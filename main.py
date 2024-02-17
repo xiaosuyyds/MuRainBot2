@@ -30,14 +30,13 @@ def post_data():
 # 导入配置文件
 def import_profile(yml_path):
     try:
-        f = open(yml_path, encoding='utf-8')
-        file_content = f.read()
-        f.close()
+        with open(yml_path, "r", encoding="utf-8") as f:
+            file_content = f.read()
         profile = yaml.load(file_content, yaml.FullLoader)
         # print(content)
         logger.info("配置文件导入成功！")
         return profile
-    except (FileNotFoundError,):
+    except FileNotFoundError or OSError:
         logger.critical('配置文件导入失败！')
         return None
 
@@ -80,10 +79,10 @@ def main():
     if MuRainLib.LibInfo().version == VERSION:
         logger.info("MuRainLib版本校验成功！")
     else:
-        logger.warning("MuRainLib版本检测未通过，可能会发生异常，请确认是否继续？\n"
+        logger.warning("MuRainLib版本检测未通过，可能会发生异常\n"
                        f"MuRainLib版本:{MuRainLib.LibInfo().version} MuRain Bot版本:{VERSION}\n"
                        "注意：我们将不会受理在此模式下运行的报错")
-        input()
+        os.system("pause")
         logger.warning("MuRainLib版本检测未通过，可能会发生异常，将继续运行！")
 
     config = import_profile(yaml_path)
