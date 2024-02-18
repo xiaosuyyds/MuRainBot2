@@ -30,7 +30,7 @@ def post_data():
 # 导入配置文件
 def import_profile(yml_path):
     try:
-        with open(yml_path, "r", encoding="utf-8") as f:
+        with open(yml_path, encoding="utf-8") as f:
             file_content = f.read()
         profile = yaml.load(file_content, yaml.FullLoader)
         # print(content)
@@ -100,6 +100,7 @@ def main():
     logger.info("启动监听服务器")
     server.serve_forever()
     logger.warning("监听服务器结束运行！")
+
 
 if __name__ == '__main__':
     pass
