@@ -36,7 +36,7 @@
 * 下载本项目的releases或源码包
 * 若下载的是releases则go-cqhttp已经帮您配置好了正反向HTTP的端口，只需要配置密码即可
 * 若下载的是源码包则请自行放入bot框架，并检查端口是否与MRB2配置的一致
-* 若下载的是releases则已经帮您把Qsgin服务器也配置好了，只需启动`一键启动.bat`或`一键启动-dev.bat`即可
+* 若下载的是releases则已经帮您把Qsgin服务器也配置好了
 * 若下载的是源码包请自行启动bot框架
 * 随后只需运行MRB2框架即可（main.py）
 

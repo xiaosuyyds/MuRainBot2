@@ -14,6 +14,7 @@ MuRainLib
 import logging
 import logging.handlers as handlers
 import os
+import sys
 
 import coloredlogs
 
@@ -33,6 +34,17 @@ class LibInfo:
 
     def get_version(self):
         return self.version, self.version_week
+
+
+def reboot():
+    # 获取当前解释器路径
+    p = sys.executable
+    try:
+        # 启动新程序(解释器路径, 当前程序)
+        os.execl(p, p, *sys.argv)
+    except OSError:
+        # 关闭当前程序
+        sys.exit()
 
 
 def log_init():

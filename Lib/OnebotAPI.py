@@ -15,7 +15,7 @@ import urllib.parse
 
 
 class OnebotAPI:
-    def __init__(self, host: str, port: int, original: bool = False):
+    def __init__(self, host: str = "", port: int = -1, original: bool = False):
         # if url != "":
         #     url_list = urllib.parse.urlparse(url)
         #     host = url_list.scheme + "//" + url_list.netloc
@@ -36,12 +36,16 @@ class OnebotAPI:
         self.url = urllib.parse.urljoin(self.host + ":" + str(self.port), self.node)
         return self.url
 
-    def set(self, node, data=None):
+    def set_node(self, node, data=None):
         if data is None:
             data = {}
         self.node = node
         self.data = data
         return str(self)
+
+    def set_ip(self, host, port):
+        self.host = host
+        self.port = port
 
     def get(self, node="", data=None):
         if node != "":
@@ -55,6 +59,12 @@ class OnebotAPI:
         if self.node == "":
             # raise ValueError('The node cannot be empty')
             self.node = "/"
+
+        if self.host == "":
+            raise ValueError('The host cannot be empty')
+
+        if self.port == -1:
+            raise ValueError('The port cannot be empty')
 
         # 发起get请求
         try:

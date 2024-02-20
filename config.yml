@@ -1,9 +1,13 @@
 # MuCloud Bot Python配置文件
 account: # 账号相关
-  uin: 123456  # QQ账号（留空则自动获取）
-  name: "" #昵称（留空则自动获取）
+  user_id: 123456  # QQ账号（留空则自动获取）
+  nick_name: "" #昵称（留空则自动获取）
+  bot_admin: []
 
 api: # Api设置
-  url: 'http://127.0.0.1:5700/'
+  host: '127.0.0.1'
+  port: 5700
+
+server:
   host: '127.0.0.1'
   port: 5701
