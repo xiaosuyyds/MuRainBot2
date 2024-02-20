@@ -12,6 +12,7 @@ from Lib import QQRichText
 from flask import Flask, request
 import yaml
 import os
+import logging
 import threading
 import importlib
 from werkzeug.serving import make_server
@@ -31,12 +32,12 @@ request_list = []
 # 上报
 @app.route('/', methods=["POST"])
 def post_data():
-    if request in request_list:
+    data = request.get_json()
+    if data in request_list:
         return "OK"
     else:
-        request_list.append(request)
+        request_list.append(data)
 
-    data = request.get_json()
     if data['post_type'] == "message":
         if data['message_type'] == 'group':  # 如果是群聊信息
             group_id = data['group_id']  # 获取群号
@@ -72,11 +73,12 @@ def post_data():
                     logger.info("收到来自%s的加群邀请，群号是%s已默认同意(flag:%s)" % (user_id, group_id, flag))
 
         # 戳一戳
-        if data['notice_type'] == 'notify':
-            user_id = data['user_id']
-            tid = data['target_id']
-            group_id = data['group_id']
-            logger.info("检测到群号为%s内，%s戳了戳%s" % (group_id, user_id, tid))
+        if data['post_type'] == "notice":
+            if data['notice_type'] == 'notify':
+                user_id = data['user_id']
+                tid = data['target_id']
+                group_id = data['group_id']
+                logger.info("检测到群号为%s内，%s戳了戳%s" % (group_id, user_id, tid))
 
         # 进群聊
         if data['post_type'] == "notice":
@@ -103,7 +105,7 @@ def post_data():
     # 插件
     for plugin in plugins.keys():
         plugin_thread = threading.Thread(
-            target=plugins[plugin].main(),
+            target=plugins[plugin].main,
             args=(
                 data,
                 work_path)
@@ -203,6 +205,9 @@ logger.info("读取到监听api，将以此url调用API:{}"
 # 启动监听服务器
 server = make_server(config["server"]["host"], config["server"]["port"], app)
 logger.info("启动监听服务器")
+# 禁用werkzeug的日志记录
+log = logging.getLogger('werkzeug')
+log.disabled = True
 server.serve_forever()
 
 logger.warning("监听服务器结束运行！")

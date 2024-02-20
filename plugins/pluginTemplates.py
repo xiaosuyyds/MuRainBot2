@@ -43,9 +43,9 @@ def group_msg_send(group_id, message: str | QQRichText.QQRichText):
 
 # 主函数
 def main(report, work_path):
-    bot_name = config["account"]["name"]
-    bot_uid = config["account"]["uin"]
-    bot_admin = config["bot"]["admin"]
+    bot_name = config["account"]["nick_name"]
+    bot_uid = config["account"]["user_id"]
+    bot_admin = config["account"]["bot_admin"]
 
     # report:go-cqhttp上报的消息
     # work_path:data目录的路径
