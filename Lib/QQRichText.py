@@ -152,7 +152,7 @@ class QQRichText:
                 self.rich_text += "[CQ:{}".format(rich["type"])
                 if rich["data"]:
                     for rich_type, rich_data in rich["data"].items():
-                        self.rich_text += ",{}:{}".format(rich_type, rich_data)
+                        self.rich_text += ",{}={}".format(rich_type, cq_encode(rich_data))
                 self.rich_text += "]"
         return self.rich_text
 
