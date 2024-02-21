@@ -27,6 +27,7 @@ def cq_encode(text) -> str:
     return text.replace("&", "&amp;").replace("[", "&#91;"). \
         replace("]", "&#93;").replace(",", "&#44;")
 
+#TODO: 完善模板，方便插件调用
 
 class Text:
     def __init__(self, text: str) -> None:

@@ -27,7 +27,7 @@ print(cq.get())
 
 
 api = OnebotAPI.OnebotAPI(host="0.0.0.0", port=576)
-print(api.set(node="114514"))
+print(api.set_node(node="114514", data={"114514": 1919810}))
 print(api)
 print(api.get())
 # logging.info('test运行结束！')

@@ -14,6 +14,7 @@ import requests
 import urllib.parse
 
 
+#TODO: API调用模板（给每个API写个class方便调用）
 class OnebotAPI:
     def __init__(self, host: str = "", port: int = -1, original: bool = False):
         # if url != "":
