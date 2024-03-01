@@ -1,6 +1,31 @@
-# MuRain Bot2(MRB2) 文档
+<h1 align="center">MuRain Bot2(MRB2)</h1>
+
+
+
+<p align="center" class="shields">
+    <a href="https://github.com/xiaosuyyds/MuRainBot2/issues" style="text-decoration:none">
+        <img src="https://img.shields.io/github/issues/xiaosuyyds/MuRainBot2.svg" alt="GitHub issues"/>
+    </a>
+    <a href="https://github.com/xiaosuyyds/MuRainBot2/stargazers" style="text-decoration:none" >
+        <img src="https://img.shields.io/github/stars/xiaosuyyds/MuRainBot2.svg" alt="GitHub stars"/>
+    </a>
+    <a href="https://github.com/xiaosuyyds/MuRainBot2/network" style="text-decoration:none" >
+        <img src="https://img.shields.io/github/forks/xiaosuyyds/MuRainBot2.svg" alt="GitHub forks"/>
+    </a>
+    <!--
+    <a href="https://github.com/xiaosuyyds/MuRainBot2/actions">
+        <img src="https://img.shields.io/github/actions/workflow/status/xiaosuyyds/MuRainBot2/vuepress-deploy.yml">
+    </a>
+    -->
+    <a href="https://github.com/xiaosuyyds/MuRainBot2/blob/master/LICENSE" style="text-decoration:none" >
+        <img src="https://img.shields.io/static/v1?label=LICENSE&message=GPL-3.0&color=lightrey"alt="GitHub license"/>
+    </a>
+</p>
+
+
+### 首先感谢您选择/使用了MRB2作为您的QQBot
+### 一个基于python 适配onebot11协议的QQbot ~~(框架?)~~
 **此项目也可称作MuCloud Bot(MCB)**
-## 首先感谢您选择、使用了MRB2作为您的QQBot
 
 
 
@@ -58,4 +83,10 @@
 * !!!注意上述所有目录除`/plugins`目录外均有可能未创建，请插件自行检测、创建!!!
 
 ## 鸣谢
-### 在此鸣谢[HarcicYang](https://github.com/HarcicYang)和[kaokao221](https://github.com/kaokao221)为此项目提供了许多的帮助~
+
+### 感谢所有为此项目做出贡献的大大~你们的存在，让社区变得更加美好！
+<a href="https://github.com/xiaosuyyds/MuRainBot2/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=xiaosuyyds/MuRainBot2&max=999" alt=感谢他们（鼓掌）！>
+</a>
+
+### 以及特别鸣谢[HarcicYang](https://github.com/HarcicYang)和[kaokao221](https://github.com/kaokao221)为此项目提供了许多的帮助~

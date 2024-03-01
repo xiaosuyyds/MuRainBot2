@@ -4,8 +4,7 @@
 #  | |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __| __) |
 #  | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
-# Code with by Xiaosu & Evan. Copyright (c) 2024 GuppyTEAM. All rights reserved.
-# 本代码由校溯 和 XuFuyu编写。版权所有 （c） 2024 Guppy团队。保留所有权利。
+
 """
 MuRainLib
 用于MuRain Bot框架
