@@ -18,7 +18,7 @@ from werkzeug.serving import make_server
 
 logger = MuRainLib.log_init()
 VERSION = "2.0.0-dev"  # 版本
-VERSION_WEEK = "24Y07W"  # 版本周
+VERSION_WEEK = "24W10A"  # 版本周
 
 plugins = {}  # 插件
 app = Flask(__name__)
@@ -197,13 +197,23 @@ if len(plugins) > 0:
 else:
     logger.warning("无插件成功导入！")
 
-logger.info("读取到监听服务器ip，将以此ip启动监听服务器:{}:{}"
+logger.info("读取到监听服务器ip，将以此ip启动监听服务器: {}:{}"
             .format(config["server"]["host"], config["server"]["port"]))
 
 api.set_ip(config["api"]["host"], config["api"]["port"])
 
-logger.info("读取到监听api，将以此url调用API:{}"
+logger.info("读取到监听api，将以此url调用API: {}"
             .format(str(api)))
+
+# 检测bot名称与botUID是否为空
+if bot_uid is None or bot_name == "" or bot_uid == 123456 or bot_name is None:
+    logger.warning("配置文件中未找到BotUID或昵称，将自动获取！")
+    try:
+        bot_uid, bot_name = api.get("/get_login_info")
+    except:
+        logger.error("获取BotUID与昵称失败！可能会导致严重问题！")
+
+logger.info("欢迎使用{}({})".format(bot_name, bot_uid))
 
 # 启动监听服务器
 server = make_server(config["server"]["host"], config["server"]["port"], app)
