@@ -57,11 +57,5 @@
 * 为了调用插件则需要创建一个函数`main`，详情请见插件模板（才不是作者懒）
 * !!!注意上述所有目录除`/plugins`目录外均有可能未创建，请插件自行检测、创建!!!
 
-## 版权
-```
-Code with by Xiaosu & Evan. Copyright (c) 2024 GuppyTEAM. All rights reserved.
-本代码由校溯 和 XuFuyu编写。版权所有 （c） 2024 Guppy团队。保留所有权利。
-```
-
 ## 鸣谢
 ### 在此鸣谢[HarcicYang](https://github.com/HarcicYang)和[kaokao221](https://github.com/kaokao221)为此项目提供了许多的帮助~
