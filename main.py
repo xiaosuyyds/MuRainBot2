@@ -4,8 +4,7 @@
 #  | |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __| __) |
 #  | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
-# Code with by Xiaosu & Evan. Copyright (c) 2024 GuppyTEAM. All rights reserved.
-# 本代码由校溯 和 XuFuyu编写。版权所有 （c） 2024 Guppy团队。保留所有权利。
+
 from Lib import MuRainLib
 from Lib import OnebotAPI
 from Lib import QQRichText
@@ -119,14 +118,14 @@ def post_data():
 
 
 # 导入配置文件
-def import_profile(yml_path):
+def import_config(yml_path):
     try:
         with open(yml_path, encoding="utf-8") as f:
             file_content = f.read()
-        profile = yaml.load(file_content, yaml.FullLoader)
+        config = yaml.load(file_content, yaml.FullLoader)
         # print(content)
         logger.info("配置文件导入成功！")
-        return profile
+        return config
     except FileNotFoundError or OSError:
         logger.critical('配置文件导入失败！')
         return None
@@ -170,8 +169,9 @@ yaml_path = os.path.join(work_path, 'config.yml')
 plugins_path = os.path.join(work_path, "plugins")
 
 logger.info(f"MuRain Bot开始运行，当前版本：{VERSION}")
-logger.info("Code with by Xiaosu & Evan. Copyright (c) 2024 GuppyTEAM. All rights reserved.")
-logger.info("本代码由校溯 和 XuFuyu编写。版权所有 （c） 2024 Guppy团队。保留所有权利。")
+logger.info("Github: https://github.com/xiaosuyyds/MuRainBot2/")
+
+
 # 版本检测
 if MuRainLib.LibInfo().version == VERSION:
     logger.info("MuRainLib版本校验成功！")
@@ -182,7 +182,7 @@ else:
     os.system("pause")
     logger.warning("MuRainLib版本检测未通过，可能会发生异常，将继续运行！")
 
-config = import_profile(yaml_path)
+config = import_config(yaml_path)
 
 bot_uid = config["account"]["user_id"]
 bot_name = config["account"]["nick_name"]
