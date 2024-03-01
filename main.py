@@ -14,6 +14,7 @@ import os
 import logging
 import threading
 import importlib
+import atexit
 from werkzeug.serving import make_server
 
 logger = MuRainLib.log_init()
@@ -27,6 +28,11 @@ api = OnebotAPI.OnebotAPI()
 
 request_list = []
 
+# 结束运行
+@atexit.register
+def finalize_and_cleanup():
+    # TODO: 清理缓存文件等
+    logger.warning("MuRainBot结束运行！\n")    
 
 # 上报
 @app.route('/', methods=["POST"])
@@ -168,6 +174,7 @@ data_path = os.path.join(work_path, 'data')
 yaml_path = os.path.join(work_path, 'config.yml')
 plugins_path = os.path.join(work_path, "plugins")
 
+
 logger.info(f"MuRain Bot开始运行，当前版本：{VERSION}")
 logger.info("Github: https://github.com/xiaosuyyds/MuRainBot2/")
 
@@ -210,18 +217,23 @@ if bot_uid is None or bot_name == "" or bot_uid == 123456 or bot_name is None:
     logger.warning("配置文件中未找到BotUID或昵称，将自动获取！")
     try:
         bot_uid, bot_name = api.get("/get_login_info")
-    except:
+    except (TypeError,ConnectionRefusedError):
         logger.error("获取BotUID与昵称失败！可能会导致严重问题！")
 
 logger.info("欢迎使用{}({})".format(bot_name, bot_uid))
 
-# 启动监听服务器
-server = make_server(config["server"]["host"], config["server"]["port"], app)
-logger.info("启动监听服务器")
+
 # 禁用werkzeug的日志记录
 log = logging.getLogger('werkzeug')
 log.disabled = True
-server.serve_forever()
 
-logger.warning("监听服务器结束运行！")
-logger.warning("MuRain Bot运行结束！")
+# 启动监听服务器
+try:
+    logger.info("启动监听服务器")
+    server = make_server(config["server"]["host"], config["server"]["port"], app)
+    server.serve_forever()
+except:
+     logger.warning("监听服务器启动失败！")
+finally:
+    logger.warning("监听服务器结束运行！")
+    # logger.warning("MuRain Bot运行结束！")
