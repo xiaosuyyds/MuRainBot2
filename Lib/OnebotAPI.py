@@ -13,7 +13,7 @@ import requests
 import urllib.parse
 
 
-#TODO: API调用模板（给每个API写个class方便调用）
+# TODO: API调用模板（给每个API写个class方便调用）
 class OnebotAPI:
     def __init__(self, host: str = "", port: int = -1, original: bool = False):
         # if url != "":
@@ -79,3 +79,5 @@ class OnebotAPI:
         except Exception as e:
             # 返回异常信息
             return e
+
+# TODO: 让插件可以使用装饰器来获取上报

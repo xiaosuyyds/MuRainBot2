@@ -28,11 +28,13 @@ api = OnebotAPI.OnebotAPI()
 
 request_list = []
 
+
 # 结束运行
 @atexit.register
 def finalize_and_cleanup():
     # TODO: 清理缓存文件等
-    logger.warning("MuRainBot结束运行！\n")    
+    logger.warning("MuRainBot结束运行！\n")
+
 
 # 上报
 @app.route('/', methods=["POST"])
@@ -46,67 +48,51 @@ def post_data():
 
     if data['post_type'] == "message":
         if data['message_type'] == 'group':  # 如果是群聊信息
-            group_id = data['group_id']  # 获取群号
-            user_id = data['sender']['user_id']  # 获取信息发送者的 QQ号码
             username = data['sender']['nickname']  # 获取信息发送者的昵称
-            message = data['raw_message']  # 获取原始信息
-            msg_id = data['message_id']  # 获取信息ID
-            group_user_name = data['sender']['card']  # 获取信息发送者的群昵称
-            if group_user_name != "":
-                username = group_user_name  # 若用户设置
+            if data['sender']['card'] != "":
+                username = data['sender']['card']  # 若用户设置
                 # 了群昵称则把用户名设为群昵称
             group_name = api.get("/get_group_info", {"group_id": group_id})["group_name"]
 
             message = QQRichText.cq_decode(message)
 
             logger.info("收到群 %s(%s) 内 %s(%s) 的消息: %s (%s)" % (
-                group_name, group_id, username, user_id, message.replace("\n", ""), msg_id))
+                group_name, data['group_id'], username, data['sender']['user_id'], data['raw_message'],
+                data['message_id']))
 
-            # 获取组文件路径
+            # 获取群文件夹路径
             grou_path = os.path.join(data_path, "groups", str(group_id))
-            # 如果组文件路径不存在，则创建
+            # 如果获取群文件夹路径不存在，则创建
             if not os.path.exists(grou_path):
                 os.makedirs(grou_path)
 
         # 加群邀请
-        if data['post_type'] == 'request':
-            if data['request_type'] == 'group':
-                user_id = data['user_id']
-                group_id = data['group_id']
-                type_ = data['sub_type']
-                flag = data['flag']
-                if type_ == "invite":
-                    logger.info("收到来自%s的加群邀请，群号是%s已默认同意(flag:%s)" % (user_id, group_id, flag))
+        if data['post_type'] == 'request' and data['request_type'] == 'group':
+            logger.info("收到来自%s的加群邀请, 群号%s, flag:%s, 类型: %s" %
+                        (data['user_id'], data['group_id'], data['flag'], data['sub_type']))
 
         # 戳一戳
-        if data['post_type'] == "notice":
-            if data['notice_type'] == 'notify':
-                user_id = data['user_id']
-                tid = data['target_id']
-                group_id = data['group_id']
-                logger.info("检测到群号为%s内，%s戳了戳%s" % (group_id, user_id, tid))
+        if data['post_type'] == "notice" and data['notice_type'] == 'notify':
+            logger.info("检测到群号为%s内，%s戳了戳%s" %
+                        (data['group_id'], data['user_id'], data['target_id']))
 
         # 进群聊
-        if data['post_type'] == "notice":
-            if data['notice_type'] == "group_increase":
-                oid = data['operator_id']
-                user_id = data['user_id']
-                group_id = data['group_id']
-                logger.info("检测到群号为%s内，%s进群了，操作者%s" % (group_id, user_id, oid))
+        if data['post_type'] == "notice" and data['notice_type'] == "group_increase":
+            logger.info("检测到群号为%s内，%s进群了，操作者%s" %
+                        (data['group_id'], data['user_id'], data['operator_id']))
 
         # 退群聊
-        if data['post_type'] == "notice":
-            if data['notice_type'] == "group_decrease":
-                type_ = data['sub_type']
-                oid = data['operator_id']
-                group_id = data['group_id']
-                user_id = data['user_id']
-                if type_ == "leave":
-                    logger.info("检测到%s退出了群聊%s" % (user_id, group_id))
-                elif type_ == "kick":
-                    logger.info("检测到%s被%s踢出了群聊%s" % (user_id, oid, group_id))
-                elif type_ == "kick_me" or user_id == bot_uid:
-                    logger.info("检测到Bot被%s踢出了群聊%s" % (oid, group_id))
+        if data['post_type'] == "notice" and data['notice_type'] == "group_decrease":
+            type_ = data['sub_type']
+            oid = data['operator_id']
+            group_id = data['group_id']
+            user_id = data['user_id']
+            if type_ == "leave":
+                logger.info("检测到%s退出了群聊%s" % (user_id, group_id))
+            elif type_ == "kick":
+                logger.info("检测到%s被%s踢出了群聊%s" % (user_id, oid, group_id))
+            elif type_ == "kick_me" or user_id == bot_uid:
+                logger.info("检测到Bot被%s踢出了群聊%s" % (oid, group_id))
 
     # TODO: 异步执行
 
@@ -174,10 +160,8 @@ data_path = os.path.join(work_path, 'data')
 yaml_path = os.path.join(work_path, 'config.yml')
 plugins_path = os.path.join(work_path, "plugins")
 
-
 logger.info(f"MuRain Bot开始运行，当前版本：{VERSION}")
 logger.info("Github: https://github.com/xiaosuyyds/MuRainBot2/")
-
 
 # 版本检测
 if MuRainLib.LibInfo().version == VERSION:
@@ -217,11 +201,10 @@ if bot_uid is None or bot_name == "" or bot_uid == 123456 or bot_name is None:
     logger.warning("配置文件中未找到BotUID或昵称，将自动获取！")
     try:
         bot_uid, bot_name = api.get("/get_login_info")
-    except (TypeError,ConnectionRefusedError):
+    except (TypeError, ConnectionRefusedError):
         logger.error("获取BotUID与昵称失败！可能会导致严重问题！")
 
 logger.info("欢迎使用{}({})".format(bot_name, bot_uid))
-
 
 # 禁用werkzeug的日志记录
 log = logging.getLogger('werkzeug')
@@ -233,7 +216,7 @@ try:
     server = make_server(config["server"]["host"], config["server"]["port"], app)
     server.serve_forever()
 except:
-     logger.warning("监听服务器启动失败！")
+    logger.warning("监听服务器启动失败！")
 finally:
     logger.warning("监听服务器结束运行！")
     # logger.warning("MuRain Bot运行结束！")
