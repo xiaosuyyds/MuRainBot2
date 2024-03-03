@@ -10,3 +10,4 @@
 *.log
 /.idea
 *.pyc
+test.py
