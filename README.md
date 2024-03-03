@@ -35,7 +35,7 @@
     |- group
         |- 123  群号为123相关的缓存文件
         ...
-    |- json     不属于某个单独群聊的MRB2及插件的josn临时/缓存文件
+    |- json     不属于某个单独群聊的MRB2及插件的json临时/缓存文件
     ...
 |- go-cqhttp    QQBot内核框架，此处以go-cqhttp示例
 |- Lib          MRB2的Lib库，插件和MRB2均需要依赖此Lib
