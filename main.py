@@ -46,25 +46,24 @@ def post_data():
         request_list.append(data)
     # TODO: 上报事件处理，写一个事件(上报)的class
 
-    if data['post_type'] == "message":
-        if data['message_type'] == 'group':  # 如果是群聊信息
-            username = data['sender']['nickname']  # 获取信息发送者的昵称
-            if data['sender']['card'] != "":
-                username = data['sender']['card']  # 若用户设置
-                # 了群昵称则把用户名设为群昵称
-            group_name = api.get("/get_group_info", {"group_id": data['group_id']})["group_name"]
+    if data['post_type'] == "message" and data['message_type'] == 'group':  # 如果是群聊信息
+        username = data['sender']['nickname']  # 获取信息发送者的昵称
+        if data['sender']['card'] != "":
+            username = data['sender']['card']  # 若用户设置
+            # 了群昵称则把用户名设为群昵称
+        group_name = api.get("/get_group_info", {"group_id": data['group_id']})["group_name"]
 
-            message = QQRichText.cq_decode(data['raw_message'])
+        message = QQRichText.cq_decode(data['raw_message'])
 
-            logger.info("收到群 %s(%s) 内 %s(%s) 的消息: %s (%s)" % (
-                group_name, data['group_id'], username, data['sender']['user_id'], message,
-                data['message_id']))
+        logger.info("收到群 %s(%s) 内 %s(%s) 的消息: %s (%s)" % (
+            group_name, data['group_id'], username, data['sender']['user_id'], message,
+            data['message_id']))
 
-            # 获取群文件夹路径
-            grou_path = os.path.join(data_path, "groups", str(data['group_id']))
-            # 如果获取群文件夹路径不存在，则创建
-            if not os.path.exists(grou_path):
-                os.makedirs(grou_path)
+        # 获取群文件夹路径
+        grou_path = os.path.join(data_path, "groups", str(data['group_id']))
+        # 如果获取群文件夹路径不存在，则创建
+        if not os.path.exists(grou_path):
+            os.makedirs(grou_path)
 
         # 加群邀请
         if data['post_type'] == 'request' and data['request_type'] == 'group':
@@ -200,7 +199,8 @@ logger.info("读取到监听api，将以此url调用API: {}"
 if bot_uid is None or bot_name == "" or bot_uid == 123456 or bot_name is None:
     logger.warning("配置文件中未找到BotUID或昵称，将自动获取！")
     try:
-        bot_uid, bot_name = api.get("/get_login_info")
+        bot_info = api.get("/get_login_info")
+        bot_uid, bot_name = bot_info["user_id"], bot_info["nickname"]
     except (TypeError, ConnectionRefusedError):
         logger.error("获取BotUID与昵称失败！可能会导致严重问题！")
 
