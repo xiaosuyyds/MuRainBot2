@@ -1,63 +1,66 @@
-<h1 align="center">MuRain Bot2(MRB2)</h1>
+# <div style="text-align: center;"> MuRain Bot2(MRB2)
+<div style="text-align: center;">
+   <p class="shields">
+       <a href="https://github.com/xiaosuyyds/MuRainBot2/issues" style="text-decoration:none">
+           <img src="https://img.shields.io/github/issues/xiaosuyyds/MuRainBot2.svg" alt="GitHub issues"/>
+       </a>
+       <a href="https://github.com/xiaosuyyds/MuRainBot2/stargazers" style="text-decoration:none" >
+           <img src="https://img.shields.io/github/stars/xiaosuyyds/MuRainBot2.svg" alt="GitHub stars"/>
+       </a>
+       <a href="https://github.com/xiaosuyyds/MuRainBot2/network" style="text-decoration:none" >
+           <img src="https://img.shields.io/github/forks/xiaosuyyds/MuRainBot2.svg" alt="GitHub forks"/>
+       </a>
+       <!--
+       <a href="https://github.com/xiaosuyyds/MuRainBot2/actions">
+           <img src="https://img.shields.io/github/actions/workflow/status/xiaosuyyds/MuRainBot2/vuepress-deploy.yml">
+       </a>
+       -->
+       <a href="https://github.com/xiaosuyyds/MuRainBot2/blob/master/LICENSE" style="text-decoration:none" >
+           <img src="https://img.shields.io/static/v1?label=LICENSE&message=GPL-3.0&color=lightrey" alt="GitHub license"/>
+       </a>
+   </p>
+</div>
 
-
-
-<p align="center" class="shields">
-    <a href="https://github.com/xiaosuyyds/MuRainBot2/issues" style="text-decoration:none">
-        <img src="https://img.shields.io/github/issues/xiaosuyyds/MuRainBot2.svg" alt="GitHub issues"/>
-    </a>
-    <a href="https://github.com/xiaosuyyds/MuRainBot2/stargazers" style="text-decoration:none" >
-        <img src="https://img.shields.io/github/stars/xiaosuyyds/MuRainBot2.svg" alt="GitHub stars"/>
-    </a>
-    <a href="https://github.com/xiaosuyyds/MuRainBot2/network" style="text-decoration:none" >
-        <img src="https://img.shields.io/github/forks/xiaosuyyds/MuRainBot2.svg" alt="GitHub forks"/>
-    </a>
-    <!--
-    <a href="https://github.com/xiaosuyyds/MuRainBot2/actions">
-        <img src="https://img.shields.io/github/actions/workflow/status/xiaosuyyds/MuRainBot2/vuepress-deploy.yml">
-    </a>
-    -->
-    <a href="https://github.com/xiaosuyyds/MuRainBot2/blob/master/LICENSE" style="text-decoration:none" >
-        <img src="https://img.shields.io/static/v1?label=LICENSE&message=GPL-3.0&color=lightrey"alt="GitHub license"/>
-    </a>
-</p>
-
-
+### 这是一个基于python 适配onebot11协议的QQBot ~~(框架?)~~
 ### 首先感谢您选择/使用了MRB2作为您的QQBot
-### 一个基于python 适配onebot11协议的QQbot ~~(框架?)~~
-**此项目也可称作MuCloud Bot(MCB)**
+~~*此项目也可称作MuCloud Bot(MCB)*~~
 
 
 
-### 项目基本目录结构:
+<details>
+<summary><B><span style="font-size: x-large; ">查基本看目录结构</span></B></summary>
+
 ```
-|- data         MRB2及插件的临时/缓存文件
-    |- group
-        |- 123  群号为123相关的缓存文件
-        ...
-    |- json     不属于某个单独群聊的MRB2及插件的json临时/缓存文件
-    ...
-|- go-cqhttp    QQBot内核框架，此处以go-cqhttp示例
-|- Lib          MRB2的Lib库，插件和MRB2均需要依赖此Lib
-    |- MuRainLib.py   MRB2的Lib库之一
-    |- QQRichText.py  MRB2的Lib库之一
-    |- OnebotAPI.py   MRB2的Lib库之一
-|- logs
-    |- today.log       当日的日志
-    |- xxxx-xx-xx.log  以往的日志
-    ...
-|- plugins
-    |- xxx.py   xxx插件代码
-    |- yyy.py   yyy插件代码 
-    ...
-|- plugin_configs
-    |- xxx.yml  xxx插件的配置文件
-    |- yyy.yml  yyy插件的配置文件
-    ...
-|- config.yml   MRB2配置文件
-|- main.py      MRB2代码（运行这个即可启动）
-|- README.md    这个文件就不用解释了吧（？）
+├─ data         MRB2及插件的临时/缓存文件
+│   ├─ group
+│   │   ├─ 123  群号为123相关的缓存文件
+│   │   ...
+│   ├─ json     不属于某个单独群聊的MRB2及插件的json临时/缓存文件
+│   ...
+├─ go-cqhttp    QQBot内核框架，此处以go-cqhttp示例
+├─ Lib          MRB2的Lib库，插件和MRB2均需要依赖此Lib
+│   ├─ MuRainLib.py   MRB2的Lib库之一
+│   ├─ QQRichText.py  MRB2的Lib库之一
+│   ├─ OnebotAPI.py   MRB2的Lib库之一
+├─ logs
+│   ├─ today.log       当日的日志
+│   ├─ xxxx-xx-xx.log  以往的日志
+│   ...
+├─ plugins
+│   ├─ xxx.py   xxx插件代码
+│   ├─ yyy.py   yyy插件代码 
+│   ...
+├─ plugin_configs
+│   ├─ xxx.yml  xxx插件的配置文件
+│   ├─ yyy.yml  yyy插件的配置文件
+│   ...
+├─ config.yml   MRB2配置文件
+├─ main.py      MRB2代码（运行这个即可启动）
+└─ README.md    这个文件就不用解释了吧（？）
 ```
+
+</details>
+
 
 ## 如何部署？
 * 下载本项目的releases或源码包
@@ -76,7 +79,7 @@
     * 正式版本的版本周格式为`<年份>Y<周数>W` 例如`24Y09W`
 
 ## 插件
-### MRBR本身不具备任何实际上的功能，一切都需要编写插件来实现功能
+### MRB2本身不具备任何实际上的功能，一切都需要编写插件来实现功能
 ### MRB2插件编写规范
 
 * 插件名称采用大驼峰命名
@@ -94,7 +97,7 @@
 
 ## 鸣谢
 
-### 感谢所有为此项目做出贡献的大大~你们的存在，让社区变得更加美好！
+### 感谢所有为此项目做出贡献的大大~你们的存在，让社区变得更加美好~！
 <a href="https://github.com/xiaosuyyds/MuRainBot2/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=xiaosuyyds/MuRainBot2&max=999" alt=感谢他们（鼓掌）！>
 </a>

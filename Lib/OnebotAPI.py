@@ -16,6 +16,11 @@ import urllib.parse
 # TODO: API调用模板（给每个API写个class方便调用）
 class OnebotAPI:
     def __init__(self, host: str = "", port: int = -1, original: bool = False):
+        """
+        :param host: 调用的ip
+        :param port: 调用的端口
+        :param original: 是否返回全部json（默认只返回data内）
+        """
         # if url != "":
         #     url_list = urllib.parse.urlparse(url)
         #     host = url_list.scheme + "//" + url_list.netloc

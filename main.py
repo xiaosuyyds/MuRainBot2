@@ -93,9 +93,8 @@ def post_data():
             elif type_ == "kick_me" or user_id == bot_uid:
                 logger.info("检测到Bot被%s踢出了群聊%s" % (oid, group_id))
 
-    # TODO: 异步执行
-
     # 插件
+    # TODO: 插件异步执行，替换多线程
     for plugin in plugins.keys():
         plugin_thread = threading.Thread(
             target=plugins[plugin].main,
