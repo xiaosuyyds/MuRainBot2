@@ -52,16 +52,16 @@ def post_data():
             if data['sender']['card'] != "":
                 username = data['sender']['card']  # 若用户设置
                 # 了群昵称则把用户名设为群昵称
-            group_name = api.get("/get_group_info", {"group_id": group_id})["group_name"]
+            group_name = api.get("/get_group_info", {"group_id": data['group_id']})["group_name"]
 
-            message = QQRichText.cq_decode(message)
+            message = QQRichText.cq_decode(data['raw_message'])
 
             logger.info("收到群 %s(%s) 内 %s(%s) 的消息: %s (%s)" % (
-                group_name, data['group_id'], username, data['sender']['user_id'], data['raw_message'],
+                group_name, data['group_id'], username, data['sender']['user_id'], message,
                 data['message_id']))
 
             # 获取群文件夹路径
-            grou_path = os.path.join(data_path, "groups", str(group_id))
+            grou_path = os.path.join(data_path, "groups", str(data['group_id']))
             # 如果获取群文件夹路径不存在，则创建
             if not os.path.exists(grou_path):
                 os.makedirs(grou_path)
