@@ -8,7 +8,6 @@
 from Lib import MuRainLib
 from Lib import OnebotAPI
 from Lib import QQRichText
-import os
 import logging
 
 api = OnebotAPI.OnebotAPI()

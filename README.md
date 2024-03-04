@@ -1,25 +1,23 @@
-# <div style="text-align: center;"> MuRain Bot2(MRB2)
-<div style="text-align: center;">
-   <p class="shields">
-       <a href="https://github.com/xiaosuyyds/MuRainBot2/issues" style="text-decoration:none">
-           <img src="https://img.shields.io/github/issues/xiaosuyyds/MuRainBot2.svg" alt="GitHub issues"/>
-       </a>
-       <a href="https://github.com/xiaosuyyds/MuRainBot2/stargazers" style="text-decoration:none" >
-           <img src="https://img.shields.io/github/stars/xiaosuyyds/MuRainBot2.svg" alt="GitHub stars"/>
-       </a>
-       <a href="https://github.com/xiaosuyyds/MuRainBot2/network" style="text-decoration:none" >
-           <img src="https://img.shields.io/github/forks/xiaosuyyds/MuRainBot2.svg" alt="GitHub forks"/>
-       </a>
-       <!--
-       <a href="https://github.com/xiaosuyyds/MuRainBot2/actions">
-           <img src="https://img.shields.io/github/actions/workflow/status/xiaosuyyds/MuRainBot2/vuepress-deploy.yml">
-       </a>
-       -->
-       <a href="https://github.com/xiaosuyyds/MuRainBot2/blob/master/LICENSE" style="text-decoration:none" >
-           <img src="https://img.shields.io/static/v1?label=LICENSE&message=GPL-3.0&color=lightrey" alt="GitHub license"/>
-       </a>
-   </p>
-</div>
+<h1 align="center">MuRain Bot2(MRB2)</h1>
+<p align="center" class="shields">
+    <a href="https://github.com/xiaosuyyds/MuRainBot2/issues" style="text-decoration:none">
+        <img src="https://img.shields.io/github/issues/xiaosuyyds/MuRainBot2.svg" alt="GitHub issues"/>
+    </a>
+    <a href="https://github.com/xiaosuyyds/MuRainBot2/stargazers" style="text-decoration:none" >
+        <img src="https://img.shields.io/github/stars/xiaosuyyds/MuRainBot2.svg" alt="GitHub stars"/>
+    </a>
+    <a href="https://github.com/xiaosuyyds/MuRainBot2/network" style="text-decoration:none" >
+        <img src="https://img.shields.io/github/forks/xiaosuyyds/MuRainBot2.svg" alt="GitHub forks"/>
+    </a>
+    <!--
+    <a href="https://github.com/xiaosuyyds/MuRainBot2/actions">
+        <img src="https://img.shields.io/github/actions/workflow/status/xiaosuyyds/MuRainBot2/vuepress-deploy.yml">
+    </a>
+    -->
+    <a href="https://github.com/xiaosuyyds/MuRainBot2/blob/master/LICENSE" style="text-decoration:none" >
+        <img src="https://img.shields.io/static/v1?label=LICENSE&message=GPL-3.0&color=lightrey" alt="GitHub license"/>
+    </a>
+</p>
 
 ### 这是一个基于python 适配onebot11协议的QQBot ~~(框架?)~~
 ### 首先感谢您选择/使用了MRB2作为您的QQBot
@@ -28,7 +26,7 @@
 
 
 <details>
-<summary><B><span style="font-size: x-large; ">查基本看目录结构</span></B></summary>
+<summary>查基本看目录结构</summary>
 
 ```
 ├─ data         MRB2及插件的临时/缓存文件
@@ -41,7 +39,7 @@
 ├─ Lib          MRB2的Lib库，插件和MRB2均需要依赖此Lib
 │   ├─ MuRainLib.py   MRB2的Lib库之一
 │   ├─ QQRichText.py  MRB2的Lib库之一
-│   ├─ OnebotAPI.py   MRB2的Lib库之一
+│   └─ OnebotAPI.py   MRB2的Lib库之一
 ├─ logs
 │   ├─ today.log       当日的日志
 │   ├─ xxxx-xx-xx.log  以往的日志
@@ -51,6 +49,7 @@
 │   ├─ yyy.py   yyy插件代码 
 │   ...
 ├─ plugin_configs
+│   ├─ pluginTemplates.py  插件模板
 │   ├─ xxx.yml  xxx插件的配置文件
 │   ├─ yyy.yml  yyy插件的配置文件
 │   ...
@@ -89,8 +88,8 @@
 * 插件的配置文件将存储在`/plugin_configs`目录下，并以插件名称命名，统一使用yml或yaml当作配置文件
 * 在此推荐插件写出详细的log日志，但是如果你硬不写我也没办法（
 * 若需要则可引用Lib库，推荐不要重复造轮子，但是如果你硬要我也没办法（
-* 需要在插件的头部写上一个类`PluginInfo`，详情请见插件模板 ~~（才不是作者懒）~~
-* 为了调用插件则需要创建一个函数`main`，详情请见插件模板 ~~（才不是作者懒，好吧我就是懒）~~
+* 需要在插件的头部写上一个类`PluginInfo`，详情请见[插件模板](plugins/pluginTemplates.py) ~~（才不是作者懒）~~
+* 为了调用插件则需要创建一个函数`main`，详情请见[插件模板](plugins/pluginTemplates.py) ~~（才不是作者懒，好吧我就是懒）~~
 * !!!注意上述所有目录除`/plugins`目录外均有可能未创建，请插件自行检测、创建!!!
 
 #### 不过我们有一些我们自己制作的插件，后续可能会放在源码中或是releases中
