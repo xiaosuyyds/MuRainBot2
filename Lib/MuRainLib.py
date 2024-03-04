@@ -87,10 +87,3 @@ def log_init():
     file_handler.setFormatter(logging.Formatter(fmt))
     logger.addHandler(file_handler)
     return logger
-
-
-if __name__ == '__main__':
-    print("这是一个Lib库，为其他程序提供一些方法，函数。")
-    print("不可直接运行！")
-    input("Enter或按Ctrl+C以退出")
-    exit(0)
