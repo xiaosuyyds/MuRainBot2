@@ -101,7 +101,7 @@ _~~插件是MRB2的灵魂，没有插件的MRB2只是一个空壳~~_
 
 ## 鸣谢
 
-### 感谢所有为此项目做出贡献的大大~你们的存在，让社区变得更加美好~！
+### 感谢所有为此项目做出贡献的大大，你们的存在，让社区变得更加美好~！
 <a href="https://github.com/xiaosuyyds/MuRainBot2/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=xiaosuyyds/MuRainBot2&max=999" alt=感谢他们（鼓掌）！>
 </a>
