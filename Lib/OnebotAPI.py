@@ -62,14 +62,14 @@ class OnebotAPI:
         self.data = data
 
         if self.node == "":
-            # raise ValueError('The node cannot be empty')
+            # raise ValueError('The node cannot be empty.')
             self.node = "/"
 
         if self.host == "":
-            raise ValueError('The host cannot be empty')
+            raise ValueError('The host cannot be empty.')
 
         if self.port == -1:
-            raise ValueError('The port cannot be empty')
+            raise ValueError('The port cannot be empty.')
 
         # 发起get请求
         try:

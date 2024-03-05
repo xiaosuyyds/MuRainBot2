@@ -5,9 +5,7 @@
 #  | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
 
-from Lib import MuRainLib
-from Lib import OnebotAPI
-from Lib import QQRichText
+from Lib import *
 import logging
 
 api = OnebotAPI.OnebotAPI()

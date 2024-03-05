@@ -5,9 +5,7 @@
 #  | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
 
-from Lib import MuRainLib
-from Lib import OnebotAPI
-from Lib import QQRichText
+from Lib import *
 from flask import Flask, request
 import yaml
 import os
@@ -19,7 +17,7 @@ from werkzeug.serving import make_server
 
 logger = MuRainLib.log_init()
 VERSION = "2.0.0-dev"  # 版本
-VERSION_WEEK = "24W10A"  # 版本周
+VERSION_WEEK = "24W11A"  # 版本周
 
 plugins = {}  # 插件
 app = Flask(__name__)
@@ -158,18 +156,20 @@ data_path = os.path.join(work_path, 'data')
 yaml_path = os.path.join(work_path, 'config.yml')
 plugins_path = os.path.join(work_path, "plugins")
 
-logger.info(f"MuRain Bot开始运行，当前版本：{VERSION}")
+logger.info(f"MuRain Bot开始运行，当前版本：{VERSION}({VERSION_WEEK})")
 logger.info("Github: https://github.com/xiaosuyyds/MuRainBot2/")
 
 # 版本检测
-if MuRainLib.LibInfo().version == VERSION:
+if LibInfo().version == VERSION:
     logger.info("MuRainLib版本校验成功！")
 else:
     logger.warning("MuRainLib版本检测未通过，可能会发生异常\n"
-                   f"MuRainLib版本:{MuRainLib.LibInfo().version} MuRain Bot版本:{VERSION}\n"
+                   f"MuRainLib版本:{LibInfo().version} MuRain Bot版本:{VERSION}\n"
                    "注意：我们将不会受理在此模式下运行的报错")
     os.system("pause")
     logger.warning("MuRainLib版本检测未通过，可能会发生异常，将继续运行！")
+
+logger.info(f"MuRainLib当前版本：{LibInfo().version}({LibInfo().version_week})")
 
 config = import_config(yaml_path)
 
@@ -189,12 +189,13 @@ else:
 logger.info("读取到监听服务器ip，将以此ip启动监听服务器: {}:{}"
             .format(config["server"]["host"], config["server"]["port"]))
 
+# 设置API
 api.set_ip(config["api"]["host"], config["api"]["port"])
 
 logger.info("读取到监听api，将以此url调用API: {}"
             .format(str(api)))
 
-# 检测bot名称与botUID是否为空
+# 检测bot名称与botUID是否为空或未设置
 if bot_uid is None or bot_name == "" or bot_uid == 123456 or bot_name is None:
     logger.warning("配置文件中未找到BotUID或昵称，将自动获取！")
     try:
@@ -218,4 +219,3 @@ except:
     logger.warning("监听服务器启动失败！")
 finally:
     logger.warning("监听服务器结束运行！")
-    # logger.warning("MuRain Bot运行结束！")

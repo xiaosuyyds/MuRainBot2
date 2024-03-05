@@ -29,16 +29,16 @@ class Event:
             listener()
 
 
-def EventListener(*args, **kwargs):
+def event_listener(*args, **kwargs):
     if args[0] is None:
         raise TypeError("missing 1 required argument")
     if isinstance(args[0], Event):
         raise TypeError("incorrect argument")
 
     def wrapper(func):
-        className = args[0].__name__
-        if className not in EventListeners.keys():
-            EventListeners[className] = []
-        EventListeners[className].append(func)
+        class_name = args[0].__name__
+        if class_name not in EventListeners.keys():
+            EventListeners[class_name] = []
+        EventListeners[class_name].append(func)
 
     return wrapper

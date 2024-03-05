@@ -17,22 +17,9 @@ import sys
 
 import coloredlogs
 
-VERSION = "2.0.0-dev"
-VERSION_WEEK = "24Y07W"
-
 work_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 data_path = os.path.join(work_path, "data")
 logs_path = os.path.join(work_path, "logs")
-
-
-# MuRainLib信息
-class LibInfo:
-    def __init__(self):
-        self.version = VERSION
-        self.version_week = VERSION_WEEK
-
-    def get_version(self):
-        return self.version, self.version_week
 
 
 def reboot():

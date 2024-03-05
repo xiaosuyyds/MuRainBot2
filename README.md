@@ -30,16 +30,17 @@
 
 ```
 ├─ data         MRB2及插件的临时/缓存文件
-│   ├─ group
-│   │   ├─ 123  群号为123相关的缓存文件
+│   ├─ group  每个群的相关的缓存文件
+│   │   ├─ 123  群号为123相关的缓存文件（示例）
 │   │   ...
 │   ├─ json     不属于某个单独群聊的MRB2及插件的json临时/缓存文件
 │   ...
 ├─ go-cqhttp    QQBot内核框架，此处以go-cqhttp示例
 ├─ Lib          MRB2的Lib库，插件和MRB2均需要依赖此Lib
-│   ├─ MuRainLib.py   MRB2的Lib库之一
-│   ├─ QQRichText.py  MRB2的Lib库之一
-│   └─ OnebotAPI.py   MRB2的Lib库之一
+│   ├─ EventManager.py MRB2的Lib库之一，用于广播上报事件
+│   ├─ MuRainLib.py    MRB2的Lib库之一，用于提供一些零七八碎的函数
+│   ├─ QQRichText.py   MRB2的Lib库之一，用于解析QQ消息
+│   └─ OnebotAPI.py    MRB2的Lib库之一，用于调用OneBotAPI.py
 ├─ logs
 │   ├─ today.log       当日的日志
 │   ├─ xxxx-xx-xx.log  以往的日志
@@ -78,6 +79,7 @@
     * 正式版本的版本周格式为`<年份>Y<周数>W` 例如`24Y09W`
 
 ## 插件
+_~~插件是MRB2的灵魂，没有插件的MRB2只是一个空壳~~_
 ### MRB2本身不具备任何实际上的功能，一切都需要编写插件来实现功能
 ### MRB2插件编写规范
 
