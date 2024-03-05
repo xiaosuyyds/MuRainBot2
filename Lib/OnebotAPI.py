@@ -84,5 +84,3 @@ class OnebotAPI:
         except Exception as e:
             # 返回异常信息
             return e
-
-# TODO: 让插件可以使用装饰器来获取上报
