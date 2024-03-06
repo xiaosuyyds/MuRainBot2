@@ -20,25 +20,23 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-EventListeners = {}
+event_listeners = {}
 
 
 class Event:
     def call(self):
-        for listener in EventListeners[self.__class__.__name__]:
-            listener()
+        if self.__class__.__name__ in event_listeners:
+            for listener in event_listeners[self.__class__.__name__]:
+                listener()
 
 
 def event_listener(*args, **kwargs):
     if args[0] is None:
         raise TypeError("missing 1 required argument")
-    if isinstance(args[0], Event):
+    if not issubclass(args[0], Event):
         raise TypeError("incorrect argument")
 
     def wrapper(func):
-        class_name = args[0].__name__
-        if class_name not in EventListeners.keys():
-            EventListeners[class_name] = []
-        EventListeners[class_name].append(func)
+        event_listeners.setdefault(args[0].__name__, []).append(func)
 
     return wrapper
