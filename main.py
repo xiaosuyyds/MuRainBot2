@@ -4,6 +4,7 @@
 #  | |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __| __) |
 #  | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
+import sys
 
 from Lib import *
 from flask import Flask, request
@@ -160,7 +161,8 @@ if __name__ == '__main__':
         logger.warning("MuRainLib版本检测未通过，可能会发生异常\n"
                        f"MuRainLib版本:{LibInfo().version} MuRain Bot版本:{VERSION}\n"
                        "注意：我们将不会受理在此模式下运行的报错")
-        os.system("pause")
+        if input("Continue?(Y/n)").lower() != "y":
+            sys.exit()
         logger.warning("MuRainLib版本检测未通过，可能会发生异常，将继续运行！")
 
     logger.info("MuRainLib当前版本：{}({})".format(LibInfo().version, LibInfo().version_week))
