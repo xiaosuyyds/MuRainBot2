@@ -42,7 +42,6 @@ def post_data():
         return "OK"
     else:
         request_list.append(data)
-    # TODO: 上报事件处理，写一个事件(上报)的class
 
     if data['post_type'] == "message" and data['message_type'] == 'group':  # 如果是群聊信息
         username = data['sender']['nickname']  # 获取信息发送者的昵称
@@ -106,32 +105,32 @@ def post_data():
 
 
 # 导入配置文件
-def import_config(yml_path):
+def load_config(yml_path):
     try:
         with open(yml_path, encoding="utf-8") as f:
             file_content = f.read()
         config = yaml.load(file_content, yaml.FullLoader)
         # print(content)
-        logger.info("配置文件导入成功！")
+        logger.info("配置文件加载成功！")
         return config
     except FileNotFoundError or OSError:
-        logger.critical('配置文件导入失败！')
+        logger.critical('配置文件加载失败！')
         return None
 
 
-def import_plugins():
+def load_plugins():
     global plugins
     # 获取插件目录下的所有文件
     things_in_plugin_dir = os.listdir(plugins_path)
 
     # 筛选出后缀为.py的文件
-    def pick_module(name, plugin_suffix=".py"):
+    def mapper(name, plugin_suffix=".py"):
         if name.endswith(plugin_suffix):
             return name.split(".")[0]
         else:
             return ""
 
-    things_in_plugin_dir = map(pick_module, things_in_plugin_dir)
+    things_in_plugin_dir = map(mapper, things_in_plugin_dir)
     things_in_plugin_dir = [_ for _ in things_in_plugin_dir if _ != ""]
 
     plugins = {}
@@ -140,82 +139,77 @@ def import_plugins():
         try:
             plugins[i] = importlib.import_module('.' + i, package='plugins')
         except Exception as e:
-            logger.warning("导入插件 {} 失败！ 原因:{}".format(i, e))
+            logger.error("导入插件 {} 失败！ 原因:{}".format(i, e))
     return plugins
 
 
 # 主函数
 if __name__ == '__main__':
-    pass
-else:
-    logger.warning("您当前正在使用非常规手段运行MuRain Bot，这可能会造成严重的错误！\n"
-                   "注意：我们将不会受理在此模式下运行的报错")
+    work_path = os.path.abspath(os.path.dirname(__file__))
+    data_path = os.path.join(work_path, 'data')
+    yaml_path = os.path.join(work_path, 'config.yml')
+    plugins_path = os.path.join(work_path, "plugins")
 
-work_path = os.path.abspath(os.path.dirname(__file__))
-data_path = os.path.join(work_path, 'data')
-yaml_path = os.path.join(work_path, 'config.yml')
-plugins_path = os.path.join(work_path, "plugins")
+    logger.info(f"MuRain Bot开始运行，当前版本：{VERSION}({VERSION_WEEK})")
+    logger.info("Github: https://github.com/xiaosuyyds/MuRainBot2/")
 
-logger.info(f"MuRain Bot开始运行，当前版本：{VERSION}({VERSION_WEEK})")
-logger.info("Github: https://github.com/xiaosuyyds/MuRainBot2/")
+    # 版本检测
+    if LibInfo().version == VERSION:
+        logger.info("MuRainLib版本校验成功！")
+    else:
+        logger.warning("MuRainLib版本检测未通过，可能会发生异常\n"
+                       f"MuRainLib版本:{LibInfo().version} MuRain Bot版本:{VERSION}\n"
+                       "注意：我们将不会受理在此模式下运行的报错")
+        os.system("pause")
+        logger.warning("MuRainLib版本检测未通过，可能会发生异常，将继续运行！")
 
-# 版本检测
-if LibInfo().version == VERSION:
-    logger.info("MuRainLib版本校验成功！")
-else:
-    logger.warning("MuRainLib版本检测未通过，可能会发生异常\n"
-                   f"MuRainLib版本:{LibInfo().version} MuRain Bot版本:{VERSION}\n"
-                   "注意：我们将不会受理在此模式下运行的报错")
-    os.system("pause")
-    logger.warning("MuRainLib版本检测未通过，可能会发生异常，将继续运行！")
+    logger.info("MuRainLib当前版本：{}({})".format(LibInfo().version, LibInfo().version_week))
 
-logger.info(f"MuRainLib当前版本：{LibInfo().version}({LibInfo().version_week})")
+    config = load_config(yaml_path)
 
-config = import_config(yaml_path)
+    bot_uid = config["account"]["user_id"]
+    bot_name = config["account"]["nick_name"]
+    bot_admin = config["account"]["bot_admin"]
 
-bot_uid = config["account"]["user_id"]
-bot_name = config["account"]["nick_name"]
-bot_admin = config["account"]["bot_admin"]
+    load_plugins()
+    if len(plugins) > 0:
+        logger.info("插件导入完成，共成功导入 {} 个插件".format(len(plugins)))
+        for plugin in plugins:
+            plugin_info = plugins[plugin].PluginInfo(config)
+            logger.info("%s 作者:%s", plugin_info.NAME, plugin_info.AUTHOR)
+    else:
+        logger.warning("无插件成功导入！")
 
-import_plugins()
-if len(plugins) > 0:
-    logger.info("插件导入完成，共成功导入 {} 个插件".format(len(plugins)))
-    for plugin in plugins:
-        plugin_info = plugins[plugin].PluginInfo(config)
-        logger.info("%s 作者:%s", plugin_info.NAME, plugin_info.AUTHOR)
-else:
-    logger.warning("无插件成功导入！")
+    logger.info("读取到监听服务器ip，将以此ip启动监听服务器: {}:{}"
+                .format(config["server"]["host"], config["server"]["port"]))
 
-logger.info("读取到监听服务器ip，将以此ip启动监听服务器: {}:{}"
-            .format(config["server"]["host"], config["server"]["port"]))
+    # 设置API
+    api.set_ip(config["api"]["host"], config["api"]["port"])
 
-# 设置API
-api.set_ip(config["api"]["host"], config["api"]["port"])
+    logger.info("读取到监听api，将以此url调用API: {}"
+                .format(str(api)))
 
-logger.info("读取到监听api，将以此url调用API: {}"
-            .format(str(api)))
+    # 检测bot名称与botUID是否为空或未设置
+    if bot_uid is None or bot_name == "" or bot_uid == 123456 or bot_name is None:
+        logger.warning("配置文件中未找到BotUID或昵称，将自动获取！")
+        try:
+            bot_info = api.get("/get_login_info")
+            bot_uid, bot_name = bot_info["user_id"], bot_info["nickname"]
+        except (TypeError, ConnectionRefusedError):
+            logger.error("获取BotUID与昵称失败！可能会导致严重问题！")
 
-# 检测bot名称与botUID是否为空或未设置
-if bot_uid is None or bot_name == "" or bot_uid == 123456 or bot_name is None:
-    logger.warning("配置文件中未找到BotUID或昵称，将自动获取！")
+    logger.info("欢迎使用{}({})".format(bot_name, bot_uid))
+
+    # 禁用werkzeug的日志记录
+    log = logging.getLogger('werkzeug')
+    log.disabled = True
+
+    # 启动监听服务器
     try:
-        bot_info = api.get("/get_login_info")
-        bot_uid, bot_name = bot_info["user_id"], bot_info["nickname"]
-    except (TypeError, ConnectionRefusedError):
-        logger.error("获取BotUID与昵称失败！可能会导致严重问题！")
-
-logger.info("欢迎使用{}({})".format(bot_name, bot_uid))
-
-# 禁用werkzeug的日志记录
-log = logging.getLogger('werkzeug')
-log.disabled = True
-
-# 启动监听服务器
-try:
-    logger.info("启动监听服务器")
-    server = make_server(config["server"]["host"], config["server"]["port"], app)
-    server.serve_forever()
-except:
-    logger.warning("监听服务器启动失败！")
-finally:
-    logger.warning("监听服务器结束运行！")
+        logger.info("启动监听服务器")
+        server = make_server(config["server"]["host"], config["server"]["port"], app)
+        server.serve_forever()
+    except:
+        logger.error("监听服务器启动失败！")
+    finally:
+        logger.info("监听服务器结束运行！")
