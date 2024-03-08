@@ -111,3 +111,8 @@ _~~插件是MRB2的灵魂，没有插件的MRB2只是一个空壳~~_
 </a>
 
 ### 以及特别鸣谢[HarcicYang](https://github.com/HarcicYang)和[kaokao221](https://github.com/kaokao221)为此项目提供了许多的帮助~
+
+
+## ⭐StarHistory⭐
+
+![Star History Chart](https://api.star-history.com/svg?repos=xiaosuyyds/MuRainBot&type=Date)
