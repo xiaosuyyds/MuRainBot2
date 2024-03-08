@@ -4,8 +4,7 @@
 #  | |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __| __) |
 #  | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
-import sys
-
+import Lib.EventManager
 from Lib import *
 from flask import Flask, request
 import yaml
@@ -43,6 +42,9 @@ def post_data():
         return "OK"
     else:
         request_list.append(data)
+
+    type_ = data['post_type']
+    Lib.EventManager.Event([type_, data[type_ + '_type']], data)
 
     if data['post_type'] == "message" and data['message_type'] == 'group':  # 如果是群聊信息
         username = data['sender']['nickname']  # 获取信息发送者的昵称
@@ -125,11 +127,14 @@ def load_plugins():
     things_in_plugin_dir = os.listdir(plugins_path)
 
     # 筛选出后缀为.py的文件
-    def mapper(name, plugin_suffix=".py"):
-        if name.endswith(plugin_suffix):
-            return name.split(".")[0]
-        else:
-            return ""
+    def mapper(name, plugin_suffix=None):
+        if plugin_suffix is None:
+            plugin_suffix = [".py", ".pyc"]
+        for i in plugin_suffix:
+            if name.endswith(i):
+                return name.split(".")[0]
+            else:
+                return ""
 
     things_in_plugin_dir = map(mapper, things_in_plugin_dir)
     things_in_plugin_dir = [_ for _ in things_in_plugin_dir if _ != ""]
