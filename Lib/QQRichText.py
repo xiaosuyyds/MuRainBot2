@@ -29,29 +29,33 @@ def cq_encode(text) -> str:
 
 # TODO: 完善模板，方便插件调用
 
+# 文本
 class Text:
     def __init__(self, text: str) -> None:
-        self.text = text
-        self.raw_text = cq_decode(text)
-        self.content = {"type": "text", "data": {"text": self.raw_text}}
+        self.text = cq_encode(text)
+        self.raw_text = text
+        self.content = {"type": "text", "data": {"text": self.text}}
 
     def set(self, text: str) -> None:
-        self.text = text
-        self.raw_text = cq_encode(text)
+        self.text = cq_encode(text)
+        self.raw_text = text
+        self.content = {"type": "text", "data": {"text": self.text}}
 
-    def get(self) -> str:
-        return self.text
+    @property
+    def get(self) -> dict:
+        return self.content
 
     def get_raw_text(self) -> str:
         return self.raw_text
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.raw_text
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self.content)
 
 
+# 表情
 class Face:
     def __init__(self, face_id: int) -> None:
         self.id = face_id
@@ -60,38 +64,160 @@ class Face:
     def set(self, face_id: int) -> None:
         self.id = face_id
 
-    def get(self) -> int:
-        return self.id
+    @property
+    def get(self) -> dict:
+        return self.content
+
+    def __str__(self) -> str:
+        return "[CQ:face,id={}]".format(self.id)
+
+    def __repr__(self) -> str:
+        return str(self.content)
+
+
+# 语音
+class Record:
+    def __init__(self, file: str, magic: bool | int = 0, cache: bool | int = 1, proxy: bool | int = 1,
+                 timeout: int = -1) -> None:
+        self.file = file
+        self.magic = bool(magic)
+        self.cache = bool(cache)
+        self.proxy = bool(proxy)
+        self.timeout = timeout
+        if timeout != -1:
+            self.content = {
+                "type": "record", "data":
+                    {
+                        "file": self.file,
+                        "magic": int(self.magic),
+                        "cache": int(self.cache),
+                        "proxy": int(self.proxy),
+                        "timeout": self.timeout
+                    }
+            }
+        else:
+            self.content = {
+                "type": "record", "data":
+                    {
+                        "file": self.file,
+                        "magic": int(self.magic),
+                        "cache": int(self.cache),
+                        "proxy": int(self.proxy)
+                    }
+            }
+
+    def set(self, file: str) -> None:
+        self.file = file
+
+    @property
+    def get(self) -> dict:
+        return self.content
 
     def __str__(self):
-        return "[CQ:face,id={}]".format(self.id)
+        cq = "[CQ:record,file={}".format(self.file)
+        if self.magic:
+            cq += ",magic=1"
+        if not self.cache:
+            cq += ",cache=0"
+        if self.timeout != -1:
+            cq += ",timeout={}"
+        return cq + "]"
 
     def __repr__(self):
         return str(self.content)
 
 
-# class Record:
-#     def __init__(self, face_id: int) -> None:
-#         self.id = face_id
-#         self.content = {"type": "record", "data": {"id": self.id}}
-#
-#     def set(self, face_id: int) -> None:
-#         self.id = id
-#
-#     def get(self) -> int:
-#         return self.id
-#
-#     def __str__(self):
-#         return "[CQ:face,id={}]".format(self.id)
-#
-#     def __repr__(self):
-#         return str(self.content)
+class At:
+    def __init__(self, qq: int | str, name: str = "") -> None:
+        if isinstance(qq, str) and qq != "all":
+            raise ValueError("QQ号只能为数字或all")
+        self.qq = qq
+        self.name = name
+        self.content = {"type": "at", "data": {"qq": self.qq, "name": name}}
+
+    def set(self, qq: int) -> None:
+        self.qq = qq
+
+    @property
+    def get(self) -> dict:
+        return self.content
+
+    def __str__(self) -> str:
+        return "[CQ:at,qq={},name={}]".format(self.qq, self.name)
+
+    def __repr__(self) -> str:
+        return str(self.content)
+
+
+class Image:
+    def __init__(self, file: str, image_type: str = "", sub_type: int = 0,
+                 cache: bool | int = True, id_: int = 40000, c: int = 1) -> None:
+        self.file = file
+        self.type = image_type
+        self.subType = sub_type
+        self.cache = bool(cache)
+        self.id = id_
+        self.c = c
+        if not 0 >= sub_type >= 13:
+            raise ValueError("未知的subType")
+        if not 40000 >= id_ >= 40005:
+            raise ValueError("未知的id")
+        if not 1 >= c >= 3:
+            raise ValueError("线程数过多/过少")
+        if self.type != "" and self.type != "flash" and self.type != "show":
+            raise ValueError("未知的图片类型")
+
+        self.content = {"type": "image", "data": {"file": file}}
+        if self.type != "":
+            self.content["data"]["type"] = image_type
+
+        if self.subType != 0:
+            self.content["data"]["subType"] = sub_type
+
+        if not self.cache:
+            self.content["data"]["cache"] = 0
+
+        if self.id != 40000:
+            self.content["data"]["id"] = id_
+
+        if self.c != 1:
+            self.content["data"]["c"] = c
+
+    def set(self, file: str) -> None:
+        self.file = file
+
+    @property
+    def get(self) -> dict:
+        return self.content
+
+    def __str__(self) -> str:
+        cq = "[CQ:image,file={}".format(self.file)
+        if self.type != "":
+            cq += ",type={}"
+
+        if self.subType != 0:
+            cq += ",subType={}"
+
+        if not self.cache:
+            cq += ",cache=0"
+
+        if self.id != 40000:
+            cq += ",id={}"
+
+        if self.c != 1:
+            cq += ",c={}"
+
+        return cq + "]"
+
+    def __repr__(self):
+        return str(self.content)
 
 
 class QQRichText:
-    def __init__(self, rich_list: list = None, rich_text: str = ""):
+    def __init__(self, rich_list: list | tuple = None, rich_text: str = ""):
         if rich_list is None:
             rich_list = []
+        # 富文本解析
         if rich_text != "":
             self.rich_text = rich_text
             pattern = r"\[CQ:(\w+)(?:,([^\]]+))?\]"
@@ -111,10 +237,11 @@ class QQRichText:
                             }
                         )
                         text = ""
+                    # CQ起始
                     cq = "["
                     flag = True
                 elif i == "]":
-                    # CQ起始
+                    # CQ结束
                     cq += "]"
                     flag = False
                     rich = re.findall(pattern, cq)
@@ -142,19 +269,41 @@ class QQRichText:
                         }
                     }
                 )
-        self.rich_list = rich_list
+
+        self.rich_list = []
+        for rich in rich_list:
+            if isinstance(rich, dict):
+                self.rich_list.append(rich)
+            elif isinstance(rich, str):
+                self.rich_list.append(Text(rich).get)
+            else:
+                try:
+                    self.rich_list.append(rich.get)
+                except TypeError:
+                    self.rich_list.append(rich)
 
     def __str__(self):
         self.rich_text = ""
         for rich in self.rich_list:
-            if rich["type"] == "text":
-                self.rich_text += rich["data"]["text"]
+            if isinstance(rich, dict):
+                if rich["type"] == "text":
+                    self.rich_text += rich["data"]["text"]
+                else:
+                    self.rich_text += "[CQ:{}".format(rich["type"])
+                    if rich["data"]:
+                        for rich_type, rich_data in rich["data"].items():
+                            rich_type = cq_encode(cq_decode(rich_type))
+                            rich_data = cq_encode(cq_decode(rich_data))
+                            self.rich_text += ",{}={}".format(rich_type, cq_encode(rich_data))
+                    self.rich_text += "]"
+            elif isinstance(rich, str):
+                self.rich_text += rich
             else:
-                self.rich_text += "[CQ:{}".format(rich["type"])
-                if rich["data"]:
-                    for rich_type, rich_data in rich["data"].items():
-                        self.rich_text += ",{}={}".format(rich_type, cq_encode(rich_data))
-                self.rich_text += "]"
+                try:
+                    self.rich_text += str(rich)
+                except ValueError:
+                    raise ValueError("QQRichText: rich_list contains a non-string or non-dict element")
+
         return self.rich_text
 
     def __repr__(self):
@@ -162,3 +311,52 @@ class QQRichText:
 
     def get(self):
         return self.rich_list
+
+    def add(self, other):
+        print("123test", type(other))
+        if isinstance(other, QQRichText):
+            print("123test", other.get())
+            return QQRichText(self.rich_list + other.get())
+        elif isinstance(other, dict):
+            return QQRichText(self.rich_list + [other])
+        elif isinstance(other, str):
+            return QQRichText(self.rich_list + [{"type": "text", "data": {"text": other}}])
+        else:
+            try:
+                return QQRichText(self.rich_list + [other.get])
+            except ValueError:
+                raise ValueError("QQRichText: rich_list contains a non-string or non-dict element")
+
+    def __add__(self, other):
+        return self.add(other)
+
+    def __eq__(self, other):
+        if isinstance(other, QQRichText):
+            return self.rich_list == other.rich_list
+        else:
+            try:
+                return str(self) == str(other)
+            except ValueError:
+                return False
+
+    def __contains__(self, other):
+        if isinstance(other, QQRichText):
+            return all(item in self.rich_list for item in other.rich_list)
+        else:
+            try:
+                return str(other) in str(self)
+            except ValueError:
+                return False
+
+
+# 单元测试
+if __name__ == "__main__":
+    b = Face(1)
+
+    c = QQRichText([
+        Text("Hi"),
+        Face(1),
+        Record("https://gchat.qpic.cn/gchatpic_new/100000/100000/100000/0?term=2", False),
+    ])
+
+    print(b in c)
