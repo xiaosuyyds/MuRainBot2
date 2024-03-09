@@ -12,18 +12,16 @@ register_event_list = []  # event_type, func, arg, args
 register_keyword_list = []  # keyword, func, arg, args
 
 
-def register_event(event_type: [str, str], func, arg: int = 0, *args):
+def register_event(event_type: tuple[str, str] | str | tuple[tuple[str, str] | str], func, arg: int = 0, *args) -> None:
     """
     注册事件
-    :param event_type: 接收的事件类型，可以是一个字符串，也可以是一个列表，列表中的字符串会依次匹配
+    :param event_type: 接收的事件类型，可以是一个字符串，也可以是一个列表，列表中的字符串会依次匹配，例如：
+    ('message', 'group') 或者 'message'
     :param func: 接收的函数
     :param arg: 优先级，默认0
     :param args: 传给func的参数
     :return: None
     """
-
-    def cmp(x):
-        return x[2]
 
     if args is None:
         args = []
@@ -32,10 +30,10 @@ def register_event(event_type: [str, str], func, arg: int = 0, *args):
             if event is list:
                 register_event_list.append((event, func, arg, args))
     register_event_list.append((event_type, func, arg, args))
-    register_event_list.sort(key=cmp, reverse=True)
+    register_event_list.sort(key=lambda x: x[2], reverse=True)
 
 
-def register_keyword(keyword, func, model: str = "INCLUDE", arg: int = 0, *args):
+def register_keyword(keyword: str, func, model: str = "INCLUDE", arg: int = 0, *args) -> None:
     """
     注册关键字
     :param keyword: 关键词
@@ -52,13 +50,11 @@ def register_keyword(keyword, func, model: str = "INCLUDE", arg: int = 0, *args)
     :return: None
     """
 
-    def cmp(x):
-        return x[2]
-
     if args is None:
         args = []
     register_keyword_list.append((keyword, func, model, arg, args))
-    register_keyword_list.sort(key=cmp, reverse=True)
+    register_keyword_list.sort(key=lambda x: x[2], reverse=True)
+    return
 
 
 class Event:
@@ -69,7 +65,7 @@ class Event:
     event_data: 事件数据
     """
 
-    def __init__(self, event_type: [str, str], event_data):
+    def __init__(self, event_type: tuple[str, str] | str | tuple[tuple[str, str] | str], event_data):
         self.event_class = event_type
         self.event_data = event_data
         # 事件扫描
@@ -106,16 +102,18 @@ class Event:
 
 # 单元测试
 if __name__ == '__main__':
-    def test_func(type_, arg):
-        print(1, type_, arg)
+    def test_func(event_type, arg):
+        print(1, event_type, arg)
 
 
-    def test_func2(type_, arg, num=2):
-        print(num, type_, arg)
+    def test_func2(event_type, arg, num=2):
+        print(num, event_type, arg)
 
 
     register_event('test', test_func, 1)
-    register_event('', test_func2, 2)
+    register_event('', test_func2, 2, 3)
+    register_event('', test_func2, 2, 4)
     register_event('test', test_func, 1)
 
     Event('test', 'data')
+    Event('test2', 'data')

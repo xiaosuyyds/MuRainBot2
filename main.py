@@ -38,13 +38,17 @@ def finalize_and_cleanup():
 @app.route('/', methods=["POST"])
 def post_data():
     data = request.get_json()
+    logger.debug(data)
     if data in request_list:
         return "OK"
     else:
         request_list.append(data)
 
     type_ = data['post_type']
-    Lib.EventManager.Event([type_, data[type_ + '_type']], data)
+    if type_ + '_type' in data:
+        Lib.EventManager.Event((type_, data[type_ + '_type']), data)
+    else:
+        Lib.EventManager.Event(type_, data)
 
     if data['post_type'] == "message" and data['message_type'] == 'group':  # 如果是群聊信息
         username = data['sender']['nickname']  # 获取信息发送者的昵称
@@ -205,7 +209,7 @@ if __name__ == '__main__':
         except (TypeError, ConnectionRefusedError):
             logger.error("获取BotUID与昵称失败！可能会导致严重问题！")
 
-    logger.info("欢迎使用{}({})".format(bot_name, bot_uid))
+    logger.info("欢迎使用 {}({})".format(bot_name, bot_uid))
 
     # 禁用werkzeug的日志记录
     log = logging.getLogger('werkzeug')
