@@ -12,7 +12,7 @@ register_event_list = []  # event_type, func, arg, args
 register_keyword_list = []  # keyword, func, arg, args
 
 
-def register_event(event_type: [str, str] | list[[str, str]], func, arg: int = 0, *args):
+def register_event(event_type: [str, str], func, arg: int = 0, *args):
     """
     注册事件
     :param event_type: 接收的事件类型，可以是一个字符串，也可以是一个列表，列表中的字符串会依次匹配
