@@ -44,10 +44,13 @@
 │   ...
 ├─ go-cqhttp    QQBot内核框架，此处以go-cqhttp示例
 ├─ Lib          MRB2的Lib库，插件和MRB2均需要依赖此Lib
+|   ├─ ConfigManager.py MRB2的Lib库之一，用于读取配置文件，不过原先是CookieLibrarie的内容
+|   ├─ EasyEventManager.py MRB2的Lib库之一，也是广播事件（不过简单了很多），不过原先是CookieLibrarie的内容
 │   ├─ EventManager.py MRB2的Lib库之一，用于广播上报事件
 │   ├─ MuRainLib.py    MRB2的Lib库之一，用于提供一些零七八碎的函数
-│   ├─ QQRichText.py   MRB2的Lib库之一，用于解析QQ消息
-│   └─ OnebotAPI.py    MRB2的Lib库之一，用于调用OneBotAPI.py
+│   ├─ OnebotAPI.py    MRB2的Lib库之一，用于调用OneBotAPI.py
+│   ├─ PluginManager.py MRB2的Lib库之一，用于管理插件等，不过原先是CookieLibrarie的内容
+│   └─ QQRichText.py   MRB2的Lib库之一，用于解析QQ消息
 ├─ logs
 │   ├─ today.log       当日的日志
 │   ├─ xxxx-xx-xx.log  以往的日志
