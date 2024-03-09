@@ -41,18 +41,18 @@ class OnebotAPI:
         self.url = urllib.parse.urljoin(self.host + ":" + str(self.port), self.node)
         return self.url
 
-    def set_node(self, node, data=None):
+    def set_node(self, node: str, data: dict = None):
         if data is None:
             data = {}
         self.node = node
         self.data = data
         return str(self)
 
-    def set_ip(self, host, port):
+    def set_ip(self, host: str, port: int):
         self.host = host
         self.port = port
 
-    def get(self, node="", data=None):
+    def get(self, node: str = "", data: dict = None):
         if node != "":
             self.node = node
         if data is not None:

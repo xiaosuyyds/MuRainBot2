@@ -47,7 +47,8 @@ def log_init():
     # 设置终端日志
     coloredlogs.install(level='INFO', isatty=True, stream=sys.stdout,
                         field_styles={
-                            "asctime": {"color": "green"}, "hostname": {"color": "magenta"},
+                            "asctime": {"color": "green"},
+                            "hostname": {"color": "magenta"},
                             "levelname": {"color": "white"}
                         }, fmt=fmt, colors=log_colors_config)
 

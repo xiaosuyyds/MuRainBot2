@@ -8,6 +8,6 @@ api: # Api设置
   host: '127.0.0.1'
   port: 5700
 
-server:
+server: # 监听服务器设置
   host: '127.0.0.1'
   port: 5701
