@@ -45,7 +45,11 @@ def log_init():
     # 日志格式
     fmt = '[%(asctime)s] [%(filename)s] [%(levelname)s]: %(message)s'
     # 设置终端日志
-    coloredlogs.install(level='INFO', isatty=True, stream=sys.stdout, fmt=fmt, colors=log_colors_config)
+    coloredlogs.install(level='INFO', isatty=True, stream=sys.stdout,
+                        field_styles={
+                            "asctime": {"color": "green"}, "hostname": {"color": "magenta"},
+                            "levelname": {"color": "white"}
+                        }, fmt=fmt, colors=log_colors_config)
 
     # 设置文件日志
     logger = logging.getLogger()
