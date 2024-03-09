@@ -70,12 +70,14 @@
 
 
 ## 如何部署？
+**作者在python3.10编写、测试均未发现问题，其他版本暂未测试**
 * 下载本项目的releases或源码包
+* 请下载python环境，并使用pip安装`requirements.txt`内的库
 * 若下载的是releases则go-cqhttp已经帮您配置好了正反向HTTP的端口，只需要配置密码即可
 * 若下载的是源码包则请自行放入bot框架，并检查端口是否与MRB2配置的一致
 * 若下载的是releases则已经帮您把Qsgin服务器也配置好了
 * 若下载的是源码包请自行启动bot框架
-* 随后只需运行MRB2即可（main.py）
+  * 随后只需运行MRB2即可（main.py）
 
 ## 关于版本
 * 目前MRB2版本为2.0.0-dev
