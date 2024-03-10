@@ -1,11 +1,10 @@
 # coding: utf-8
 
-# MIT License
-# Copyright (c) 2024 BigCookie233
+# Created by BigCookie233
 
 import importlib
 
-import Lib.EasyEventManager as EventManager
+import CookieLibraries.EventManager as EventManager
 
 
 class PluginEnableEvent(EventManager.Event):
