@@ -6,10 +6,11 @@
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
 
 import threading
+import traceback
 import re
 
-register_event_list = []  # event_type, func, arg, args
-register_keyword_list = []  # keyword, func, arg, args
+register_event_list = []  # event_type, func, arg, args, by_file
+register_keyword_list = []  # keyword, func, arg, args, by_file
 
 
 def register_event(event_type: tuple[str, str] | str | tuple[tuple[str, str] | str], func, arg: int = 0, *args) -> None:
@@ -25,12 +26,21 @@ def register_event(event_type: tuple[str, str] | str | tuple[tuple[str, str] | s
 
     if args is None:
         args = []
-    if event_type is list:
-        for event in event_type:
-            if event is list:
-                register_event_list.append((event, func, arg, args))
-    register_event_list.append((event_type, func, arg, args))
+    register_event_list.append((event_type, func, arg, args, traceback.extract_stack()[-2].filename))
     register_event_list.sort(key=lambda x: x[2], reverse=True)
+
+
+def unregister_event(event_type: tuple[str, str] | str | tuple[tuple[str, str] | str]):
+    """
+    取消注册事件
+    :param event_type: 接收的事件类型，可以是一个字符串，也可以是一个列表，列表中的字符串会依次匹配，例如：
+    ('message', 'group') 或者 'message'
+    :return: None
+    """
+    for i in range(len(register_event_list)):
+        if (register_event_list[i][0] == event_type and
+                register_event_list[i][4] == traceback.extract_stack()[-2].filename):
+            del register_event_list[i]
 
 
 def register_keyword(keyword: str, func, model: str = "INCLUDE", arg: int = 0, *args) -> None:
@@ -52,9 +62,21 @@ def register_keyword(keyword: str, func, model: str = "INCLUDE", arg: int = 0, *
 
     if args is None:
         args = []
-    register_keyword_list.append((keyword, func, model, arg, args))
+    register_keyword_list.append((keyword, func, model, arg, args, traceback.extract_stack()[-2].filename))
     register_keyword_list.sort(key=lambda x: x[2], reverse=True)
     return
+
+
+def unregister_keyword(keyword: str):
+    """
+    注销关键字
+    :param keyword: 关键词
+    :return: None
+    """
+    for i in range(len(register_keyword_list)):
+        if (register_keyword_list[i][0] == keyword and
+                register_event_list[i][4] == traceback.extract_stack()[-2].filename):
+            del register_keyword_list[i]
 
 
 class Event:
@@ -69,7 +91,7 @@ class Event:
         self.event_class = event_type
         self.event_data = event_data
         # 事件扫描
-        for event_class, func, arg, args in register_event_list:
+        for event_class, func, arg, args, by_file in register_event_list:
             if event_class == self.event_class or event_class == ["", ""] or event_class == "":
                 threading.Thread(target=lambda: func(self.event_class, self.event_data, *args)).start()
 
@@ -77,7 +99,7 @@ class Event:
         if self.event_class is list:
             if self.event_class[0] == "message":
                 message = str(self.event_data["raw_message"])
-                for keyword, func, model, arg, args in register_keyword_list:
+                for keyword, func, model, arg, args, by_file in register_keyword_list:
                     if model == "BEGIN":
                         if message.startswith(keyword):
                             threading.Thread(target=lambda: func(self.event_class, self.event_data, *args)).start()

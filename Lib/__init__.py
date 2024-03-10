@@ -9,8 +9,6 @@ from Lib.MuRainLib import *
 import Lib.EventManager
 import Lib.OnebotAPI
 import Lib.QQRichText
-import Lib.ConfigManager
-import Lib.PluginManager
 
 VERSION = "2.0.0-dev"
 VERSION_WEEK = "24Y11A"
