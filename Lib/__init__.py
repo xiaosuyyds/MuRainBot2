@@ -9,7 +9,6 @@ from Lib.MuRainLib import *
 import Lib.EventManager
 import Lib.OnebotAPI
 import Lib.QQRichText
-import Lib.EasyEventManager
 import Lib.ConfigManager
 import Lib.PluginManager
 
