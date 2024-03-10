@@ -27,8 +27,6 @@ def cq_encode(text) -> str:
         replace("]", "&#93;").replace(",", "&#44;")
 
 
-# TODO: 完善模板，方便插件调用
-
 # 文本
 class Text:
     def __init__(self, text: str) -> None:
@@ -63,6 +61,7 @@ class Face:
 
     def set(self, face_id: int) -> None:
         self.id = face_id
+        self.content = {"type": "face", "data": {"id": self.id}}
 
     @property
     def get(self) -> dict:
@@ -108,6 +107,7 @@ class Record:
 
     def set(self, file: str) -> None:
         self.file = file
+        self.content["data"]["file"] = self.file
 
     @property
     def get(self) -> dict:
@@ -137,6 +137,7 @@ class At:
 
     def set(self, qq: int) -> None:
         self.qq = qq
+        self.content = {"type": "at", "data": {"qq": self.qq, "name": self.name}}
 
     @property
     def get(self) -> dict:
@@ -185,6 +186,7 @@ class Image:
 
     def set(self, file: str) -> None:
         self.file = file
+        self.content["data"]["file"] = file
 
     @property
     def get(self) -> dict:
@@ -210,6 +212,50 @@ class Image:
         return cq + "]"
 
     def __repr__(self):
+        return str(self.content)
+
+
+class Reply:
+    def __init__(self, reply_id: int, text: str = "", qq: int = -1, time: int = -1, seq: int = -1) -> None:
+        self.id = reply_id
+        self.content = {"type": "reply", "data": {"id": self.id}}
+        if text != "":
+            self.content["text"] = text
+
+        if qq != -1:
+            self.content["qq"] = qq
+
+        if time != -1:
+            self.content["time"] = time
+
+        if seq != -1:
+            self.content["seq"] = seq
+
+    def set(self, reply_id: int) -> None:
+        self.id = reply_id
+        self.content = {"type": "reply", "data": {"id": self.id}}
+
+    @property
+    def get(self) -> dict:
+        return self.content
+
+    def __str__(self) -> str:
+        cq = "[CQ:reply,id={}".format(self.id)
+
+        if "text" in self.content["data"]:
+            cq += ",text={}"
+
+        if "qq" in self.content["data"]:
+            cq += ",qq={}"
+
+        if "time" in self.content["data"]:
+            cq += ",time={}"
+
+        if "seq" in self.content["data"]:
+            cq += ",seq={}"
+        return cq + "]"
+
+    def __repr__(self) -> str:
         return str(self.content)
 
 

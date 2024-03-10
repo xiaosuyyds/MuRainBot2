@@ -17,7 +17,7 @@ def register_event(event_type: tuple[str, str] | str | tuple[tuple[str, str] | s
     """
     注册事件
     :param event_type: 接收的事件类型，可以是一个字符串，也可以是一个列表，列表中的字符串会依次匹配，例如：
-    ('message', 'group') 或者 'message'
+    ('message', 'group') 或者 'message'，若为"all"或"*"则代表匹配所有事件
     :param func: 接收的函数
     :param arg: 优先级，默认0
     :param args: 传给func的参数
@@ -33,6 +33,7 @@ def register_event(event_type: tuple[str, str] | str | tuple[tuple[str, str] | s
 def unregister_event(event_type: tuple[str, str] | str | tuple[tuple[str, str] | str]):
     """
     取消注册事件
+    用于取消注册一个事件，取消注册后插件将不再对此事件做出响应
     :param event_type: 接收的事件类型，可以是一个字符串，也可以是一个列表，列表中的字符串会依次匹配，例如：
     ('message', 'group') 或者 'message'
     :return: None
@@ -70,6 +71,8 @@ def register_keyword(keyword: str, func, model: str = "INCLUDE", arg: int = 0, *
 def unregister_keyword(keyword: str):
     """
     注销关键字
+    用于取消注册一个关键词，注销后关键词会被取消被用于匹配
+    需要传入对应的关键词字符串来将其取消注册，无法取消注册不属于此插件的关键词
     :param keyword: 关键词
     :return: None
     """
@@ -90,9 +93,13 @@ class Event:
     def __init__(self, event_type: tuple[str, str] | str | tuple[tuple[str, str] | str], event_data):
         self.event_class = event_type
         self.event_data = event_data
+
+        if self.event_class == "all" or self.event_class == "*":
+            raise ValueError("不能将all或是*设为事件，因为会发生冲突。")
+
         # 事件扫描
         for event_class, func, arg, args, by_file in register_event_list:
-            if event_class == self.event_class or event_class == ["", ""] or event_class == "":
+            if event_class == self.event_class or event_class == "all" or event_class == "*":
                 threading.Thread(target=lambda: func(self.event_class, self.event_data, *args)).start()
 
         # 关键词检测
@@ -132,10 +139,10 @@ if __name__ == '__main__':
         print(num, event_type, arg)
 
 
-    register_event('test', test_func, 1)
-    register_event('', test_func2, 2, 3)
-    register_event('', test_func2, 2, 4)
-    register_event('test', test_func, 1)
+    register_event('test', test_func, 5)
+    register_event('all', test_func2, 2, 3)
+    register_event('all', test_func2, -1, 4)
+    register_event('test2', test_func, 1)
 
     Event('test', 'data')
     Event('test2', 'data')
