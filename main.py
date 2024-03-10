@@ -64,10 +64,10 @@ def post_data():
             data['message_id']))
 
         # 获取群文件夹路径
-        grou_path = os.path.join(data_path, "groups", str(data['group_id']))
+        group_path = os.path.join(data_path, "groups", str(data['group_id']))
         # 如果获取群文件夹路径不存在，则创建
-        if not os.path.exists(grou_path):
-            os.makedirs(grou_path)
+        if not os.path.exists(group_path):
+            os.makedirs(group_path)
 
         # 加群邀请
         if data['post_type'] == 'request' and data['request_type'] == 'group':
