@@ -14,16 +14,16 @@ class Event:
                 listener(self)
 
 
-def event_listener(*args, **kwargs):
-    if args[0] is None:
+def event_listener(event_class):
+    if event_class is None:
         raise TypeError("missing 1 required argument")
-    if not issubclass(args[0], Event):
+    if not issubclass(event_class, Event):
         raise TypeError("incorrect argument")
 
     def wrapper(func):
         if len(inspect.signature(func).parameters) != 1:
             raise TypeError("The listener takes 0 positional arguments but 1 will be given")
-        event_listeners.setdefault(args[0], []).append(func)
+        event_listeners.setdefault(event_class, []).append(func)
         return func
 
     return wrapper
