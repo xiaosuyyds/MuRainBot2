@@ -313,9 +313,7 @@ class QQRichText:
         return self.rich_list
 
     def add(self, other):
-        print("123test", type(other))
         if isinstance(other, QQRichText):
-            print("123test", other.get())
             return QQRichText(self.rich_list + other.get())
         elif isinstance(other, dict):
             return QQRichText(self.rich_list + [other])
