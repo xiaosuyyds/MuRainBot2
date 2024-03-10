@@ -24,5 +24,6 @@ def event_listener(*args, **kwargs):
         if len(inspect.signature(func).parameters) != 1:
             raise TypeError("The listener takes 0 positional arguments but 1 will be given")
         event_listeners.setdefault(args[0], []).append(func)
+        return func
 
     return wrapper
