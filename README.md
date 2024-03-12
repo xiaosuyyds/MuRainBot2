@@ -110,6 +110,7 @@ _~~插件是MRB2的灵魂，没有插件的MRB2只是一个空壳~~_
 
 ## 鸣谢
 
+### 请勿直接提交到[`master`](https://github.com/xiaosuyyds/MuRainBot2)分支，请先提交到[`dev`](https://github.com/xiaosuyyds/MuRainBot2/tree/dev)分支，随后再创建PR合并分支
 ### 感谢所有为此项目做出贡献的大大，你们的存在，让社区变得更加美好~！
 <a href="https://github.com/xiaosuyyds/MuRainBot2/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=xiaosuyyds/MuRainBot2&max=999" alt=感谢他们（鼓掌）！>
