@@ -8,26 +8,31 @@
 import threading
 import traceback
 import re
+from typing import Callable, Any, Tuple, Dict
 
 register_event_list = []  # event_type, func, arg, args, by_file
 register_keyword_list = []  # keyword, func, arg, args, by_file
 
 
-def register_event(event_type: tuple[str, str] | str | tuple[tuple[str, str] | str], func, arg: int = 0, *args) -> None:
+def register_event(event_type: tuple[str, str] | str | tuple[tuple[str, str] | str], arg: int = 0) -> Callable:
     """
-    注册事件
+    注册事件，需要使用装饰器语法
     :param event_type: 接收的事件类型，可以是一个字符串，也可以是一个列表，列表中的字符串会依次匹配，例如：
     ('message', 'group') 或者 'message'，若为"all"或"*"则代表匹配所有事件
-    :param func: 接收的函数
     :param arg: 优先级，默认0
-    :param args: 传给func的参数
     :return: None
     """
 
-    if args is None:
-        args = []
+    def wrapper(func, *args, **kwargs):
+        print("运行run")
+        func(*args, **kwargs)
+        print("func运行结束")
+        return func
+
     register_event_list.append((event_type, func, arg, args, traceback.extract_stack()[-2].filename))
     register_event_list.sort(key=lambda x: x[2], reverse=True)
+
+    return wrapper
 
 
 def unregister_event(event_type: tuple[str, str] | str | tuple[tuple[str, str] | str]):
@@ -131,18 +136,21 @@ class Event:
 
 # 单元测试
 if __name__ == '__main__':
+
+    @register_event('test', 5)
+    @register_event('test2', 1)
     def test_func(event_type, arg):
         print(1, event_type, arg)
 
-
+    @register_event('all', 2)
+    @register_event('all', -1)
     def test_func2(event_type, arg, num=2):
         print(num, event_type, arg)
 
 
-    register_event('test', test_func, 5)
-    register_event('all', test_func2, 2, 3)
-    register_event('all', test_func2, -1, 4)
-    register_event('test2', test_func, 1)
+
+
+
 
     Event('test', 'data')
     Event('test2', 'data')

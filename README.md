@@ -121,4 +121,4 @@ _~~插件是MRB2的灵魂，没有插件的MRB2只是一个空壳~~_
 
 ## ⭐StarHistory⭐
 
-![Star History Chart](https://api.star-history.com/svg?repos=xiaosuyyds/MuRainBot&type=Date)
+[![](https://api.star-history.com/svg?repos=xiaosuyyds/MuRainBot2&type=Date)](https://github.com/xiaosuyyds/MuRainBot2/stargazers)
