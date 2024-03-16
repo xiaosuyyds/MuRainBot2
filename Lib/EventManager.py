@@ -10,8 +10,8 @@ import traceback
 import re
 from typing import Callable, Any, Tuple, Dict
 
-register_event_list = []  # event_type, func, arg, args, by_file
-register_keyword_list = []  # keyword, func, arg, args, by_file
+register_event_list = []  # event_type, func, arg, args, kwargs, by_file
+register_keyword_list = []  # keyword, func, arg, args, kwargs, by_file
 
 
 def register_event(event_type: tuple[str, str] | str | tuple[tuple[str, str] | str], arg: int = 0) -> Callable:
@@ -24,13 +24,13 @@ def register_event(event_type: tuple[str, str] | str | tuple[tuple[str, str] | s
     """
 
     def wrapper(func, *args, **kwargs):
-        print("运行run")
-        func(*args, **kwargs)
-        print("func运行结束")
-        return func
+        # print("运行run")
+        # func(*args, **kwargs)
+        # print("func运行结束")
+        register_event_list.append((event_type, func, arg, args, kwargs, traceback.extract_stack()[-2].filename))
+        register_event_list.sort(key=lambda x: x[2], reverse=True)
 
-    register_event_list.append((event_type, func, arg, args, traceback.extract_stack()[-2].filename))
-    register_event_list.sort(key=lambda x: x[2], reverse=True)
+        return func
 
     return wrapper
 
@@ -45,7 +45,7 @@ def unregister_event(event_type: tuple[str, str] | str | tuple[tuple[str, str] |
     """
     for i in range(len(register_event_list)):
         if (register_event_list[i][0] == event_type and
-                register_event_list[i][4] == traceback.extract_stack()[-2].filename):
+                register_event_list[i][5] == traceback.extract_stack()[-2].filename):
             del register_event_list[i]
 
 
@@ -103,9 +103,9 @@ class Event:
             raise ValueError("不能将all或是*设为事件，因为会发生冲突。")
 
         # 事件扫描
-        for event_class, func, arg, args, by_file in register_event_list:
+        for event_class, func, arg, args, kwargs, by_file in register_event_list:
             if event_class == self.event_class or event_class == "all" or event_class == "*":
-                threading.Thread(target=lambda: func(self.event_class, self.event_data, *args)).start()
+                threading.Thread(target=lambda: func(self.event_class, self.event_data, *args, **kwargs)).start()
 
         # 关键词检测
         if self.event_class is list:
@@ -146,11 +146,6 @@ if __name__ == '__main__':
     @register_event('all', -1)
     def test_func2(event_type, arg, num=2):
         print(num, event_type, arg)
-
-
-
-
-
 
     Event('test', 'data')
     Event('test2', 'data')
