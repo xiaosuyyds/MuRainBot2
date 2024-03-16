@@ -43,10 +43,10 @@ def unregister_event(event_type: tuple[str, str] | str | tuple[tuple[str, str] |
     ('message', 'group') 或者 'message'
     :return: None
     """
-    for i in range(len(register_event_list)):
-        if (register_event_list[i][0] == event_type and
-                register_event_list[i][5] == traceback.extract_stack()[-2].filename):
-            del register_event_list[i]
+    for i in register_event_list:
+        if (i[0] == event_type and
+                i[5] == traceback.extract_stack()[-2].filename):
+            register_event_list.remove(i)
 
 
 def register_keyword(keyword: str, func, model: str = "INCLUDE", arg: int = 0, *args) -> None:
