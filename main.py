@@ -57,10 +57,10 @@ def post_data():
             # 了群昵称则把用户名设为群昵称
         group_name = api.get("/get_group_info", {"group_id": data['group_id']})["group_name"]
 
-        message = QQRichText.cq_decode(data['raw_message'])
+        message = QQRichText.QQRichText(data['message'])
 
         logger.info("收到群 %s(%s) 内 %s(%s) 的消息: %s (%s)" % (
-            group_name, data['group_id'], username, data['sender']['user_id'], message,
+            group_name, data['group_id'], username, data['sender']['user_id'], str(message),
             data['message_id']))
 
         # 获取群文件夹路径

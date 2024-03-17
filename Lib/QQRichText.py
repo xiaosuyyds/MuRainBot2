@@ -133,18 +133,23 @@ class At:
             raise ValueError("QQ号只能为数字或all")
         self.qq = qq
         self.name = name
-        self.content = {"type": "at", "data": {"qq": self.qq, "name": name}}
+        self.content = {"type": "at", "data": {"qq": self.qq}}
+        if name:
+            self.content["data"]["name"] = name
 
     def set(self, qq: int) -> None:
         self.qq = qq
-        self.content = {"type": "at", "data": {"qq": self.qq, "name": self.name}}
+        self.content["data"]["qq"] = self.qq
 
     @property
     def get(self) -> dict:
         return self.content
 
     def __str__(self) -> str:
-        return "[CQ:at,qq={},name={}]".format(self.qq, self.name)
+        if self.name:
+            return "[CQ:at,qq={},name={}]".format(self.qq, self.name)
+        else:
+            return "[CQ:at,qq={}]".format(self.qq)
 
     def __repr__(self) -> str:
         return str(self.content)
@@ -260,9 +265,22 @@ class Reply:
 
 
 class QQRichText:
-    def __init__(self, rich_list: list | tuple = None, rich_text: str = ""):
-        if rich_list is None:
-            rich_list = []
+    def __init__(self, *rich):
+        rich_text = ""
+        rich_list = []
+
+        if isinstance(rich, str):
+            rich_text = rich
+        elif isinstance(rich, list) or isinstance(rich, tuple):
+            rich_list = list(rich)
+        elif isinstance(rich, dict):
+            rich_list.append(rich)
+        else:
+            try:
+                rich_list.append(rich.get)
+            except ValueError:
+                raise ValueError("参数类型错误，未知的rich类型")
+
         # 富文本解析
         if rich_text != "":
             self.rich_text = rich_text
@@ -271,7 +289,7 @@ class QQRichText:
             cq = ""
             flag = False
             for i in rich_text:
-                if i == "[":
+                if i == "[" and not flag:
                     # 文本消息
                     if text != "":
                         rich_list.append(
@@ -286,22 +304,23 @@ class QQRichText:
                     # CQ起始
                     cq = "["
                     flag = True
-                elif i == "]":
+                elif i == "]" and flag:
                     # CQ结束
                     cq += "]"
                     flag = False
                     rich = re.findall(pattern, cq)
-                    rich_type = rich[0][0]
-                    rich_data = rich[0][1]
-                    rich_list.append(
-                        {
-                            "type": rich_type,
-                            "data": dict(  # CQ码参数
-                                cq_decode(x)
-                                .split("=", 1) for x in rich_data.split(",")
-                            ) if rich_data else {},
-                        }
-                    )
+                    if len(rich) > 0:
+                        rich_type = rich[0][0]
+                        rich_data = rich[0][1]
+                        rich_list.append(
+                            {
+                                "type": rich_type,
+                                "data": dict(  # CQ码参数
+                                    cq_decode(x)
+                                    .split("=", 1) for x in rich_data.split(",")
+                                ) if rich_data else {},
+                            }
+                        )
                 elif flag:
                     cq += i
                 else:
@@ -332,6 +351,8 @@ class QQRichText:
         self.rich_text = ""
         for rich in self.rich_list:
             if isinstance(rich, dict):
+                if "type" not in rich or "data" not in rich:
+                    raise ValueError("转换为CQ码时失败，未知的类型或是非标准message，无法转换")
                 if rich["type"] == "text":
                     self.rich_text += rich["data"]["text"]
                 else:
@@ -348,7 +369,7 @@ class QQRichText:
                 try:
                     self.rich_text += str(rich)
                 except ValueError:
-                    raise ValueError("QQRichText: rich_list contains a non-string or non-dict element")
+                    raise ValueError("转换为CQ码时失败，未知的变量类型，无法转换")
 
         return self.rich_text
 
