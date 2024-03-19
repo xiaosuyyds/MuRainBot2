@@ -17,7 +17,7 @@ from werkzeug.serving import make_server
 
 logger = MuRainLib.log_init()
 VERSION = "2.0.0-dev"  # 版本
-VERSION_WEEK = "24W11A"  # 版本周
+VERSION_WEEK = "24W13A"  # 版本周
 
 plugins = {}  # 插件
 app = Flask(__name__)
@@ -97,16 +97,22 @@ def post_data():
             elif type_ == "kick_me" or user_id == bot_uid:
                 logger.info("检测到Bot被%s踢出了群聊%s" % (oid, group_id))
 
-    # 插件
+    # 若插件包含main函数则运行
     # TODO: 插件异步执行，替换多线程
     for plugin in plugins.keys():
-        plugin_thread = threading.Thread(
-            target=plugins[plugin].main,
-            args=(
-                data,
-                work_path)
-        )
-        plugin_thread.start()
+        try:
+            callable(exec(plugins[plugin]+".main"))
+        except AttributeError:
+            pass
+        else:
+            logger.debug("执行插件%s" % plugin)
+            plugin_thread = threading.Thread(
+                target=plugins[plugin].main,
+                args=(
+                    data,
+                    work_path)
+            )
+            plugin_thread.start()
 
     return "OK"
 
@@ -170,7 +176,8 @@ if __name__ == '__main__':
         logger.warning("MuRainLib版本检测未通过，可能会发生异常\n"
                        f"MuRainLib版本:{LibInfo().version} MuRain Bot版本:{VERSION}\n"
                        "注意：我们将不会受理在此模式下运行的报错")
-        if input("Continue?(Y/n)").lower() != "y":
+        input_text = input("Continue?(Y/n)").lower()
+        if input_text != "y" and input_text != "Y":
             sys.exit()
         logger.warning("MuRainLib版本检测未通过，可能会发生异常，将继续运行！")
 
