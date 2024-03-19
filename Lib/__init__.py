@@ -11,7 +11,7 @@ import Lib.OnebotAPI
 import Lib.QQRichText
 
 VERSION = "2.0.0-dev"
-VERSION_WEEK = "24Y11A"
+VERSION_WEEK = "24W13A"
 
 
 # Lib信息
