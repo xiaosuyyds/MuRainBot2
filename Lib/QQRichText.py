@@ -32,12 +32,12 @@ class Text:
     def __init__(self, text: str) -> None:
         self.text = cq_encode(text)
         self.raw_text = text
-        self.content = {"type": "text", "data": {"text": self.text}}
+        self.content = {"type": "text", "data": {"text": self.raw_text}}
 
     def set(self, text: str) -> None:
         self.text = cq_encode(text)
         self.raw_text = text
-        self.content = {"type": "text", "data": {"text": self.text}}
+        self.content = {"type": "text", "data": {"text": self.raw_text}}
 
     @property
     def get(self) -> dict:
@@ -133,23 +133,18 @@ class At:
             raise ValueError("QQ号只能为数字或all")
         self.qq = qq
         self.name = name
-        self.content = {"type": "at", "data": {"qq": self.qq}}
-        if name:
-            self.content["data"]["name"] = name
+        self.content = {"type": "at", "data": {"qq": self.qq, "name": name}}
 
     def set(self, qq: int) -> None:
         self.qq = qq
-        self.content["data"]["qq"] = self.qq
+        self.content = {"type": "at", "data": {"qq": self.qq, "name": self.name}}
 
     @property
     def get(self) -> dict:
         return self.content
 
     def __str__(self) -> str:
-        if self.name:
-            return "[CQ:at,qq={},name={}]".format(self.qq, self.name)
-        else:
-            return "[CQ:at,qq={}]".format(self.qq)
+        return "[CQ:at,qq={},name={}]".format(self.qq, self.name)
 
     def __repr__(self) -> str:
         return str(self.content)
@@ -271,8 +266,16 @@ class QQRichText:
 
         if isinstance(rich, str):
             rich_text = rich
-        elif isinstance(rich, list) or isinstance(rich, tuple):
-            rich_list = list(rich)
+        elif isinstance(rich, list):
+            if len(rich) == 1:
+                rich_list = [rich[0]]
+            else:
+                rich_list = rich
+        elif isinstance(rich, tuple):
+            if len(rich) == 1:
+                rich_list = [rich[0]]
+            else:
+                rich_list = list(rich)
         elif isinstance(rich, dict):
             rich_list.append(rich)
         else:
