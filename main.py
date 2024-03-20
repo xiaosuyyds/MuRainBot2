@@ -71,31 +71,35 @@ def post_data():
 
         # 加群邀请
         if data['post_type'] == 'request' and data['request_type'] == 'group':
-            logger.info("收到来自%s的加群邀请, 群号%s, flag:%s, 类型: %s" %
-                        (data['user_id'], data['group_id'], data['flag'], data['sub_type']))
+            group_name = api.get("/get_group_info", {"group_id": data['group_id']})["group_name"]
+            logger.info("收到来自%s的加群邀请, 群：%s(%s), flag:%s, 类型: %s" %
+                        (data['user_id'], group_name, data['group_id'], data['flag'], data['sub_type']))
 
         # 戳一戳
         if data['post_type'] == "notice" and data['notice_type'] == 'notify':
-            logger.info("检测到群号为%s内，%s戳了戳%s" %
-                        (data['group_id'], data['user_id'], data['target_id']))
+            group_name = api.get("/get_group_info", {"group_id": data['group_id']})["group_name"]
+            logger.info("收到群%s(%s)内，%s戳了戳%s" %
+                        (group_name, data['group_id'], data['user_id'], data['target_id']))
 
         # 进群聊
         if data['post_type'] == "notice" and data['notice_type'] == "group_increase":
-            logger.info("检测到群号为%s内，%s进群了，操作者%s" %
-                        (data['group_id'], data['user_id'], data['operator_id']))
+            group_name = api.get("/get_group_info", {"group_id": data['group_id']})["group_name"]
+            logger.info("检测到群%s（%s）内，%s进群了，操作者%s" %
+                        (group_name, data['group_id'], data['user_id'], data['operator_id']))
 
         # 退群聊
         if data['post_type'] == "notice" and data['notice_type'] == "group_decrease":
             type_ = data['sub_type']
             oid = data['operator_id']
             group_id = data['group_id']
+            group_name = api.get("/get_group_info", {"group_id": data['group_id']})["group_name"]
             user_id = data['user_id']
             if type_ == "leave":
-                logger.info("检测到%s退出了群聊%s" % (user_id, group_id))
+                logger.info("检测到%s退出了群聊%s(%s)" % (user_id, group_name, group_id))
             elif type_ == "kick":
-                logger.info("检测到%s被%s踢出了群聊%s" % (user_id, oid, group_id))
+                logger.info("检测到%s被%s踢出了群聊%s(%s)" % (user_id, oid, group_name, group_id))
             elif type_ == "kick_me" or user_id == bot_uid:
-                logger.info("检测到Bot被%s踢出了群聊%s" % (oid, group_id))
+                logger.info("检测到Bot被%s踢出了群聊%s(%s)" % (oid, group_name, group_id))
 
     # 若插件包含main函数则运行
     # TODO: 插件异步执行，替换多线程
