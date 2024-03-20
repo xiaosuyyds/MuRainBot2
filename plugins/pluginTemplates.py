@@ -13,6 +13,7 @@ api = OnebotAPI.OnebotAPI()
 config = {}
 
 
+# TODO: 插件信息后续从类改为函数，把初始化的也放进来。
 class PluginInfo:
     def __init__(self, config_):
         """
