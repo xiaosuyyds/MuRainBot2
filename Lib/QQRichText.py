@@ -266,14 +266,21 @@ class QQRichText:
 
         if isinstance(rich, str):
             rich_text = rich
-        elif isinstance(rich, list):
+        elif isinstance(rich, list) or isinstance(rich, tuple):
             if len(rich) == 1:
-                rich_list = [rich[0]]
-            else:
-                rich_list = rich
-        elif isinstance(rich, tuple):
-            if len(rich) == 1:
-                rich_list = [rich[0]]
+                if isinstance(rich[0], str):
+                    rich_text = rich[0]
+                elif isinstance(rich[0], QQRichText):
+                    rich_list += rich[0].get()
+                elif isinstance(rich[0], dict):
+                    rich_list.append(rich[0])
+                elif isinstance(rich, list) or isinstance(rich, tuple):
+                    rich_list += rich[0]
+                else:
+                    try:
+                        rich_list.append(rich[0].get)
+                    except (TypeError, AttributeError):
+                        raise ValueError("参数类型错误，未知的rich")
             else:
                 rich_list = list(rich)
         elif isinstance(rich, dict):
@@ -281,7 +288,7 @@ class QQRichText:
         else:
             try:
                 rich_list.append(rich.get)
-            except ValueError:
+            except (TypeError, AttributeError):
                 raise ValueError("参数类型错误，未知的rich类型")
 
         # 富文本解析
@@ -313,8 +320,8 @@ class QQRichText:
                     flag = False
                     rich = re.findall(pattern, cq)
                     if len(rich) > 0:
-                        rich_type = rich[0][0]
-                        rich_data = rich[0][1]
+                        rich_type = cq_encode(rich[0][0])
+                        rich_data = cq_encode(rich[0][1])
                         rich_list.append(
                             {
                                 "type": rich_type,
@@ -347,7 +354,7 @@ class QQRichText:
             else:
                 try:
                     self.rich_list.append(rich.get)
-                except TypeError:
+                except (TypeError, AttributeError):
                     self.rich_list.append(rich)
 
     def __str__(self):
@@ -364,14 +371,14 @@ class QQRichText:
                         for rich_type, rich_data in rich["data"].items():
                             rich_type = cq_encode(cq_decode(rich_type))
                             rich_data = cq_encode(cq_decode(rich_data))
-                            self.rich_text += ",{}={}".format(rich_type, cq_encode(rich_data))
+                            self.rich_text += ",{}={}".format(rich_type, rich_data)
                     self.rich_text += "]"
             elif isinstance(rich, str):
                 self.rich_text += rich
             else:
                 try:
                     self.rich_text += str(rich)
-                except ValueError:
+                except (TypeError, AttributeError):
                     raise ValueError("转换为CQ码时失败，未知的变量类型，无法转换")
 
         return self.rich_text
@@ -392,7 +399,7 @@ class QQRichText:
         else:
             try:
                 return QQRichText(self.rich_list + [other.get])
-            except ValueError:
+            except (TypeError, AttributeError):
                 raise ValueError("QQRichText: rich_list contains a non-string or non-dict element")
 
     def __add__(self, other):
@@ -413,7 +420,7 @@ class QQRichText:
         else:
             try:
                 return str(other) in str(self)
-            except ValueError:
+            except (TypeError, AttributeError):
                 return False
 
 
@@ -426,5 +433,5 @@ if __name__ == "__main__":
         Face(1),
         Record("https://gchat.qpic.cn/gchatpic_new/100000/100000/100000/0?term=2", False),
     ])
-
+    print(b, c)
     print(b in c)
