@@ -105,18 +105,19 @@ def post_data():
     # TODO: 插件异步执行，替换多线程
     for plugin in plugins.keys():
         try:
-            callable(plugins[plugin].main)
+            if not callable(plugins[plugin].main):
+                continue
         except AttributeError:
-            pass
-        else:
-            logger.debug("执行插件%s" % plugin)
-            plugin_thread = threading.Thread(
-                target=plugins[plugin].main,
-                args=(
-                    data,
-                    work_path)
-            )
-            plugin_thread.start()
+            continue
+
+        logger.debug("执行插件%s" % plugin)
+        plugin_thread = threading.Thread(
+            target=plugins[plugin].main,
+            args=(
+                data,
+                work_path)
+        )
+        plugin_thread.start()
 
     return "OK"
 

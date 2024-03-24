@@ -105,7 +105,8 @@ class Event:
         # 事件扫描
         for event_class, func, arg, args, kwargs, by_file in register_event_list:
             if event_class == self.event_class or event_class == "all" or event_class == "*":
-                if str(func(self.event_class, self.event_data, *args, **kwargs)) == "True":
+                return_ = func(self.event_class, self.event_data, *args, **kwargs)
+                if isinstance(return_, bool) and return_:
                     break
 
         # 关键词检测
@@ -115,30 +116,37 @@ class Event:
                 for keyword, func, model, arg, args, by_file in register_keyword_list:
                     if model == "BEGIN":
                         if message.startswith(keyword):
-                            if str(func(self.event_class, self.event_data, *args)) == "True":
+                            return_ = func(self.event_class, self.event_data, *args)
+                            if isinstance(return_, bool) and return_:
                                 break
                     elif model == "END":
                         if message.endswith(keyword):
-                            if str(func(self.event_class, self.event_data, *args)) == "True":
+                            return_ = func(self.event_class, self.event_data, *args)
+                            if isinstance(return_, bool) and return_:
                                 break
                     elif model == "INCLUDE":
                         if keyword in message:
-                            if str(func(self.event_class, self.event_data, *args)) == "True":
+                            return_ = func(self.event_class, self.event_data, *args)
+                            if isinstance(return_, bool) and return_:
                                 break
                     elif model == "EXCLUDE":
                         if keyword not in message:
-                            if str(func(self.event_class, self.event_data, *args)) == "True":
+                            return_ = func(self.event_class, self.event_data, *args)
+                            if isinstance(return_, bool) and return_:
                                 break
                     elif model == "EQUAL":
                         if message == keyword:
-                            if str(func(self.event_class, self.event_data, *args)) == "True":
+                            return_ = func(self.event_class, self.event_data, *args)
+                            if isinstance(return_, bool) and return_:
                                 break
                     elif model == "REGEX":
                         if re.search(keyword, message):
-                            if str(func(self.event_class, self.event_data, *args)) == "True":
+                            return_ = func(self.event_class, self.event_data, *args)
+                            if isinstance(return_, bool) and return_:
                                 break
                     else:
                         raise ValueError("Unsupported model: {}".format(model))
+
 
 
 # 单元测试
