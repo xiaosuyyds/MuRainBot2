@@ -1,0 +1,16 @@
+# coding: utf-8
+
+# Created by BigCookie233
+
+import Lib
+
+PLUGIN_NAME = "PingPong"
+PLUGIN_VERSION = "v0.1 SNAPSHOT"
+
+logger = Lib.LoggerManager.logger
+
+
+@Lib.Events.on_group_message
+def on_message(event: Lib.Events.ReceiveGroupMessageEvent):
+    if event.message.raw_message == "ping":
+        Lib.MessageManager.Message("pong!").send_to_group(event.message.group_id)

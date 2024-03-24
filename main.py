@@ -4,18 +4,21 @@
 #  | |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __| __) |
 #  | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
-import Lib.EventManager
-from Lib import *
-from flask import Flask, request
-import yaml
-import os
-import logging
-import threading
-import importlib
 import atexit
+import importlib
+import logging
+import os
+import threading
+
+import yaml
+from flask import Flask, request
 from werkzeug.serving import make_server
 
+import Lib.EventManager
+from Lib import *
+
 logger = MuRainLib.log_init()
+LoggerManager.logger = logger
 VERSION = "2.0.0-dev"  # 版本
 VERSION_WEEK = "24W13A"  # 版本周
 
@@ -46,9 +49,9 @@ def post_data():
 
     type_ = data['post_type']
     if type_ + '_type' in data:
-        Lib.EventManager.Event((type_, data[type_ + '_type']), data)
+        Lib.XiaosuEventManager.Event((type_, data[type_ + '_type']), data)
     else:
-        Lib.EventManager.Event(type_, data)
+        Lib.XiaosuEventManager.Event(type_, data)
 
     if data['post_type'] == "message" and data['message_type'] == 'group':  # 如果是群聊信息
         username = data['sender']['nickname']  # 获取信息发送者的昵称
@@ -62,6 +65,9 @@ def post_data():
         logger.info("收到群 %s(%s) 内 %s(%s) 的消息: %s (%s)" % (
             group_name, data['group_id'], username, data['sender']['user_id'], str(message),
             data['message_id']))
+        Events.ReceiveGroupMessageEvent(
+            MessageManager.ReceivedGroupMessage(data['raw_message'], data['message_id'], data['sender'],
+                                                data['group_id'])).call()
 
         # 获取群文件夹路径
         group_path = os.path.join(data_path, "groups", str(data['group_id']))
@@ -105,19 +111,18 @@ def post_data():
     # TODO: 插件异步执行，替换多线程
     for plugin in plugins.keys():
         try:
-            if not callable(plugins[plugin].main):
-                continue
+            callable(plugins[plugin].main)
         except AttributeError:
-            continue
-
-        logger.debug("执行插件%s" % plugin)
-        plugin_thread = threading.Thread(
-            target=plugins[plugin].main,
-            args=(
-                data,
-                work_path)
-        )
-        plugin_thread.start()
+            pass
+        else:
+            logger.debug("执行插件%s" % plugin)
+            plugin_thread = threading.Thread(
+                target=plugins[plugin].main,
+                args=(
+                    data,
+                    work_path)
+            )
+            plugin_thread.start()
 
     return "OK"
 
@@ -194,6 +199,7 @@ if __name__ == '__main__':
     bot_name = config["account"]["nick_name"]
     bot_admin = config["account"]["bot_admin"]
 
+    PluginManager.load_plugins("plugins")
     load_plugins()
     if len(plugins) > 0:
         logger.info("插件导入完成，共成功导入 {} 个插件".format(len(plugins)))
@@ -207,6 +213,7 @@ if __name__ == '__main__':
                 .format(config["server"]["host"], config["server"]["port"]))
 
     # 设置API
+    BotController.init()
     api.set_ip(config["api"]["host"], config["api"]["port"])
 
     logger.info("读取到监听api，将以此url调用API: {}"
