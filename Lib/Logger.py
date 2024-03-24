@@ -11,9 +11,12 @@ import coloredlogs
 import sys
 
 logger = None
+work_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+data_path = os.path.join(work_path, "data")
+logs_path = os.path.join(work_path, "logs")
 
 
-def init(logs_path):
+def init(logs_path:str = logs_path):
     # 日志颜色
     log_colors = {
         "DEBUG": "white",
@@ -53,6 +56,12 @@ def init(logs_path):
     file_handler.suffix = "%Y-%m-%d.log"
     file_handler.setFormatter(logging.Formatter(fmt))
     logger.addHandler(file_handler)
+
+
+def get_logger():
+    if logger is None:
+        init()
+    return logger
 
 
 def exception_dispatcher(handler, block: bool = False):

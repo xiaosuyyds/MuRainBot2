@@ -5,7 +5,7 @@
 import requests
 
 import Lib.Configs as Configs
-import Lib.LoggerManager as LoggerManager
+import Lib.Logger as LoggerManager
 
 base_url = None
 

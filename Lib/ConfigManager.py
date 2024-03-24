@@ -7,7 +7,7 @@ import traceback
 
 import yaml
 
-import Lib.LoggerManager as LoggerManager
+import Lib.Logger as LoggerManager
 
 
 class Config:

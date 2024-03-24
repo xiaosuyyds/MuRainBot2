@@ -6,18 +6,14 @@
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
 
 from Lib.MuRainLib import *
-import Lib.XiaosuEventManager
-import Lib.OnebotAPI
-import Lib.QQRichText
-
+import Lib.OnebotAPI as OnebotAPI
+import Lib.QQRichText as QQRichText
 import Lib.ConfigManager as ConfigManager
 import Lib.EventManager as EventManager
-import Lib.PluginManager as PluginManager
-import Lib.LoggerManager as LoggerManager
+import Lib.Logger as Logger
 import Lib.BotController as BotController
 import Lib.MessageManager as MessageManager
 import Lib.Configs as Configs
-import Lib.Events as Events
 
 
 VERSION = "2.0.0-dev"
