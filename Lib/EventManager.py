@@ -105,7 +105,8 @@ class Event:
         # 事件扫描
         for event_class, func, arg, args, kwargs, by_file in register_event_list:
             if event_class == self.event_class or event_class == "all" or event_class == "*":
-                threading.Thread(target=lambda: func(self.event_class, self.event_data, *args, **kwargs)).start()
+                if str(func(self.event_class, self.event_data, *args, **kwargs)) == "True":
+                    break
 
         # 关键词检测
         if self.event_class is list:
@@ -114,22 +115,28 @@ class Event:
                 for keyword, func, model, arg, args, by_file in register_keyword_list:
                     if model == "BEGIN":
                         if message.startswith(keyword):
-                            threading.Thread(target=lambda: func(self.event_class, self.event_data, *args)).start()
+                            if str(func(self.event_class, self.event_data, *args)) == "True":
+                                break
                     elif model == "END":
                         if message.endswith(keyword):
-                            threading.Thread(target=lambda: func(self.event_class, self.event_data, *args)).start()
+                            if str(func(self.event_class, self.event_data, *args)) == "True":
+                                break
                     elif model == "INCLUDE":
                         if keyword in message:
-                            threading.Thread(target=lambda: func(self.event_class, self.event_data, *args)).start()
+                            if str(func(self.event_class, self.event_data, *args)) == "True":
+                                break
                     elif model == "EXCLUDE":
                         if keyword not in message:
-                            threading.Thread(target=lambda: func(self.event_class, self.event_data, *args)).start()
+                            if str(func(self.event_class, self.event_data, *args)) == "True":
+                                break
                     elif model == "EQUAL":
                         if message == keyword:
-                            threading.Thread(target=lambda: func(self.event_class, self.event_data, *args)).start()
+                            if str(func(self.event_class, self.event_data, *args)) == "True":
+                                break
                     elif model == "REGEX":
                         if re.search(keyword, message):
-                            threading.Thread(target=lambda: func(self.event_class, self.event_data, *args)).start()
+                            if str(func(self.event_class, self.event_data, *args)) == "True":
+                                break
                     else:
                         raise ValueError("Unsupported model: {}".format(model))
 

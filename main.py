@@ -105,7 +105,7 @@ def post_data():
     # TODO: 插件异步执行，替换多线程
     for plugin in plugins.keys():
         try:
-            callable(exec(plugins[plugin]+".main"))
+            callable(plugins[plugin].main)
         except AttributeError:
             pass
         else:
