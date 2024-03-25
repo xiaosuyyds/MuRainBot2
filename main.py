@@ -102,7 +102,6 @@ def post_data():
                 logger.info("检测到Bot被%s踢出了群聊%s(%s)" % (oid, group_name, group_id))
 
     # 若插件包含main函数则运行
-    # TODO: 插件异步执行，替换多线程
     for plugin in plugins.keys():
         try:
             if not callable(plugins[plugin].main):
@@ -111,13 +110,17 @@ def post_data():
             continue
 
         logger.debug("执行插件%s" % plugin)
-        plugin_thread = threading.Thread(
-            target=plugins[plugin].main,
-            args=(
-                data,
-                work_path)
-        )
-        plugin_thread.start()
+        try:
+            plugin_thread = threading.Thread(
+                target=plugins[plugin].main,
+                args=(
+                    data,
+                    work_path)
+            )
+            plugin_thread.start()
+        except Exception as e:
+            logger.error("执行插件%s时发生错误：%s" % (plugin, e))
+            continue
 
     return "OK"
 
@@ -222,6 +225,8 @@ if __name__ == '__main__':
         try:
             bot_info = api.get("/get_login_info")
             bot_uid, bot_name = bot_info["user_id"], bot_info["nickname"]
+            config["account"]["user_id"] = bot_uid
+            config["account"]["bot_name"] = bot_name
         except (TypeError, ConnectionRefusedError):
             logger.error("获取BotUID与昵称失败！可能会导致严重问题！")
 
