@@ -18,7 +18,7 @@ class Config:
 
     @LoggerManager.log_exception()
     def reload(self):
-        with open(self.path, "r", encoding=self.encoding) as file:
+        with open(self.path, encoding=self.encoding) as file:
             self.raw_config = yaml.load(file.read(), yaml.FullLoader)
         return self
 
