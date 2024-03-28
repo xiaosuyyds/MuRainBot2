@@ -46,7 +46,7 @@
 ├─ Lib          MRB2的Lib库，插件和MRB2均需要依赖此Lib
 │   ├─ __init__.py     MRB2Lib
 │   ├─ BotController.py   MRB2的Lib库之一，用于控制Bot
-|   ├─ ConfigMainanager.py MRB2的Lib库之一，用于管理配置文件
+|   ├─ ConfigManager.py MRB2的Lib库之一，用于管理配置文件
 |   ├─ Configs.py      MRB2的Lib库之一，用于配置文件的一些功能
 │   ├─ EventManager.py MRB2的Lib库之一，用于广播上报事件
 │   ├─ Logger.py       MRB2的Lib库之一，用于记录日志
