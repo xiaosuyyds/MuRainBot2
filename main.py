@@ -15,7 +15,7 @@ import importlib
 import atexit
 from werkzeug.serving import make_server
 
-logger = MuRainLib.log_init()
+logger = Logger.get_logger()
 VERSION = "2.0.0-dev"  # 版本
 VERSION_WEEK = "24W13A"  # 版本周
 
@@ -102,7 +102,6 @@ def post_data():
                 logger.info("检测到Bot被%s踢出了群聊%s(%s)" % (oid, group_name, group_id))
 
     # 若插件包含main函数则运行
-    # TODO: 插件异步执行，替换多线程
     for plugin in plugins.keys():
         try:
             if not callable(plugins[plugin].main):
@@ -111,13 +110,17 @@ def post_data():
             continue
 
         logger.debug("执行插件%s" % plugin)
-        plugin_thread = threading.Thread(
-            target=plugins[plugin].main,
-            args=(
-                data,
-                work_path)
-        )
-        plugin_thread.start()
+        try:
+            plugin_thread = threading.Thread(
+                target=plugins[plugin].main,
+                args=(
+                    data,
+                    work_path)
+            )
+            plugin_thread.start()
+        except Exception as e:
+            logger.error("执行插件%s时发生错误：%s" % (plugin, e))
+            continue
 
     return "OK"
 
@@ -181,8 +184,7 @@ if __name__ == '__main__':
         logger.warning("MuRainLib版本检测未通过，可能会发生异常\n"
                        f"MuRainLib版本:{LibInfo().version} MuRain Bot版本:{VERSION}\n"
                        "注意：我们将不会受理在此模式下运行的报错")
-        input_text = input("Continue?(Y/n)").lower()
-        if input_text != "y" and input_text != "Y":
+        if input("Continue?(Y/n)").lower() != "y":
             sys.exit()
         logger.warning("MuRainLib版本检测未通过，可能会发生异常，将继续运行！")
 
@@ -198,8 +200,13 @@ if __name__ == '__main__':
     if len(plugins) > 0:
         logger.info("插件导入完成，共成功导入 {} 个插件".format(len(plugins)))
         for plugin in plugins:
-            plugin_info = plugins[plugin].PluginInfo(config)
-            logger.info("%s 作者:%s", plugin_info.NAME, plugin_info.AUTHOR)
+            try:
+                plugin_info = plugins[plugin].PluginInfo(config)
+                logger.info("%s 作者:%s", plugin_info.NAME, plugin_info.AUTHOR)
+            except ArithmeticError:
+                logger.warning("插件{} 没有信息".format(plugin))
+            except Exception as e:
+                logger.warning("插件{} 信息获取失败: {}".format(plugin, e))
     else:
         logger.warning("无插件成功导入！")
 
@@ -218,6 +225,8 @@ if __name__ == '__main__':
         try:
             bot_info = api.get("/get_login_info")
             bot_uid, bot_name = bot_info["user_id"], bot_info["nickname"]
+            config["account"]["user_id"] = bot_uid
+            config["account"]["bot_name"] = bot_name
         except (TypeError, ConnectionRefusedError):
             logger.error("获取BotUID与昵称失败！可能会导致严重问题！")
 
