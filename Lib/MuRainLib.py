@@ -10,12 +10,8 @@ MuRainLib
 用于MuRain Bot框架
 """
 
-import logging
-import logging.handlers as handlers
 import os
 import sys
-
-import coloredlogs
 
 work_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 data_path = os.path.join(work_path, "data")

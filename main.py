@@ -15,7 +15,7 @@ import importlib
 import atexit
 from werkzeug.serving import make_server
 
-logger = Logger.get_logger()
+logger = Logger.logger
 VERSION = "2.0.0-dev"  # 版本
 VERSION_WEEK = "24W13A"  # 版本周
 
