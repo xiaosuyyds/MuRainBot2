@@ -27,13 +27,19 @@ def write_non_existent_file(path, data, encoding="utf-8"):
     write_non_existent_file_task(path, data, encoding)
 
 
+def write_cache(path, item):
+    if path in cache:
+        cache[path] = item
+    else:
+        raise KeyError("Path not found or Not in Cache")
+
+
 @ThreadPool.async_task
 def write_file_task(path, data, encoding="utf-8"):
     with open(path, "w", encoding=encoding) as file:
         file.write(data)
 
 
-@ThreadPool.async_task
 def write_non_existent_file_task(path, data, encoding="utf-8"):
     if not os.path.exists(path):
         write_file_task(path, data, encoding)
