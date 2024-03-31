@@ -37,7 +37,7 @@ def finalize_and_cleanup():
 # 上报
 @app.route('/', methods=["POST"])
 def post_data():
-    data = request.get_json()
+    data = BotController.Event(request.get_json())
     # 检测是否为重复上报
     logger.debug(data)
     if data in request_list:
@@ -128,20 +128,6 @@ def post_data():
     return "OK"
 
 
-# 导入配置文件
-def load_config(yml_path):
-    try:
-        with open(yml_path, encoding="utf-8") as f:
-            file_content = f.read()
-        config = yaml.load(file_content, yaml.FullLoader)
-        # print(content)
-        logger.info("配置文件加载成功！")
-        return config
-    except FileNotFoundError or OSError:
-        logger.critical('配置文件加载失败！')
-        return None
-
-
 def load_plugins():
     global plugins
     # 获取插件目录下的所有文件
@@ -195,18 +181,16 @@ if __name__ == '__main__':
 
     logger.info("MuRainLib当前版本：{}({})".format(LibInfo().version, LibInfo().version_week))
 
-    config = load_config(yaml_path)
-
-    bot_uid = config["account"]["user_id"]
-    bot_name = config["account"]["nick_name"]
-    bot_admin = config["account"]["bot_admin"]
+    bot_uid = Configs.GlobalConfig().user_id
+    bot_name = Configs.GlobalConfig().nick_name
+    bot_admin = Configs.GlobalConfig().bot_admin
 
     load_plugins()
     if len(plugins) > 0:
         logger.info("插件导入完成，共成功导入 {} 个插件".format(len(plugins)))
         for plugin in plugins:
             try:
-                plugin_info = plugin["plugin"].PluginInfo(config)
+                plugin_info = plugin["plugin"].PluginInfo()
                 logger.info("%s: %s 作者:%s" % (plugin["name"], plugin_info.NAME, plugin_info.AUTHOR))
             except ArithmeticError:
                 logger.warning("插件{} 没有信息".format(plugin["name"]))
@@ -216,10 +200,10 @@ if __name__ == '__main__':
         logger.warning("无插件成功导入！")
 
     logger.info("读取到监听服务器ip，将以此ip启动监听服务器: {}:{}"
-                .format(config["server"]["host"], config["server"]["port"]))
+                .format(Configs.GlobalConfig().server_host, Configs.GlobalConfig().server_port))
 
     # 设置API
-    api.set_ip(config["api"]["host"], config["api"]["port"])
+    api.set_ip(Configs.GlobalConfig().api_host, Configs.GlobalConfig().api_port)
 
     logger.info("读取到监听api，将以此url调用API: {}"
                 .format(str(api)))
@@ -228,25 +212,28 @@ if __name__ == '__main__':
     if bot_uid is None or bot_name == "" or bot_uid == 123456 or bot_name is None:
         logger.warning("配置文件中未找到BotUID或昵称，将自动获取！")
         try:
-            bot_info = api.get("/get_login_info")
+            bot_info = {"user_id":123456, "nickname": "abcd"}
             bot_uid, bot_name = bot_info["user_id"], bot_info["nickname"]
-            config["account"]["user_id"] = bot_uid
-            config["account"]["bot_name"] = bot_name
-        except (TypeError, ConnectionRefusedError):
-            logger.error("获取BotUID与昵称失败！可能会导致严重问题！")
+            raw_config = Configs.GlobalConfig().raw_config
+            raw_config["account"]["user_id"] = bot_uid
+            raw_config["account"]["nick_name"] = bot_name
+            Configs.GlobalConfig().write_cache(raw_config)
+            logger.debug("已成功获取BotUID与昵称！")
+        except Exception as e:
+            logger.error("获取BotUID与昵称失败！可能会导致严重问题！报错信息：{}".format(repr(e)))
 
-    logger.info("欢迎使用 {}({})".format(bot_name, bot_uid))
+    logger.info("欢迎使用 {}({})".format(Configs.GlobalConfig().nick_name, Configs.GlobalConfig().user_id))
 
     # 禁用werkzeug的日志记录
     log = logging.getLogger('werkzeug')
     log.disabled = True
 
     # 启动监听服务器
-    try:
-        logger.info("启动监听服务器")
-        server = make_server(config["server"]["host"], config["server"]["port"], app)
-        server.serve_forever()
-    except:
-        logger.error("监听服务器启动失败！")
-    finally:
-        logger.info("监听服务器结束运行！")
+    # try:
+    logger.info("启动监听服务器")
+    server = make_server(Configs.GlobalConfig().server_host, Configs.GlobalConfig().server_port, app)
+    server.serve_forever()
+    # except Exception as e:
+    #     logger.error("监听服务器启动失败！报错信息：{}".format(repr(e)))
+    # finally:
+    #     logger.info("监听服务器结束运行！")

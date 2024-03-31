@@ -21,6 +21,12 @@ class Config:
             raise TypeError("default config must be a string")
         return self
 
+    def write_cache(self, item):
+        FileCacher.write_cache(self.path, item)
+
+    def get_config(self):
+        return self.raw_config
+
 
 class PluginConfig(Config):
     def __init__(self):

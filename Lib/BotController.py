@@ -11,8 +11,15 @@ def init():
     api.set_ip(config.api_host, config.api_port)
 
 
-def send_group_message(group_id, message):
-    api.get("/send_group_msg", {"group_id": group_id, "message": message})
+def send_message(message: QQRichText.QQRichText() | str, group_id: int = 0, user_id: int = 0):
+    if group_id == 0 and user_id == 0:
+        raise ValueError("group_id and user_id cannot be both 0")
+    elif group_id != 0 and user_id != 0:
+        raise ValueError("group_id and user_id cannot be both not 0")
+    elif group_id != 0:
+        api.get("/send_msg", {"group_id": group_id, "message": message})
+    elif user_id != 0:
+        api.get("/send_private_msg", {"user_id": user_id, "message": message})
 
 
 class BotINFO:
@@ -120,3 +127,5 @@ class Event:
                 self.notice_type = "honor"
                 self.sub_type = event_json["sub_type"]
 
+    def __getitem__(self, item):
+        return self.event_json["item"]
