@@ -52,3 +52,15 @@ def main(report, work_path):
             else:
                 BotController.send_message(QQRichText.QQRichText(QQRichText.At(data.user_id), "Hello World!"),
                                            group_id=data.group_id)
+
+
+# 写法3: 注册事件
+@EventManager.register_event("message")
+def on_message(event_class, event_data):
+    data = BotController.Event(event_data)
+    if data.message == "hello":
+        if data.message_type == "private":
+            BotController.send_message("Hello World!", user_id=data.user_id)
+        else:
+            BotController.send_message(QQRichText.QQRichText(QQRichText.At(data.user_id), "Hello World!"),
+                                       group_id=data.group_id)
