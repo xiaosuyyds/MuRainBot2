@@ -12,7 +12,7 @@ cache = {}
 def read_file(path, encoding="utf-8"):
     if path in cache.keys():
         return cache[path]
-    with open(path, "r", encoding=encoding) as file:
+    with open(path, encoding=encoding) as file:
         cache[path] = file.read()
     return cache[path]
 
