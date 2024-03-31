@@ -76,7 +76,7 @@ class Face:
 
 # 语音
 class Record:
-    def __init__(self, file: str, magic: bool | int = 0, cache: bool | int = 1, proxy: bool | int = 1,
+    def __init__(self, file: str, magic: bool | int = 0, cache: bool | int = True, proxy: bool | int = 1,
                  timeout: int = -1) -> None:
         self.file = file
         self.magic = bool(magic)
@@ -128,61 +128,41 @@ class Record:
 
 
 class At:
-    def __init__(self, qq: int | str, name: str = "") -> None:
+    def __init__(self, qq: int | str) -> None:
         if isinstance(qq, str) and qq != "all":
             raise ValueError("QQ号只能为数字或all")
         self.qq = qq
-        self.name = name
-        self.content = {"type": "at", "data": {"qq": self.qq, "name": name}}
+        self.content = {"type": "at", "data": {"qq": self.qq}}
 
     def set(self, qq: int) -> None:
         self.qq = qq
-        self.content = {"type": "at", "data": {"qq": self.qq, "name": self.name}}
+        self.content = {"type": "at", "data": {"qq": self.qq}}
 
     @property
     def get(self) -> dict:
         return self.content
 
     def __str__(self) -> str:
-        return "[CQ:at,qq={},name={}]".format(self.qq, self.name)
+        return "[CQ:at,qq={}]".format(self.qq)
 
     def __repr__(self) -> str:
         return str(self.content)
 
 
 class Image:
-    def __init__(self, file: str, image_type: str = "", sub_type: int = 0,
-                 cache: bool | int = True, id_: int = 40000, c: int = 1) -> None:
+    def __init__(self, file: str, image_type: str = "", cache: bool | int = True) -> None:
         self.file = file
         self.type = image_type
-        self.subType = sub_type
-        self.cache = bool(cache)
-        self.id = id_
-        self.c = c
-        if not 0 >= sub_type >= 13:
-            raise ValueError("未知的subType")
-        if not 40000 >= id_ >= 40005:
-            raise ValueError("未知的id")
-        if not 1 >= c >= 3:
-            raise ValueError("线程数过多/过少")
-        if self.type != "" and self.type != "flash" and self.type != "show":
+        self.cache = cache
+        if self.type != "" and self.type != "flash":
             raise ValueError("未知的图片类型")
 
         self.content = {"type": "image", "data": {"file": file}}
         if self.type != "":
             self.content["data"]["type"] = image_type
 
-        if self.subType != 0:
-            self.content["data"]["subType"] = sub_type
-
         if not self.cache:
             self.content["data"]["cache"] = 0
-
-        if self.id != 40000:
-            self.content["data"]["id"] = id_
-
-        if self.c != 1:
-            self.content["data"]["c"] = c
 
     def set(self, file: str) -> None:
         self.file = file
@@ -197,17 +177,8 @@ class Image:
         if self.type != "":
             cq += ",type={}"
 
-        if self.subType != 0:
-            cq += ",subType={}"
-
         if not self.cache:
             cq += ",cache=0"
-
-        if self.id != 40000:
-            cq += ",id={}"
-
-        if self.c != 1:
-            cq += ",c={}"
 
         return cq + "]"
 
@@ -216,20 +187,9 @@ class Image:
 
 
 class Reply:
-    def __init__(self, reply_id: int, text: str = "", qq: int = -1, time: int = -1, seq: int = -1) -> None:
+    def __init__(self, reply_id: int) -> None:
         self.id = reply_id
         self.content = {"type": "reply", "data": {"id": self.id}}
-        if text != "":
-            self.content["text"] = text
-
-        if qq != -1:
-            self.content["qq"] = qq
-
-        if time != -1:
-            self.content["time"] = time
-
-        if seq != -1:
-            self.content["seq"] = seq
 
     def set(self, reply_id: int) -> None:
         self.id = reply_id
@@ -240,20 +200,7 @@ class Reply:
         return self.content
 
     def __str__(self) -> str:
-        cq = "[CQ:reply,id={}".format(self.id)
-
-        if "text" in self.content["data"]:
-            cq += ",text={}"
-
-        if "qq" in self.content["data"]:
-            cq += ",qq={}"
-
-        if "time" in self.content["data"]:
-            cq += ",time={}"
-
-        if "seq" in self.content["data"]:
-            cq += ",seq={}"
-        return cq + "]"
+        return "[CQ:reply,id={}]".format(self.id)
 
     def __repr__(self) -> str:
         return str(self.content)
@@ -364,7 +311,7 @@ class QQRichText:
                 if "type" not in rich or "data" not in rich:
                     raise ValueError("转换为CQ码时失败，未知的类型或是非标准message，无法转换")
                 if rich["type"] == "text":
-                    self.rich_text += rich["data"]["text"]
+                    self.rich_text += cq_encode(cq_decode(rich["data"]["text"]))
                 else:
                     self.rich_text += "[CQ:{}".format(rich["type"])
                     if rich["data"]:
@@ -374,10 +321,10 @@ class QQRichText:
                             self.rich_text += ",{}={}".format(rich_type, rich_data)
                     self.rich_text += "]"
             elif isinstance(rich, str):
-                self.rich_text += rich
+                self.rich_text += cq_encode(cq_decode(rich))
             else:
                 try:
-                    self.rich_text += str(rich)
+                    self.rich_text += cq_encode(cq_decode(str(rich)))
                 except (TypeError, AttributeError):
                     raise ValueError("转换为CQ码时失败，未知的变量类型，无法转换")
 

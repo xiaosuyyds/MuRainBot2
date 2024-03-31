@@ -19,7 +19,7 @@ logger = Logger.get_logger()
 VERSION = "2.0.0-dev"  # 版本
 VERSION_WEEK = "24W13A"  # 版本周
 
-plugins = {}  # 插件
+plugins = []  # 插件
 app = Flask(__name__)
 
 api = OnebotAPI.OnebotAPI()
@@ -38,11 +38,14 @@ def finalize_and_cleanup():
 @app.route('/', methods=["POST"])
 def post_data():
     data = request.get_json()
+    # 检测是否为重复上报
     logger.debug(data)
     if data in request_list:
         return "OK"
     else:
         request_list.append(data)
+    if len(request_list) > 100:
+        request_list.pop(0)
 
     type_ = data['post_type']
     if type_ + '_type' in data:
@@ -102,24 +105,24 @@ def post_data():
                 logger.info("检测到Bot被%s踢出了群聊%s(%s)" % (oid, group_name, group_id))
 
     # 若插件包含main函数则运行
-    for plugin in plugins.keys():
+    for plugin in plugins:
         try:
-            if not callable(plugins[plugin].main):
+            if not callable(plugin["plugin"]):
                 continue
         except AttributeError:
             continue
 
-        logger.debug("执行插件%s" % plugin)
+        logger.debug("执行插件%s" % plugin["name"])
         try:
             plugin_thread = threading.Thread(
-                target=plugins[plugin].main,
+                target=plugin["plugin"].main,
                 args=(
                     data,
                     work_path)
             )
             plugin_thread.start()
         except Exception as e:
-            logger.error("执行插件%s时发生错误：%s" % (plugin, e))
+            logger.error("执行插件%s时发生错误：%s" % (plugin["name"], repr(e)))
             continue
 
     return "OK"
@@ -157,13 +160,15 @@ def load_plugins():
     things_in_plugin_dir = map(mapper, things_in_plugin_dir)
     things_in_plugin_dir = [_ for _ in things_in_plugin_dir if _ != ""]
 
-    plugins = {}
+    plugins = []
 
     for i in things_in_plugin_dir:
         try:
-            plugins[i] = importlib.import_module('.' + i, package='plugins')
+            logger.debug("正在加载插件: {}:".format(i))
+            plugins.append({"name": i, "plugin": importlib.import_module('.' + i, package='plugins')})
+            logger.debug("插件 {} 加载成功！".format(i))
         except Exception as e:
-            logger.error("导入插件 {} 失败！ 原因:{}".format(i, e))
+            logger.error("导入插件 {} 失败！ 原因:{}".format(i, repr(e)))
     return plugins
 
 
@@ -202,12 +207,12 @@ if __name__ == '__main__':
         logger.info("插件导入完成，共成功导入 {} 个插件".format(len(plugins)))
         for plugin in plugins:
             try:
-                plugin_info = plugins[plugin].PluginInfo(config)
-                logger.info("%s 作者:%s", plugin_info.NAME, plugin_info.AUTHOR)
+                plugin_info = plugin["plugin"].PluginInfo(config)
+                logger.info("%s: %s 作者:%s" % (plugin["name"], plugin_info.NAME, plugin_info.AUTHOR))
             except ArithmeticError:
-                logger.warning("插件{} 没有信息".format(plugin))
+                logger.warning("插件{} 没有信息".format(plugin["name"]))
             except Exception as e:
-                logger.warning("插件{} 信息获取失败: {}".format(plugin, e))
+                logger.warning("插件{} 信息获取失败: {}".format(plugin["name"], repr(e)))
     else:
         logger.warning("无插件成功导入！")
 

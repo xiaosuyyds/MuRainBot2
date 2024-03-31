@@ -148,19 +148,19 @@ class Event:
                         raise ValueError("Unsupported model: {}".format(model))
 
 
-
 # 单元测试
 if __name__ == '__main__':
-
     @register_event('test', 5)
     @register_event('test2', 1)
     def test_func(event_type, arg):
         print(1, event_type, arg)
 
+
     @register_event('all', 2)
     @register_event('all', -1)
     def test_func2(event_type, arg, num=2):
         print(num, event_type, arg)
+
 
     Event('test', 'data')
     Event('test2', 'data')
