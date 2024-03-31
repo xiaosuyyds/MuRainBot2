@@ -196,7 +196,6 @@ if __name__ == '__main__':
     logger.info("MuRainLib当前版本：{}({})".format(LibInfo().version, LibInfo().version_week))
 
     config = load_config(yaml_path)
-    Configs.global_config = Configs.GlobalConfig()
 
     bot_uid = config["account"]["user_id"]
     bot_name = config["account"]["nick_name"]
