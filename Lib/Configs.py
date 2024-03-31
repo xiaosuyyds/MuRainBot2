@@ -4,6 +4,8 @@
 
 import Lib.ConfigManager as ConfigManager
 
+global_config = None
+
 
 class GlobalConfig(ConfigManager.Config):
     def __init__(self):
@@ -16,3 +18,4 @@ class GlobalConfig(ConfigManager.Config):
         self.server_port = self.raw_config["server"]["port"]
         self.api_host = self.raw_config["api"]["host"]
         self.api_port = self.raw_config["api"]["port"]
+        self.max_workers = self.raw_config["thread_pool"]["max_workers"]

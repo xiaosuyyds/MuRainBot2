@@ -6,6 +6,7 @@ import requests
 
 import Lib.Configs as Configs
 import Lib.Logger as LoggerManager
+import Lib.ThreadPool as ThreadPool
 
 base_url = None
 
@@ -16,6 +17,7 @@ def init():
     base_url = "http://{}:{}/".format(config.api_host, config.api_port)
 
 
+@ThreadPool.async_task
 @LoggerManager.log_exception(True)
 def send_request(node: str, params):
     if isinstance(base_url, str):
