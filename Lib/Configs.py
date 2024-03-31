@@ -4,8 +4,6 @@
 
 import Lib.ConfigManager as ConfigManager
 
-global_config = None
-
 
 class GlobalConfig(ConfigManager.Config):
     def __init__(self):

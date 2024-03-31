@@ -8,6 +8,7 @@ import traceback
 import yaml
 
 import Lib.Logger as LoggerManager
+import Lib.FileCacher as FileCacher
 
 
 class Config:
@@ -18,16 +19,13 @@ class Config:
 
     @LoggerManager.log_exception()
     def reload(self):
-        with open(self.path, encoding=self.encoding) as file:
-            self.raw_config = yaml.load(file.read(), yaml.FullLoader)
+        self.raw_config = yaml.load(FileCacher.read_file(self.path, self.encoding), yaml.FullLoader)
         return self
 
     @LoggerManager.log_exception()
     def save_default(self, default_config: str):
         if isinstance(default_config, str):
-            if not os.path.exists(self.path):
-                with open(self.path, "w", encoding=self.encoding) as file:
-                    file.write(default_config)
+            FileCacher.write_non_existent_file(self.path, default_config, self.encoding)
         else:
             raise TypeError("default config must be a string")
         return self
