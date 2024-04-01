@@ -110,24 +110,24 @@ def post_data():
                             (group_name, data.group_id, user_name, data.user_id))
 
     if data.post_type == 'notice':
-        if data['notice_type'] == 'group_upload':
+        if data.notice_type == 'group_upload':
             group_name = api.get("/get_group_info", {"group_id": data.group_id})["group_name"]
             logger.info("群%s(%s)内，%s上传了文件：%s" %
                         (group_name, data.group_id, data.user_id, data.file))
         # 戳一戳
-        if data['notice_type'] == 'notify':
+        if data.notice_type == 'notify':
             group_name = api.get("/get_group_info", {"group_id": data.group_id})["group_name"]
             logger.info("收到群%s(%s)内，%s戳了戳%s" %
                         (group_name, data.group_id, data.user_id, data.target_id))
 
         # 进群聊
-        if data['notice_type'] == "group_increase":
+        if data.notice_type == "group_increase":
             group_name = api.get("/get_group_info", {"group_id": data.group_id})["group_name"]
             logger.info("检测到群%s(%s)内，%s进群了，操作者%s" %
                         (group_name, data.group_id, data.user_id, data.operator_id))
 
         # 退群聊
-        if data['notice_type'] == "group_decrease":
+        if data.notice_type == "group_decrease":
             group_name = api.get("/get_group_info", {"group_id": data.group_id})["group_name"]
             user_id = data.user_id
             if data.sub_type == "leave":
@@ -245,7 +245,7 @@ if __name__ == '__main__':
     if bot_uid is None or bot_name == "" or bot_uid == 123456 or bot_name is None:
         logger.warning("配置文件中未找到BotUID或昵称，将自动获取！")
         try:
-            bot_info = {"user_id": 123456, "nickname": "abcd"}
+            bot_info = api.get("/get_login_info")
             bot_uid, bot_name = bot_info["user_id"], bot_info["nickname"]
             raw_config = Configs.GlobalConfig().raw_config
             raw_config["account"]["user_id"] = bot_uid
@@ -262,11 +262,11 @@ if __name__ == '__main__':
     log.disabled = True
 
     # 启动监听服务器
-    # try:
-    logger.info("启动监听服务器")
-    server = make_server(Configs.GlobalConfig().server_host, Configs.GlobalConfig().server_port, app)
-    server.serve_forever()
-    # except Exception as e:
-    #     logger.error("监听服务器启动失败！报错信息：{}".format(repr(e)))
-    # finally:
-    #     logger.info("监听服务器结束运行！")
+    try:
+        logger.info("启动监听服务器")
+        server = make_server(Configs.GlobalConfig().server_host, Configs.GlobalConfig().server_port, app)
+        server.serve_forever()
+    except Exception as e:
+        logger.error("监听服务器启动失败！报错信息：{}".format(repr(e)))
+    finally:
+        logger.info("监听服务器结束运行！")
