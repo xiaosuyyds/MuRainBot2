@@ -5,7 +5,7 @@
 #  | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
 
-import threading
+import Lib.QQRichText as QQRichText
 import traceback
 import re
 from typing import Callable, Any, Tuple, Dict
@@ -112,7 +112,7 @@ class Event:
         # 关键词检测
         if self.event_class is list:
             if self.event_class[0] == "message":
-                message = str(self.event_data["raw_message"])
+                message = str(QQRichText.QQRichText(event_data["message"]))
                 for keyword, func, model, arg, args, by_file in register_keyword_list:
                     if model == "BEGIN":
                         if message.startswith(keyword):
@@ -148,19 +148,19 @@ class Event:
                         raise ValueError("Unsupported model: {}".format(model))
 
 
-
 # 单元测试
 if __name__ == '__main__':
-
     @register_event('test', 5)
     @register_event('test2', 1)
     def test_func(event_type, arg):
         print(1, event_type, arg)
 
+
     @register_event('all', 2)
     @register_event('all', -1)
     def test_func2(event_type, arg, num=2):
         print(num, event_type, arg)
+
 
     Event('test', 'data')
     Event('test2', 'data')

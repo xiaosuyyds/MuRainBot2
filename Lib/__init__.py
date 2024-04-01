@@ -8,12 +8,12 @@
 from Lib.MuRainLib import *
 import Lib.OnebotAPI as OnebotAPI
 import Lib.QQRichText as QQRichText
-import Lib.ConfigManager as ConfigManager
 import Lib.EventManager as EventManager
 import Lib.Logger as Logger
 import Lib.BotController as BotController
-import Lib.MessageManager as MessageManager
 import Lib.Configs as Configs
+import Lib.FileCacher as FileCacher
+import Lib.ThreadPool as ThreadPool
 
 
 VERSION = "2.0.0-dev"

@@ -9,41 +9,58 @@ from Lib import *
 import logging
 
 api = OnebotAPI.OnebotAPI()
-
-config = {}
+api.set_ip(Configs.GlobalConfig().api_host, Configs.GlobalConfig().api_port)
 
 
 # TODO: 插件信息后续从类改为函数，把初始化的也放进来。
 class PluginInfo:
-    def __init__(self, config_):
-        """
-        :param config_:框架配置文件
-        """
-        global config
-        config = config_
-        self.NAME = "插件名称"  # 插件名称
-        self.AUTHOR = "作者"  # 插件作者
-        self.VERSION = "版本"  # 插件版本
-        self.DESCRIPTION = "描述"  # 插件描述
-        self.HELP_MSG = "帮助"  # 插件帮助
-
-        api.set_ip(config["api"]["host"], config["api"]["port"])
+    def __init__(self):
+        self.NAME = "HelloWorld"  # 插件名称
+        self.AUTHOR = "You"  # 插件作者
+        self.VERSION = "1.0.0"  # 插件版本
+        self.DESCRIPTION = "一个发送HelloWorld的插件"  # 插件描述
+        self.HELP_MSG = ""  # 插件帮助
 
 
-# 发送群聊消息
-def group_msg_send(group_id, message: str | QQRichText.QQRichText):
-    gname = api.get("/get_group_info", {"group_id": group_id})["group_name"]
-    logging.info("发送群 {}({}) 的消息: {}".format(gname, group_id, str(message)))
-    api.get("/send_group_msg", {"group_id": group_id, "message": message})
+# 写法1: 注册关键词
+def say_hello(event_class, event_data):
+    data = BotController.Event(event_data)
+    if data.post_type == "message":
+        if data.message_type == "private":
+            BotController.send_message("Hello World!", user_id=data.user_id)
+        else:
+            BotController.send_message(QQRichText.QQRichText(QQRichText.At(data.user_id), "Hello World!"),
+                                       group_id=data.group_id)
 
 
-# 主函数
+EventManager.register_keyword("hello", say_hello)
+
+
+# 写法2: 主函数
 def main(report, work_path):
     """
     :param report: go-cqhttp上报的消息
     :param work_path: main.py所在的路径
     :return:
     """
-    bot_name = config["account"]["nick_name"]
-    bot_uid = config["account"]["user_id"]
-    bot_admin = config["account"]["bot_admin"]
+    data = BotController.Event(report)
+    if data.post_type == "message":
+        message = data.message
+        if message == "hello":
+            if data.message_type == "private":
+                BotController.send_message("Hello World!", user_id=data.user_id)
+            else:
+                BotController.send_message(QQRichText.QQRichText(QQRichText.At(data.user_id), "Hello World!"),
+                                           group_id=data.group_id)
+
+
+# 写法3: 注册事件
+@EventManager.register_event("message")
+def on_message(event_class, event_data):
+    data = BotController.Event(event_data)
+    if data.message == "hello":
+        if data.message_type == "private":
+            BotController.send_message("Hello World!", user_id=data.user_id)
+        else:
+            BotController.send_message(QQRichText.QQRichText(QQRichText.At(data.user_id), "Hello World!"),
+                                       group_id=data.group_id)

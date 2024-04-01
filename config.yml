@@ -11,3 +11,6 @@ api: # Api设置
 server: # 监听服务器设置
   host: '127.0.0.1'
   port: 5701
+
+thread_pool:
+  max_workers: 5
