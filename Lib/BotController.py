@@ -40,92 +40,115 @@ class BotINFO:
 class Event:
     def __init__(self, event_json: dict):
         self.event_json = event_json
-        self.time = event_json["time"]
-        self.self_id = event_json["self_id"]
-        self.post_type = event_json["post_type"]
+        self.time = self["time"]
+        self.self_id = self["self_id"]
+        self.post_type = self["post_type"]
 
         if self.post_type == "message" or self.post_type == "message_sent":
-            self.message_type = event_json["message_type"]
-            self.user_id = event_json["user_id"]
-            self.sub_type = event_json["sub_type"]
+            self.message_type = self["message_type"]
+            self.user_id = self["user_id"]
+            self.sub_type = self["sub_type"]
 
-            self.message = QQRichText.QQRichText(event_json["message"])
-            self.message_id = event_json["message_id"]
+            self.message = QQRichText.QQRichText(self["message"])
+            self.message_id = self["message_id"]
 
             if self.message_type == "group":
-                self.group_id = event_json["group_id"]
-
-                self.sender = event_json["sender"]
+                self.group_id = self["group_id"]
+                self.sender = self["sender"]
 
             elif self.message_type == "private":
-                self.sender = event_json["sender"]
+                self.sender = self["sender"]
 
         elif self.post_type == "notice":
-            self.notice_type = event_json["notice_type"]
+            self.notice_type = self["notice_type"]
 
             if self.notice_type == "group_upload":
-                self.group_id = event_json["group_id"]
-                self.user_id = event_json["user_id"]
-                self.file = event_json["file"]
+                self.group_id = self["group_id"]
+                self.user_id = self["user_id"]
+                self.file = self["file"]
 
             elif self.notice_type == "group_decrease":
-                self.group_id = event_json["group_id"]
-                self.operator_id = event_json["operator_id"]
-                self.user_id = event_json["user_id"]
-                self.sub_type = event_json["sub_type"]
+                self.group_id = self["group_id"]
+                self.operator_id = self["operator_id"]
+                self.user_id = self["user_id"]
+                self.sub_type = self["sub_type"]
 
             elif self.notice_type == "group_increase":
-                self.group_id = event_json["group_id"]
-                self.user_id = event_json["user_id"]
-                self.sub_type = event_json["sub_type"]
+                self.group_id = self["group_id"]
+                self.user_id = self["user_id"]
+                self.sub_type = self["sub_type"]
 
             elif self.notice_type == "group_ban":
-                self.group_id = event_json["group_id"]
-                self.operator_id = event_json["operator_id"]
-                self.user_id = event_json["user_id"]
-                self.duration = event_json["duration"]
-                self.sub_type = event_json["sub_type"]
+                self.group_id = self["group_id"]
+                self.operator_id = self["operator_id"]
+                self.user_id = self["user_id"]
+                self.duration = self["duration"]
+                self.sub_type = self["sub_type"]
 
             elif self.notice_type == "group_admin":
-                self.group_id = event_json["group_id"]
-                self.user_id = event_json["user_id"]
+                self.group_id = self["group_id"]
+                self.user_id = self["user_id"]
 
             elif self.notice_type == "group_recall":
-                self.group_id = event_json["group_id"]
-                self.user_id = event_json["user_id"]
-                self.message_id = event_json["message_id"]
+                self.group_id = self["group_id"]
+                self.user_id = self["user_id"]
+                self.message_id = self["message_id"]
 
             elif self.notice_type == "friend_add":
-                self.user_id = event_json["user_id"]
+                self.user_id = self["user_id"]
 
             elif self.notice_type == "friend_recall":
-                self.message_id = event_json["message_id"]
+                self.message_id = self["message_id"]
 
             elif self.notice_type == "group_recall":
-                self.group_id = event_json["group_id"]
-                self.user_id = event_json["user_id"]
-                self.message_id = event_json["message_id"]
+                self.group_id = self["group_id"]
+                self.user_id = self["user_id"]
+                self.message_id = self["message_id"]
 
-            elif self.notice_type == "notify" and event_json["sub_type"] == "poke":
-                self.user_id = event_json["user_id"]
-                self.target_id = event_json["target_id"]
+            elif self.notice_type == "notify" and self["sub_type"] == "poke":
+                self.user_id = self["user_id"]
+                self.target_id = self["target_id"]
                 self.notice_type = "poke"
-                self.sub_type = event_json["sub_type"]
-                self.group_id = event_json["group_id"]
+                self.sub_type = self["sub_type"]
+                self.group_id = self["group_id"]
 
-            elif self.notice_type == "notify" and event_json["sub_type"] == "lucky_king":
-                self.user_id = event_json["user_id"]
-                self.group_id = event_json["group_id"]
-                self.target_id = event_json["target_id"]
+            elif self.notice_type == "notify" and self["sub_type"] == "lucky_king":
+                self.user_id = self["user_id"]
+                self.group_id = self["group_id"]
+                self.target_id = self["target_id"]
                 self.notice_type = "lucky_king"
-                self.sub_type = event_json["sub_type"]
+                self.sub_type = self["sub_type"]
 
-            elif self.notice_type == "notify" and event_json["sub_type"] == "honor":
-                self.user_id = event_json["user_id"]
-                self.group_id = event_json["group_id"]
-                self.honor_type = event_json["honor_type"]
+            elif self.notice_type == "notify" and self["sub_type"] == "honor":
+                self.user_id = self["user_id"]
+                self.group_id = self["group_id"]
+                self.honor_type = self["honor_type"]
                 self.notice_type = "honor"
-                self.sub_type = event_json["sub_type"]
+                self.sub_type = self["sub_type"]
+
+        elif self.post_type == "request":
+            self.request_type = self["request_type"]
+
+            if self.request_type == "friend":
+                self.user_id = self["user_id"]
+                self.comment = self["comment"]
+                self.flag = self["flag"]
+
+            elif self.request_type == "group":
+                self.user_id = self["user_id"]
+                self.group_id = self["group_id"]
+                self.comment = self["comment"]
+                self.flag = self["flag"]
+
+        elif self.post_type == "meta_event":
+            self.meta_event_type = self["meta_event_type"]
+
+            if self.meta_event_type == "lifecycle":
+                self.sub_type = self["sub_type"]
+
+            elif self.meta_event_type == "heartbeat":
+                self.status = self["status"]
+                self.interval = self["interval"]
 
     def __getitem__(self, item):
-        return self.event_json["item"]
+        return self.event_json.get(item)

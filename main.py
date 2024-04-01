@@ -4,6 +4,7 @@
 #  | |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __| __) |
 #  | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
+# TODO: 适配i18n国际
 import Lib.EventManager
 from Lib import *
 from flask import Flask, request
@@ -39,7 +40,7 @@ def finalize_and_cleanup():
 def post_data():
     data = BotController.Event(request.get_json())
     # 检测是否为重复上报
-    logger.debug(data)
+    logger.debug("收到上报： ", data)
     if data in request_list:
         return "OK"
     else:
@@ -47,62 +48,94 @@ def post_data():
     if len(request_list) > 100:
         request_list.pop(0)
 
-    type_ = data['post_type']
-    if type_ + '_type' in data:
-        Lib.EventManager.Event((type_, data[type_ + '_type']), data)
+    if data.post_type + '_type' in data:
+        Lib.EventManager.Event((data.post_type, data[data.post_type + '_type']), data)
     else:
-        Lib.EventManager.Event(type_, data)
+        Lib.EventManager.Event(data.post_type, data)
 
-    if data['post_type'] == "message" and data['message_type'] == 'group':  # 如果是群聊信息
-        username = data['sender']['nickname']  # 获取信息发送者的昵称
-        if data['sender']['card'] != "":
-            username = data['sender']['card']  # 若用户设置
-            # 了群昵称则把用户名设为群昵称
-        group_name = api.get("/get_group_info", {"group_id": data['group_id']})["group_name"]
+    if data.post_type == "message":
+        # 私聊消息
+        if data.message_type == 'private':
+            message = QQRichText.QQRichText(data['message'])
+            if data.sub_type == 'friend':
+                logger.info("收到好友 %s(%s) 的消息: %s (%s)" % (
+                    data.sender['nick_name'], data.sender['user_id'], str(message), data.message_id)
+                            )
+            elif data.sub_type == 'group':
+                group_name = api.get("/get_group_info", {"group_id": data.group_id})["group_name"]
+                logger.info("收到来自群 %s(%s) 内 %s(%s) 的临时会话消息: %s (%s)" % (
+                    group_name, data.group_id,
+                    data.sender['nickname'], data.sender['user_id'],
+                    str(message), data.message_id
+                )
+                            )
+            elif data.sub_type == 'other':
+                logger.info("收到来自 %s(%s) 的消息: %s (%s)" % (
+                    data.sender['nick_name'], data.sender['user_id'], str(message), data.message_id)
+                            )
 
-        message = QQRichText.QQRichText(data['message'])
+        # 群聊信息
+        if data.message_type == 'group':
+            user_name = data.sender['nickname']
+            if data.sender['card'] != "":
+                user_name = data.sender['card']
+                # 了群昵称则把用户名设为群昵称
+            group_name = api.get("/get_group_info", {"group_id": data.group_id})["group_name"]
 
-        logger.info("收到群 %s(%s) 内 %s(%s) 的消息: %s (%s)" % (
-            group_name, data['group_id'], username, data['sender']['user_id'], str(message),
-            data['message_id']))
+            message = QQRichText.QQRichText(data.message)
 
-        # 获取群文件夹路径
-        group_path = os.path.join(data_path, "groups", str(data['group_id']))
-        # 如果获取群文件夹路径不存在，则创建
-        if not os.path.exists(group_path):
-            os.makedirs(group_path)
+            logger.info("收到群 %s(%s) 内 %s(%s) 的消息: %s (%s)" % (
+                group_name, data.group_id, user_name, data.sender['user_id'], str(message),
+                data.message_id))
 
+            # 获取群文件夹路径
+            group_path = os.path.join(data_path, "groups", str(data.group_id))
+            # 如果获取群文件夹路径不存在，则创建
+            if not os.path.exists(group_path):
+                os.makedirs(group_path)
+
+    if data.post_type == 'request':
+        # 加好友邀请
+        if data.request_type == 'friend':
+            logger.info("收到好友 %s(%s) 的加好友邀请" % (data.sender['nickname'], data.sender['user_id']))
         # 加群邀请
-        if data['post_type'] == 'request' and data['request_type'] == 'group':
-            group_name = api.get("/get_group_info", {"group_id": data['group_id']})["group_name"]
-            logger.info("收到来自%s的加群邀请, 群：%s(%s), flag:%s, 类型: %s" %
-                        (data['user_id'], group_name, data['group_id'], data['flag'], data['sub_type']))
+        if data.request_type == 'group':
+            group_name = api.get("/get_group_info", {"group_id": data.group_id})["group_name"]
+            user_name = api.get("/get_stranger_info", {"user_id": data.user_id})["nickname"]
+            if data.sub_type == 'invite':
+                logger.info("收到来用户 %s(%s) 加入群%s(%s)的邀请" %
+                            (user_name, data.user_id, group_name, data.group_id))
+            elif data.sub_type == 'add':
+                logger.info("收到来群%s(%s) 内 %s(%s) 加入群的请求" %
+                            (group_name, data.group_id, user_name, data.user_id))
 
+    if data.post_type == 'notice':
+        if data['notice_type'] == 'group_upload':
+            group_name = api.get("/get_group_info", {"group_id": data.group_id})["group_name"]
+            logger.info("群%s(%s)内，%s上传了文件：%s" %
+                        (group_name, data.group_id, data.user_id, data.file))
         # 戳一戳
-        if data['post_type'] == "notice" and data['notice_type'] == 'notify':
-            group_name = api.get("/get_group_info", {"group_id": data['group_id']})["group_name"]
+        if data['notice_type'] == 'notify':
+            group_name = api.get("/get_group_info", {"group_id": data.group_id})["group_name"]
             logger.info("收到群%s(%s)内，%s戳了戳%s" %
-                        (group_name, data['group_id'], data['user_id'], data['target_id']))
+                        (group_name, data.group_id, data.user_id, data.target_id))
 
         # 进群聊
-        if data['post_type'] == "notice" and data['notice_type'] == "group_increase":
-            group_name = api.get("/get_group_info", {"group_id": data['group_id']})["group_name"]
-            logger.info("检测到群%s（%s）内，%s进群了，操作者%s" %
-                        (group_name, data['group_id'], data['user_id'], data['operator_id']))
+        if data['notice_type'] == "group_increase":
+            group_name = api.get("/get_group_info", {"group_id": data.group_id})["group_name"]
+            logger.info("检测到群%s(%s)内，%s进群了，操作者%s" %
+                        (group_name, data.group_id, data.user_id, data.operator_id))
 
         # 退群聊
-        if data['post_type'] == "notice" and data['notice_type'] == "group_decrease":
-            type_ = data['sub_type']
-            oid = data['operator_id']
-            group_id = data['group_id']
-            group_name = api.get("/get_group_info", {"group_id": data['group_id']})["group_name"]
-            user_id = data['user_id']
-            if type_ == "leave":
-                logger.info("检测到%s退出了群聊%s(%s)" % (user_id, group_name, group_id))
-            elif type_ == "kick":
-                logger.info("检测到%s被%s踢出了群聊%s(%s)" % (user_id, oid, group_name, group_id))
-            elif type_ == "kick_me" or user_id == bot_uid:
-                logger.info("检测到Bot被%s踢出了群聊%s(%s)" % (oid, group_name, group_id))
+        if data['notice_type'] == "group_decrease":
+            group_name = api.get("/get_group_info", {"group_id": data.group_id})["group_name"]
+            user_id = data.user_id
+            if data.sub_type == "leave":
+                logger.info("检测到%s退出了群聊%s(%s)" % (user_id, group_name, data.group_id))
+            elif data.sub_type == "kick":
+                logger.info("检测到%s被%s踢出了群聊%s(%s)" % (user_id, data.operator_id, group_name, data.group_id))
+            elif data.sub_type == "kick_me" or user_id == bot_uid:
+                logger.info("检测到Bot被%s踢出了群聊%s(%s)" % (data.operator_id, group_name, data.group_id))
 
     # 若插件包含main函数则运行
     for plugin in plugins:
@@ -212,7 +245,7 @@ if __name__ == '__main__':
     if bot_uid is None or bot_name == "" or bot_uid == 123456 or bot_name is None:
         logger.warning("配置文件中未找到BotUID或昵称，将自动获取！")
         try:
-            bot_info = {"user_id":123456, "nickname": "abcd"}
+            bot_info = {"user_id": 123456, "nickname": "abcd"}
             bot_uid, bot_name = bot_info["user_id"], bot_info["nickname"]
             raw_config = Configs.GlobalConfig().raw_config
             raw_config["account"]["user_id"] = bot_uid
