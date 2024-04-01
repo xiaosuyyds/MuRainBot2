@@ -11,7 +11,7 @@ def init():
     api.set_ip(config.api_host, config.api_port)
 
 
-def send_message(message: QQRichText.QQRichText() | str, group_id: int = 0, user_id: int = 0):
+def send_message(message: QQRichText.QQRichText | str, group_id: int = 0, user_id: int = 0):
     if group_id == 0 and user_id == 0:
         raise ValueError("group_id and user_id cannot be both 0")
     elif group_id != 0 and user_id != 0:
