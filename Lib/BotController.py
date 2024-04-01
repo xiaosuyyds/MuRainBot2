@@ -152,3 +152,6 @@ class Event:
 
     def __getitem__(self, item):
         return self.event_json.get(item)
+
+    def __contains__(self, other):
+        return other in self.event_json

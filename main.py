@@ -5,16 +5,16 @@
 #  | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
 # TODO: 适配i18n国际
-import Lib.EventManager
-from Lib import *
-from flask import Flask, request
-import yaml
-import os
+import atexit
+import importlib
 import logging
 import threading
-import importlib
-import atexit
+
+from flask import Flask, request
 from werkzeug.serving import make_server
+
+import Lib.EventManager
+from Lib import *
 
 logger = Logger.logger
 VERSION = "2.0.0-dev"  # 版本
@@ -40,9 +40,9 @@ def finalize_and_cleanup():
 def post_data():
     data = BotController.Event(request.get_json())
     # 检测是否为重复上报
-    logger.debug("收到上报： ", data)
+    logger.debug("收到上报: %s" % data)
     if data in request_list:
-        return "OK"
+        return "ok", 204
     else:
         request_list.append(data)
     if len(request_list) > 100:
@@ -140,7 +140,7 @@ def post_data():
     # 若插件包含main函数则运行
     for plugin in plugins:
         try:
-            if not callable(plugin["plugin"]):
+            if not callable(plugin["plugin"].main):
                 continue
         except AttributeError:
             continue
@@ -150,7 +150,7 @@ def post_data():
             plugin_thread = threading.Thread(
                 target=plugin["plugin"].main,
                 args=(
-                    data,
+                    data.event_json,
                     work_path)
             )
             plugin_thread.start()
@@ -158,7 +158,7 @@ def post_data():
             logger.error("执行插件%s时发生错误：%s" % (plugin["name"], repr(e)))
             continue
 
-    return "OK"
+    return "ok", 204
 
 
 def load_plugins():
@@ -264,7 +264,7 @@ if __name__ == '__main__':
     # 启动监听服务器
     try:
         logger.info("启动监听服务器")
-        server = make_server(Configs.GlobalConfig().server_host, Configs.GlobalConfig().server_port, app)
+        server = make_server(Configs.GlobalConfig().server_host, Configs.GlobalConfig().server_port, app, threaded=True)
         server.serve_forever()
     except Exception as e:
         logger.error("监听服务器启动失败！报错信息：{}".format(repr(e)))
