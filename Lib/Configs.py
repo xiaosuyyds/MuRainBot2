@@ -11,7 +11,9 @@ class Config:
         self.encoding = "utf-8"
 
     def reload(self):
-        self.raw_config = yaml.load(FileCacher.read_file(self.path, self.encoding), yaml.FullLoader)
+        self.raw_config = FileCacher.read_file(self.path, self.encoding)
+        if isinstance(self.raw_config, str):
+            self.raw_config = yaml.load(self.raw_config, yaml.FullLoader)
         return self
 
     def save_default(self, default_config: str):
