@@ -4,7 +4,7 @@
 #  | |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __| __) |
 #  | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
-# TODO: 适配i18n国际
+# TODO: 适配i18n国际化
 import atexit
 import importlib
 import logging
@@ -220,11 +220,11 @@ if __name__ == '__main__':
 
     load_plugins()
     if len(plugins) > 0:
-        logger.info("插件导入完成，共成功导入 {} 个插件".format(len(plugins)))
+        logger.info("插件导入完成，共成功导入 {} 个插件:".format(len(plugins)))
         for plugin in plugins:
             try:
                 plugin_info = plugin["plugin"].PluginInfo()
-                logger.info("%s: %s 作者:%s" % (plugin["name"], plugin_info.NAME, plugin_info.AUTHOR))
+                logger.info(" - %s: %s 作者:%s" % (plugin["name"], plugin_info.NAME, plugin_info.AUTHOR))
             except ArithmeticError:
                 logger.warning("插件{} 没有信息".format(plugin["name"]))
             except Exception as e:
