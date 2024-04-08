@@ -46,8 +46,11 @@ def download_file_to_cache(url: str, headers=None):
         os.makedirs(cache_path)
 
     # 下载
-    with open(file_path, "wb") as f:
-        f.write(requests.get(url, stream=True, headers=headers).content)
+    with open(file_path, "wb") as f, requests.get(url, stream=True, headers=headers) as res:
+        for chunk in res.iter_content(chunk_size=64 * 1024):
+            if not chunk:
+                break
+            f.write(chunk)
 
     # 计算MD5
     md5_hash = hashlib.md5()
@@ -58,9 +61,9 @@ def download_file_to_cache(url: str, headers=None):
         rename_path = os.path.join(cache_path, rename)
 
     # 重命名（MD5）
-    if not os.path.exists(rename_path):
-        os.rename(file_path, rename_path)
-    else:
-        os.remove(file_path)
+    if os.path.exists(rename_path):
+        os.remove(rename_path)
+
+    os.rename(file_path, rename_path)
 
     return rename_path

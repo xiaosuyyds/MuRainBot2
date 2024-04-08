@@ -9,11 +9,11 @@ import atexit
 import importlib
 import logging
 import threading
+import shutil
 
 from flask import Flask, request
 from werkzeug.serving import make_server
 
-import Lib.EventManager
 from Lib import *
 
 logger = Logger.logger
@@ -27,11 +27,33 @@ api = OnebotAPI.OnebotAPI()
 
 request_list = []
 
+work_path = os.path.abspath(os.path.dirname(__file__))
+data_path = os.path.join(work_path, 'data')
+yaml_path = os.path.join(work_path, 'config.yml')
+plugins_path = os.path.join(work_path, "plugins")
+cache_path = os.path.join(data_path, "cache")
+
+if not os.path.exists(data_path):
+    os.makedirs(data_path)
+
+if not os.path.exists(plugins_path):
+    os.makedirs(plugins_path)
+
+if not os.path.exists(cache_path):
+    os.makedirs(cache_path)
+
 
 # 结束运行
 @atexit.register
 def finalize_and_cleanup():
-    # TODO: 清理缓存文件等
+    logger.info("已收到结束指令，正在删除缓存")
+
+    if os.path.exists(cache_path):
+        try:
+            shutil.rmtree(cache_path, ignore_errors=True)
+        except Exception as e:
+            logger.warning("删除缓存时报错，报错信息: %s" % repr(e))
+
     logger.warning("MuRainBot结束运行！\n")
 
 
@@ -49,9 +71,9 @@ def post_data():
         request_list.pop(0)
 
     if data.post_type + '_type' in data:
-        Lib.EventManager.Event((data.post_type, data[data.post_type + '_type']), data)
+        EventManager.Event((data.post_type, data[data.post_type + '_type']), data)
     else:
-        Lib.EventManager.Event(data.post_type, data)
+        EventManager.Event(data.post_type, data)
 
     if data.post_type == "message":
         # 私聊消息
@@ -193,11 +215,6 @@ def load_plugins():
 
 # 主函数
 if __name__ == '__main__':
-    work_path = os.path.abspath(os.path.dirname(__file__))
-    data_path = os.path.join(work_path, 'data')
-    yaml_path = os.path.join(work_path, 'config.yml')
-    plugins_path = os.path.join(work_path, "plugins")
-
     logger.info(f"MuRain Bot开始运行，当前版本：{VERSION}({VERSION_WEEK})")
     logger.info("Github: https://github.com/xiaosuyyds/MuRainBot2/")
 
