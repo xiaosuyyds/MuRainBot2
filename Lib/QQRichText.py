@@ -324,7 +324,7 @@ class QQRichText:
                 self.rich_text += cq_encode(cq_decode(rich))
             else:
                 try:
-                    self.rich_text += cq_encode(cq_decode(str(rich)))
+                    self.rich_text += str(QQRichText(rich.get))
                 except (TypeError, AttributeError):
                     raise ValueError("转换为CQ码时失败，未知的变量类型，无法转换")
 
