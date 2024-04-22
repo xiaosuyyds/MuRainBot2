@@ -26,8 +26,7 @@
     </a>
 </p>
 
-<!--添加英文版readme.md-->
-| [简体中文](README.md) |
+| 简体中文 | [English](README_EN.md) |
 
 ### 这是一个基于python 适配onebot11协议的QQBot ~~(框架?)~~
 ### 首先感谢您选择/使用了MRB2作为您的QQBot
