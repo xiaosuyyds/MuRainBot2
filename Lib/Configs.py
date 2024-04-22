@@ -3,6 +3,10 @@ import traceback
 import yaml
 import Lib.FileCacher as FileCacher
 
+work_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+data_path = os.path.join(work_path, "data")
+config_path = os.path.join(work_path, "plugin_configs")
+
 
 class Config:
     def __init__(self, path):
@@ -32,7 +36,16 @@ class Config:
 
 class PluginConfig(Config):
     def __init__(self):
-        super().__init__(os.path.join("configs", traceback.extract_stack()[-2].filename.rsplit(".", 1)[0] + ".yml"))
+        super().__init__(os.path.join(config_path,
+                                      os.path.splitext(os.path.split(traceback.extract_stack()[-2].filename)[-1])[0]
+                                      + ".yml"))
+        self.reload()
+
+    def __getitem__(self, item):
+        return self.get_config().get(item)
+
+    def __contains__(self, other):
+        return other in self.get_config()
 
 
 class GlobalConfig(Config):
