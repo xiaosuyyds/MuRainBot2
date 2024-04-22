@@ -211,25 +211,13 @@ class QQRichText:
         rich_text = ""
         rich_list = []
 
+        if len(rich) == 1:
+            rich = rich[0]
+
         if isinstance(rich, str):
             rich_text = rich
         elif isinstance(rich, list) or isinstance(rich, tuple):
-            if len(rich) == 1:
-                if isinstance(rich[0], str):
-                    rich_text = rich[0]
-                elif isinstance(rich[0], QQRichText):
-                    rich_list += rich[0].get()
-                elif isinstance(rich[0], dict):
-                    rich_list.append(rich[0])
-                elif isinstance(rich, list) or isinstance(rich, tuple):
-                    rich_list += rich[0]
-                else:
-                    try:
-                        rich_list.append(rich[0].get)
-                    except (TypeError, AttributeError):
-                        raise ValueError("参数类型错误，未知的rich")
-            else:
-                rich_list = list(rich)
+            rich_list = list(rich)
         elif isinstance(rich, dict):
             rich_list.append(rich)
         else:
@@ -380,5 +368,6 @@ if __name__ == "__main__":
         Face(1),
         Record("https://gchat.qpic.cn/gchatpic_new/100000/100000/100000/0?term=2", False),
     ])
-    print(b, c)
+    print(b)
+    print(c)
     print(b in c)
