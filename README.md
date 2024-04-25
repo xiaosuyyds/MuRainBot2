@@ -71,7 +71,8 @@
 │   ...
 ├─ config.yml   MRB2配置文件
 ├─ main.py      MRB2代码（运行这个即可启动）
-└─ README.md    这个文件就不用解释了吧（？）
+├─ README.md    这个文件就不用解释了吧（？）
+└─ README_en.md No need to explain this file, right?
 ```
 
 </details>

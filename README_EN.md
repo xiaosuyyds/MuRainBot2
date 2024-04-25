@@ -69,7 +69,8 @@
 │   ...
 ├─ config.yml   MRB2 configuration file
 ├─ main.py      MRB2 code (run this to start)
-└─ README.md    No need to explain this file, right?
+├─ README.md    这个文件就不用解释了吧（？）
+└─ README_en.md No need to explain this file, right?
 ```
 
 </details>
@@ -121,6 +122,8 @@
 ### Thanks to all the contributors to this project, your existence makes the community a better place~!
 ![Thanks to them (applause)!](https://contrib.rocks/image?repo=xiaosuyyds/MuRainBot2&max=999)
 
-### And special thanks to [HarcicYang](https://github.com/HarcicYang) and [kaokao221](https://bing.com/search?q=) ⭐StarHistory⭐
+### And special thanks to [HarcicYang](https://github.com/HarcicYang) and [kaokao221](https://bing.com/search?q=)
+
+## ⭐StarHistory⭐
 
 ![Star History](https://api.star-history.com/svg?repos=xiaosuyyds/MuRainBot2&type=Date)
