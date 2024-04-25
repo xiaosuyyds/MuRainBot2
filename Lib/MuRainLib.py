@@ -10,9 +10,11 @@ MuRainLib
 用于MuRain Bot框架
 """
 import hashlib
+import logging
 import os
 import sys
 import requests
+import shutil
 import time
 import random
 
@@ -22,7 +24,7 @@ logs_path = os.path.join(work_path, "logs")
 cache_path = os.path.join(data_path, "cache")
 
 
-def reboot():
+def reboot() -> None:
     # 获取当前解释器路径
     p = sys.executable
     try:
@@ -33,31 +35,37 @@ def reboot():
         sys.exit()
 
 
-def download_file_to_cache(url: str, headers=None):
+def download_file_to_cache(url: str, headers=None) -> str | None:
     if headers is None:
         headers = {}
 
     # 路径拼接
-    file_name = url.split("/")[-1]+str(random.randint(10000, 99999))+str(time.time())+".cache"
+    file_name = url.split("/")[-1] + str(random.randint(10000, 99999)) + str(time.time()) + ".cache"
     file_path = os.path.join(cache_path, file_name)
 
     # 路径不存在特判
     if not os.path.exists(cache_path):
         os.makedirs(cache_path)
 
-    # 下载
-    with open(file_path, "wb") as f, requests.get(url, stream=True, headers=headers) as res:
-        for chunk in res.iter_content(chunk_size=64 * 1024):
-            if not chunk:
-                break
-            f.write(chunk)
+    try:
+        # 下载
+        with open(file_path, "wb") as f, requests.get(url, stream=True, headers=headers) as res:
+            for chunk in res.iter_content(chunk_size=64 * 1024):
+                if not chunk:
+                    break
+                f.write(chunk)
+    except requests.exceptions.RequestException as e:
+        logging.warning(f"下载文件失败: {e}")
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        return None
 
     # 计算MD5
     md5_hash = hashlib.md5()
     with open(file_path, "rb") as f:
         for byte_block in iter(lambda: f.read(4096), b""):
             md5_hash.update(byte_block)
-        rename = md5_hash.hexdigest()+".cache"
+        rename = md5_hash.hexdigest() + ".cache"
         rename_path = os.path.join(cache_path, rename)
 
     # 重命名（MD5）
@@ -67,3 +75,12 @@ def download_file_to_cache(url: str, headers=None):
     os.rename(file_path, rename_path)
 
     return rename_path
+
+
+# 删除缓存文件
+def clean_cache() -> None:
+    if os.path.exists(cache_path):
+        try:
+            shutil.rmtree(cache_path, ignore_errors=True)
+        except Exception as e:
+            logger.warning("删除缓存时报错，报错信息: %s" % repr(e))
