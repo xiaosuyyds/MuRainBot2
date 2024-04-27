@@ -26,8 +26,7 @@
     </a>
 </p>
 
-<!--添加英文版readme.md-->
-| [简体中文](README.md) |
+| 简体中文 | [English](README_EN.md) |
 
 ### 这是一个基于python 适配onebot11协议的QQBot ~~(框架?)~~
 ### 首先感谢您选择/使用了MRB2作为您的QQBot
@@ -56,7 +55,8 @@
 │   ├─ MuRainLib.py    MRB2的Lib库之一，用于提供一些零七八碎的函数
 │   ├─ OnebotAPI.py    MRB2的Lib库之一，用于调用OneBotAPI
 │   ├─ QQRichText.py   MRB2的Lib库之一，用于解析/处理QQ消息
-│   └─ ThreadPool.py   MRB2的Lib库之一，用于多线程（线程池）处理
+│   ├─ ThreadPool.py   MRB2的Lib库之一，用于多线程（线程池）处理
+│   ...
 ├─ logs
 │   ├─ latest.log       当日的日志
 │   ├─ xxxx-xx-xx.log  以往的日志
@@ -72,7 +72,8 @@
 │   ...
 ├─ config.yml   MRB2配置文件
 ├─ main.py      MRB2代码（运行这个即可启动）
-└─ README.md    这个文件就不用解释了吧（？）
+├─ README.md    这个文件就不用解释了吧（？）
+└─ README_en.md No need to explain this file, right?
 ```
 
 </details>
