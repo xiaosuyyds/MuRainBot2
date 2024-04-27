@@ -83,4 +83,4 @@ def clean_cache() -> None:
         try:
             shutil.rmtree(cache_path, ignore_errors=True)
         except Exception as e:
-            logger.warning("删除缓存时报错，报错信息: %s" % repr(e))
+            logging.warning("删除缓存时报错，报错信息: %s" % repr(e))

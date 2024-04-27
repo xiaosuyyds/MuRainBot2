@@ -55,7 +55,8 @@
 │   ├─ MuRainLib.py    MRB2的Lib库之一，用于提供一些零七八碎的函数
 │   ├─ OnebotAPI.py    MRB2的Lib库之一，用于调用OneBotAPI
 │   ├─ QQRichText.py   MRB2的Lib库之一，用于解析/处理QQ消息
-│   └─ ThreadPool.py   MRB2的Lib库之一，用于多线程（线程池）处理
+│   ├─ ThreadPool.py   MRB2的Lib库之一，用于多线程（线程池）处理
+│   ...
 ├─ logs
 │   ├─ latest.log       当日的日志
 │   ├─ xxxx-xx-xx.log  以往的日志

@@ -13,7 +13,7 @@ from Lib import *
 
 logger = Logger.logger
 VERSION = "2.0.0-dev"  # 版本
-VERSION_WEEK = "24W13A"  # 版本周
+VERSION_WEEK = "24W18A"  # 版本周
 
 plugins = []  # 插件
 
@@ -82,12 +82,14 @@ if __name__ == '__main__':
     logger.info(f"MuRain Bot开始运行，当前版本：{VERSION}({VERSION_WEEK})")
     logger.info("Github: https://github.com/xiaosuyyds/MuRainBot2/")
 
+    LibInfo.main_version, LibInfo.main_version_week = VERSION, VERSION_WEEK
+
     # 版本检测
-    if LibInfo().version == VERSION:
+    if LibInfo().version == LibInfo.main_version:
         logger.info("MuRainLib版本校验成功！")
     else:
         logger.warning("MuRainLib版本检测未通过，可能会发生异常\n"
-                       f"MuRainLib版本:{LibInfo().version} MuRain Bot版本:{VERSION}\n"
+                       f"MuRainLib版本:{LibInfo().version} MuRain Bot版本:{LibInfo.main_version}\n"
                        "注意：我们将不会受理在此模式下运行的报错")
         if input("Continue?(Y/n)").lower() != "y":
             sys.exit()

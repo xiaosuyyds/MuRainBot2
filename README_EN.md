@@ -53,7 +53,8 @@
 │   ├─ MuRainLib.py    One of MRB2's Lib libraries, used to provide some miscellaneous functions
 │   ├─ OnebotAPI.py    One of MRB2's Lib libraries, used to call OneBotAPI
 │   ├─ QQRichText.py   One of MRB2's Lib libraries, used for parsing/handling QQ messages
-│   └─ ThreadPool.py   One of MRB2's Lib libraries, used for multithreading (thread pool) processing
+│   ├─ ThreadPool.py   One of MRB2's Lib libraries, used for multithreading (thread pool) processing
+│   ...
 ├─ logs
 │   ├─ latest.log       Today's log
 │   ├─ xxxx-xx-xx.log  Past logs

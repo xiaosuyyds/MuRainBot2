@@ -16,16 +16,21 @@ import Lib.FileCacher as FileCacher
 import Lib.ThreadPool as ThreadPool
 import Lib.ListeningServer as ListeningServer
 
-
 VERSION = "2.0.0-dev"
-VERSION_WEEK = "24W13A"
+VERSION_WEEK = "24W18A"
 
 
 # Lib信息
 class LibInfo:
+    main_version, main_version_week = None, None
+
     def __init__(self):
         self.version = VERSION
         self.version_week = VERSION_WEEK
 
-    def get_version(self):
+    def get_lib_version(self):
         return self.version, self.version_week
+
+    def get_main_version(self):
+        return self.main_version, self.main_version_week
+
