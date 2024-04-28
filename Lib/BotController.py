@@ -1,14 +1,14 @@
 import Lib.Configs as Configs
 import Lib.OnebotAPI as OnebotAPI
 import Lib.QQRichText as QQRichText
+import Lib.Logger as Logger
 
 api = OnebotAPI.OnebotAPI()
+logger = Logger.logger
 
 
-def init():
-    global api
-    config = Configs.GlobalConfig()
-    api.set_ip(config.api_host, config.api_port)
+config = Configs.GlobalConfig()
+api.set_ip(config.api_host, config.api_port)
 
 
 def send_message(message: QQRichText.QQRichText | str, group_id: int = 0, user_id: int = 0):
@@ -18,8 +18,12 @@ def send_message(message: QQRichText.QQRichText | str, group_id: int = 0, user_i
         raise ValueError("group_id and user_id cannot be both not 0")
     elif group_id != 0:
         api.get("/send_msg", {"group_id": group_id, "message": message})
+        group_name = api.get("/get_group_info", {"group_id": group_id})["group_name"]
+        logger.info("发送消息 %s 到群 %s(%s) ".format(message, group_name, group_id))
     elif user_id != 0:
         api.get("/send_private_msg", {"user_id": user_id, "message": message})
+        user_name = api.get("/get_stranger_info", {"user_id": user_id})["nickname"]
+        logger.info("发送消息 %s 到 %s(%s) ".format(message, user_name, user_id))
 
 
 """ 还没写完，先注释掉
@@ -48,7 +52,7 @@ class Event:
 
         if self.post_type == "message" or self.post_type == "message_sent":
             self.message_type: str = self["message_type"]
-            self.user_id: int = self["user_id"]
+            self.user_id: int = int(self["user_id"])
             self.sub_type: str = self["sub_type"]
 
             self.message: QQRichText.QQRichText = QQRichText.QQRichText(self["message"])
@@ -56,7 +60,7 @@ class Event:
             self.message_id: int = self["message_id"]
 
             if self.message_type == "group":
-                self.group_id: int = self["group_id"]
+                self.group_id: int = int(self["group_id"])
                 self.sender: dict = self["sender"]
 
             elif self.message_type == "private":
@@ -66,77 +70,78 @@ class Event:
             self.notice_type: str = self["notice_type"]
 
             if self.notice_type == "group_upload":
-                self.group_id: int = self["group_id"]
-                self.user_id: int = self["user_id"]
+                self.group_id: int = int(self["group_id"])
+                self.user_id: int = int(self["user_id"])
                 self.file: dict = self["file"]
 
             elif self.notice_type == "group_decrease":
-                self.group_id: int = self["group_id"]
+                self.group_id: int = int(self["group_id"])
                 self.operator_id: int = self["operator_id"]
-                self.user_id: int = self["user_id"]
+                self.user_id: int = int(self["user_id"])
                 self.sub_type: str = self["sub_type"]
 
             elif self.notice_type == "group_increase":
-                self.group_id: int = self["group_id"]
-                self.user_id: int = self["user_id"]
+                self.group_id: int = int(self["group_id"])
+                self.user_id: int = int(self["user_id"])
                 self.sub_type: str = self["sub_type"]
+                self.operator_id: int = self["operator_id"]
 
             elif self.notice_type == "group_ban":
-                self.group_id: int = self["group_id"]
+                self.group_id: int = int(self["group_id"])
                 self.operator_id: int = self["operator_id"]
-                self.user_id: int = self["user_id"]
+                self.user_id: int = int(self["user_id"])
                 self.duration: int = self["duration"]
                 self.sub_type: str = self["sub_type"]
 
             elif self.notice_type == "group_admin":
-                self.group_id: int = self["group_id"]
-                self.user_id: int = self["user_id"]
+                self.group_id: int = int(self["group_id"])
+                self.user_id: int = int(self["user_id"])
 
             elif self.notice_type == "group_recall":
-                self.group_id: int = self["group_id"]
-                self.user_id: int = self["user_id"]
+                self.group_id: int = int(self["group_id"])
+                self.user_id: int = int(self["user_id"])
                 self.message_id: int = self["message_id"]
 
             elif self.notice_type == "friend_add":
-                self.user_id: int = self["user_id"]
+                self.user_id: int = int(self["user_id"])
 
             elif self.notice_type == "friend_recall":
                 self.message_id: int = self["message_id"]
 
             elif self.notice_type == "group_recall":
-                self.group_id: int = self["group_id"]
-                self.user_id: int = self["user_id"]
+                self.group_id: int = int(self["group_id"])
+                self.user_id: int = int(self["user_id"])
                 self.message_id: int = self["message_id"]
 
             elif self.notice_type == "notify":
                 self.sub_type: str = self["sub_type"]
                 if self.sub_type == "poke":
-                    self.group_id: int = self["group_id"]
-                    self.user_id: int = self["user_id"]
+                    self.group_id: int = int(self["group_id"])
+                    self.user_id: int = int(self["user_id"])
                     self.target_id: int = self["target_id"]
 
                 elif self.sub_type == "lucky_king":
-                    self.group_id: int = self["group_id"]
-                    self.user_id: int = self["user_id"]
+                    self.group_id: int = int(self["group_id"])
+                    self.user_id: int = int(self["user_id"])
                     self.target_id: int = self["target_id"]
 
                 elif self.sub_type == "honor":
-                    self.group_id: int = self["group_id"]
+                    self.group_id: int = int(self["group_id"])
                     self.honor_type: str = self["honor_type"]
-                    self.user_id: int = self["user_id"]
+                    self.user_id: int = int(self["user_id"])
 
         elif self.post_type == "request":
             self.request_type: str = self["request_type"]
 
             if self.request_type == "friend":
-                self.user_id: int = self["user_id"]
+                self.user_id: int = int(self["user_id"])
                 self.comment: str = self["comment"]
                 self.flag: str = self["flag"]
 
             elif self.request_type == "group":
                 self.sub_type: str = self["sub_type"]
-                self.group_id: int = self["group_id"]
-                self.user_id: int = self["user_id"]
+                self.group_id: int = int(self["group_id"])
+                self.user_id: int = int(self["user_id"])
                 self.comment: str = self["comment"]
                 self.flag: str = self["flag"]
 
