@@ -3,11 +3,18 @@ from werkzeug.serving import make_server
 import threading
 import Lib.OnebotAPI as OnebotAPI
 import Lib.Configs as Configs
+import Lib.BotController as BotController
+import Lib.EventManager as EventManager
+import Lib.QQRichText as QQRichText
+import Lib.Logger as Logger
+import Lib.PluginManager as PluginManager
 import os
 
 app = Flask(__name__)
 api = OnebotAPI.OnebotAPI()
-
+config = Configs.GlobalConfig()
+api.set_ip(config.api_host, config.api_port)
+logger = Logger.logger
 request_list = []
 
 work_path = os.path.abspath(os.path.dirname(__file__))
@@ -41,7 +48,7 @@ def post_data():
                     data.sender['nick_name'], data.sender['user_id'], str(message), data.message_id)
                             )
             elif data.sub_type == 'group':
-                group_name = api.get("/get_group_info", {"group_id": data.group_id})["group_name"]
+                group_name = api.get("/get_group_info", {"group_id": data.group_id}).get("group_name")
                 logger.info("收到来自群 %s(%s) 内 %s(%s) 的临时会话消息: %s (%s)" % (
                     group_name, data.group_id,
                     data.sender['nickname'], data.sender['user_id'],
@@ -59,7 +66,7 @@ def post_data():
             if data.sender['card'] != "":
                 user_name = data.sender['card']
                 # 了群昵称则把用户名设为群昵称
-            group_name = api.get("/get_group_info", {"group_id": data.group_id})["group_name"]
+            group_name = api.get("/get_group_info", {"group_id": data.group_id}).get("group_name")
 
             message = QQRichText.QQRichText(data.message)
 
@@ -79,8 +86,8 @@ def post_data():
             logger.info("收到好友 %s(%s) 的加好友邀请" % (data.sender['nickname'], data.sender['user_id']))
         # 加群邀请
         if data.request_type == 'group':
-            group_name = api.get("/get_group_info", {"group_id": data.group_id})["group_name"]
-            user_name = api.get("/get_stranger_info", {"user_id": data.user_id})["nickname"]
+            group_name = api.get("/get_group_info", {"group_id": data.group_id}).get("group_name")
+            user_name = api.get("/get_stranger_info", {"user_id": data.user_id}).get("nickname")
             if data.sub_type == 'invite':
                 logger.info("收到来用户 %s(%s) 加入群%s(%s)的邀请" %
                             (user_name, data.user_id, group_name, data.group_id))
@@ -90,34 +97,34 @@ def post_data():
 
     if data.post_type == 'notice':
         if data.notice_type == 'group_upload':
-            group_name = api.get("/get_group_info", {"group_id": data.group_id})["group_name"]
+            group_name = api.get("/get_group_info", {"group_id": data.group_id}).get("group_name")
             logger.info("群%s(%s)内，%s上传了文件：%s" %
                         (group_name, data.group_id, data.user_id, data.file))
         # 戳一戳
         if data.notice_type == 'notify':
-            group_name = api.get("/get_group_info", {"group_id": data.group_id})["group_name"]
+            group_name = api.get("/get_group_info", {"group_id": data.group_id}).get("group_name")
             logger.info("收到群%s(%s)内，%s戳了戳%s" %
                         (group_name, data.group_id, data.user_id, data.target_id))
 
         # 进群聊
         if data.notice_type == "group_increase":
-            group_name = api.get("/get_group_info", {"group_id": data.group_id})["group_name"]
+            group_name = api.get("/get_group_info", {"group_id": data.group_id}).get("group_name")
             logger.info("检测到群%s(%s)内，%s进群了，操作者%s" %
                         (group_name, data.group_id, data.user_id, data.operator_id))
 
         # 退群聊
         if data.notice_type == "group_decrease":
-            group_name = api.get("/get_group_info", {"group_id": data.group_id})["group_name"]
+            group_name = api.get("/get_group_info", {"group_id": data.group_id}).get("group_name")
             user_id = data.user_id
             if data.sub_type == "leave":
                 logger.info("检测到%s退出了群聊%s(%s)" % (user_id, group_name, data.group_id))
             elif data.sub_type == "kick":
                 logger.info("检测到%s被%s踢出了群聊%s(%s)" % (user_id, data.operator_id, group_name, data.group_id))
-            elif data.sub_type == "kick_me" or user_id == bot_uid:
+            elif data.sub_type == "kick_me" or user_id == config.user_id:
                 logger.info("检测到Bot被%s踢出了群聊%s(%s)" % (data.operator_id, group_name, data.group_id))
 
     # 若插件包含main函数则运行
-    for plugin in plugins:
+    for plugin in PluginManager.plugins:
         try:
             if not callable(plugin["plugin"].main):
                 continue
@@ -140,4 +147,4 @@ def post_data():
     return "ok", 204
 
 
-server = make_server(Configs.GlobalConfig().server_host, Configs.GlobalConfig().server_port, app, threaded=True)
+server = make_server(config.server_host, config.server_port, app, threaded=True)

@@ -15,6 +15,7 @@ import Lib.Configs as Configs
 import Lib.FileCacher as FileCacher
 import Lib.ThreadPool as ThreadPool
 import Lib.ListeningServer as ListeningServer
+import Lib.PluginManager as PluginManager
 
 VERSION = "2.0.0-dev"
 VERSION_WEEK = "24W18A"

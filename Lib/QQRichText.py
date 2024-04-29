@@ -14,17 +14,25 @@ import re
 
 
 # CQ解码
-def cq_decode(text) -> str:
+def cq_decode(text, in_cq: bool = False) -> str:
     text = str(text)
-    return text.replace("&amp;", "&").replace("&#91;", "["). \
-        replace("&#93;", "]").replace("&#44;", ",")
+    if in_cq:
+        return text.replace("&amp;", "&").replace("&#91;", "["). \
+            replace("&#93;", "]").replace("&#44;", ",")
+    else:
+        return text.replace("&amp;", "&").replace("&#91;", "["). \
+            replace("&#93;", "]")
 
 
 # CQ编码
-def cq_encode(text) -> str:
+def cq_encode(text, in_cq: bool = False) -> str:
     text = str(text)
-    return text.replace("&", "&amp;").replace("[", "&#91;"). \
-        replace("]", "&#93;").replace(",", "&#44;")
+    if in_cq:
+        return text.replace("&", "&amp;").replace("[", "&#91;"). \
+            replace("]", "&#93;").replace(",", "&#44;")
+    else:
+        return text.replace("&", "&amp;").replace("[", "&#91;"). \
+            replace("]", "&#93;")
 
 
 # 文本
@@ -39,7 +47,6 @@ class Text:
         self.raw_text = text
         self.content = {"type": "text", "data": {"text": self.raw_text}}
 
-    @property
     def get(self) -> dict:
         return self.content
 
@@ -63,7 +70,6 @@ class Face:
         self.id = face_id
         self.content = {"type": "face", "data": {"id": self.id}}
 
-    @property
     def get(self) -> dict:
         return self.content
 
@@ -109,7 +115,6 @@ class Record:
         self.file = file
         self.content["data"]["file"] = self.file
 
-    @property
     def get(self) -> dict:
         return self.content
 
@@ -138,7 +143,6 @@ class At:
         self.qq = qq
         self.content = {"type": "at", "data": {"qq": self.qq}}
 
-    @property
     def get(self) -> dict:
         return self.content
 
@@ -168,7 +172,6 @@ class Image:
         self.file = file
         self.content["data"]["file"] = file
 
-    @property
     def get(self) -> dict:
         return self.content
 
@@ -195,7 +198,6 @@ class Reply:
         self.id = reply_id
         self.content = {"type": "reply", "data": {"id": self.id}}
 
-    @property
     def get(self) -> dict:
         return self.content
 
@@ -218,11 +220,13 @@ class QQRichText:
             rich_text = rich
         elif isinstance(rich, list) or isinstance(rich, tuple):
             rich_list = list(rich)
+        elif isinstance(rich, QQRichText):
+            rich_list = rich.get()
         elif isinstance(rich, dict):
             rich_list.append(rich)
         else:
             try:
-                rich_list.append(rich.get)
+                rich_list.append(rich.get())
             except (TypeError, AttributeError):
                 raise ValueError("参数类型错误，未知的rich类型")
 
@@ -255,13 +259,12 @@ class QQRichText:
                     flag = False
                     rich = re.findall(pattern, cq)
                     if len(rich) > 0:
-                        rich_type = cq_encode(rich[0][0])
-                        rich_data = cq_encode(rich[0][1])
+                        rich_data = cq_decode(rich[0][1], in_cq=True)
                         rich_list.append(
                             {
-                                "type": rich_type,
+                                "type": rich[0][0],
                                 "data": dict(  # CQ码参数
-                                    cq_decode(x)
+                                    cq_decode(x, in_cq=True)
                                     .split("=", 1) for x in rich_data.split(",")
                                 ) if rich_data else {},
                             }
@@ -285,10 +288,12 @@ class QQRichText:
             if isinstance(rich, dict):
                 self.rich_list.append(rich)
             elif isinstance(rich, str):
-                self.rich_list.append(Text(rich).get)
+                self.rich_list.append(Text(rich).get())
+            elif isinstance(rich, QQRichText):
+                self.rich_list += rich.get()
             else:
                 try:
-                    self.rich_list.append(rich.get)
+                    self.rich_list.append(rich.get())
                 except (TypeError, AttributeError):
                     self.rich_list.append(rich)
 
@@ -299,20 +304,20 @@ class QQRichText:
                 if "type" not in rich or "data" not in rich:
                     raise ValueError("转换为CQ码时失败，未知的类型或是非标准message，无法转换")
                 if rich["type"] == "text":
-                    self.rich_text += cq_encode(cq_decode(rich["data"]["text"]))
+                    self.rich_text += rich["data"]["text"]
                 else:
                     self.rich_text += "[CQ:{}".format(rich["type"])
                     if rich["data"]:
                         for rich_type, rich_data in rich["data"].items():
-                            rich_type = cq_encode(cq_decode(rich_type))
-                            rich_data = cq_encode(cq_decode(rich_data))
+                            rich_type = cq_encode(rich_type, in_cq=True)
+                            rich_data = cq_encode(rich_data, in_cq=True)
                             self.rich_text += ",{}={}".format(rich_type, rich_data)
                     self.rich_text += "]"
             elif isinstance(rich, str):
-                self.rich_text += cq_encode(cq_decode(rich))
+                self.rich_text += rich
             else:
                 try:
-                    self.rich_text += str(QQRichText(rich.get))
+                    self.rich_text += str(QQRichText(rich.get()))
                 except (TypeError, AttributeError):
                     raise ValueError("转换为CQ码时失败，未知的变量类型，无法转换")
 
@@ -371,3 +376,19 @@ if __name__ == "__main__":
     print(b)
     print(c)
     print(b in c)
+
+    print(
+        str(
+            QQRichText(
+                [{'type': 'text', 'data': {'text': 'test'}}]
+            )
+        )
+    )
+
+    print(
+        str(
+            QQRichText(
+                "test"
+            )
+        )
+    )
