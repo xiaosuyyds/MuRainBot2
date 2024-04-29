@@ -17,7 +17,7 @@ api.set_ip(config.api_host, config.api_port)
 logger = Logger.logger
 request_list = []
 
-work_path = os.path.abspath(os.path.dirname(__file__))
+work_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 data_path = os.path.join(work_path, 'data')
 
 
