@@ -6,16 +6,11 @@
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
 # TODO: 适配i18n国际化
 import atexit
-import importlib
-import shutil
-
 from Lib import *
 
 logger = Logger.logger
 VERSION = "2.0.0-dev"  # 版本
 VERSION_WEEK = "24W18A"  # 版本周
-
-plugins = []  # 插件
 
 api = OnebotAPI.OnebotAPI()
 
@@ -24,14 +19,10 @@ request_list = []
 work_path = os.path.abspath(os.path.dirname(__file__))
 data_path = os.path.join(work_path, 'data')
 yaml_path = os.path.join(work_path, 'config.yml')
-plugins_path = os.path.join(work_path, "plugins")
 cache_path = os.path.join(data_path, "cache")
 
 if not os.path.exists(data_path):
     os.makedirs(data_path)
-
-if not os.path.exists(plugins_path):
-    os.makedirs(plugins_path)
 
 if not os.path.exists(cache_path):
     os.makedirs(cache_path)
@@ -45,36 +36,6 @@ def finalize_and_cleanup():
     MuRainLib.clean_cache()
 
     logger.warning("MuRainBot结束运行！\n")
-
-
-def load_plugins():
-    global plugins
-    # 获取插件目录下的所有文件
-    things_in_plugin_dir = os.listdir(plugins_path)
-
-    # 筛选出后缀为.py的文件
-    def mapper(name, plugin_suffix=None):
-        if plugin_suffix is None:
-            plugin_suffix = [".py", ".pyc"]
-        for i in plugin_suffix:
-            if name.endswith(i):
-                return name.split(".")[0]
-            else:
-                return ""
-
-    things_in_plugin_dir = map(mapper, things_in_plugin_dir)
-    things_in_plugin_dir = [_ for _ in things_in_plugin_dir if _ != ""]
-
-    plugins = []
-
-    for i in things_in_plugin_dir:
-        try:
-            logger.debug("正在加载插件: {}:".format(i))
-            plugins.append({"name": i, "plugin": importlib.import_module('.' + i, package='plugins')})
-            logger.debug("插件 {} 加载成功！".format(i))
-        except Exception as e:
-            logger.error("导入插件 {} 失败！ 原因:{}".format(i, repr(e)))
-    return plugins
 
 
 # 主函数
@@ -101,10 +62,10 @@ if __name__ == '__main__':
     bot_name = Configs.GlobalConfig().nick_name
     bot_admin = Configs.GlobalConfig().bot_admin
 
-    load_plugins()
-    if len(plugins) > 0:
-        logger.info("插件导入完成，共成功导入 {} 个插件:".format(len(plugins)))
-        for plugin in plugins:
+    PluginManager.load_plugins()
+    if len(PluginManager.plugins) > 0:
+        logger.info("插件导入完成，共成功导入 {} 个插件:".format(len(PluginManager.plugins)))
+        for plugin in PluginManager.plugins:
             try:
                 plugin_info = plugin["plugin"].PluginInfo()
                 logger.info(" - %s: %s 作者:%s" % (plugin["name"], plugin_info.NAME, plugin_info.AUTHOR))
