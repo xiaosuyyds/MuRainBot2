@@ -8,6 +8,7 @@ import Lib.EventManager as EventManager
 import Lib.QQRichText as QQRichText
 import Lib.Logger as Logger
 import Lib.PluginManager as PluginManager
+import Lib.QQDataCacher as QQDataCacher
 import os
 
 app = Flask(__name__)
@@ -43,35 +44,36 @@ def post_data():
         # 私聊消息
         if data.message_type == "private":
             message = QQRichText.QQRichText(data["message"])
+            QQDataCacher.UserData(data.user_id,
+                                  data.sender.get("nickname"),
+                                  data.sender.get("sex"),
+                                  data.sender.get("age"))
+            user = QQDataCacher.get_user_data(data.user_id)
             if data.sub_type == "friend":
                 logger.info("收到好友 %s(%s) 的消息: %s (%s)" % (
-                    data.sender["nick_name"], data.sender["user_id"], str(message), data.message_id)
+                    user.nickname, user.user_id, str(message), data.message_id)
                             )
             elif data.sub_type == "group":
-                group_name = api.get("/get_group_info", {"group_id": data.group_id}).get("group_name")
+                group = QQDataCacher.get_group_data(data.group_id)
                 logger.info("收到来自群 %s(%s) 内 %s(%s) 的临时会话消息: %s (%s)" % (
-                    group_name, data.group_id,
-                    data.sender["nickname"], data.sender["user_id"],
+                    group.group_name, data.group_id,
+                    user.nickname, user.user_id,
                     str(message), data.message_id
                 )
                             )
             elif data.sub_type == "other":
                 logger.info("收到来自 %s(%s) 的消息: %s (%s)" % (
-                    data.sender["nick_name"], data.sender["user_id"], str(message), data.message_id)
+                    user.nickname, user.user_id, str(message), data.message_id)
                             )
 
         # 群聊信息
         elif data.message_type == "group":
-            user_name = data.sender["nickname"]
-            if data.sender["card"] != "":
-                user_name = data.sender["card"]
-                # 了群昵称则把用户名设为群昵称
-            group_name = api.get("/get_group_info", {"group_id": data.group_id}).get("group_name")
-
+            group = QQDataCacher.get_group_data(data.group_id)
+            user = QQDataCacher.get_group_user_data(data.group_id, data.user_id)
             message = QQRichText.QQRichText(data.message)
 
             logger.info("收到群 %s(%s) 内 %s(%s) 的消息: %s (%s)" % (
-                group_name, data.group_id, user_name, data.sender["user_id"], str(message),
+                group.group_name, group.group_id, user.get_group_name(), user.user_id, str(message),
                 data.message_id))
 
             # 获取群文件夹路径
@@ -83,129 +85,139 @@ def post_data():
     elif data.post_type == "request":
         # 加好友邀请
         if data.request_type == "friend":
+            user = QQDataCacher.get_user_data(data.user_id)
             logger.info("收到来自 %s(%s) 的加好友请求: %s" %
-                        (data.sender["nickname"], data.sender["user_id"], data.comment))
+                        (user.nickname, user.user_id, data.comment))
         # 加群邀请
         elif data.request_type == "group":
-            group_name = api.get("/get_group_info", {"group_id": data.group_id}).get("group_name")
-            user_name = api.get("/get_stranger_info", {"user_id": data.user_id}).get("nickname")
+            group = QQDataCacher.get_group_data(data.group_id)
+            user = QQDataCacher.get_group_user_data(data.group_id, data.user_id)
             if data.sub_type == "invite":
                 logger.info("收到来自群 %s(%s) 内用户 %s(%s) 的加群邀请" %
-                            (group_name, data.group_id, user_name, data.user_id))
+                            (group.group_name, group.group_id, user.get_group_name(), user.user_id))
             elif data.sub_type == "add":
                 logger.info("群 %s(%s) 收到来自用户 %s(%s) 的加群请求" %
-                            (group_name, data.group_id, user_name, data.user_id))
+                            (group.group_name, group.group_id, user.get_group_name(), user.user_id))
 
     elif data.post_type == "notice":
         # 群文件上传
         if data.notice_type == "group_upload":
-            group_name = api.get("/get_group_info", {"group_id": data.group_id}).get("group_name")
-            user_name = api.get("/get_stranger_info", {"user_id": data.user_id}).get("nickname")
+            group = QQDataCacher.get_group_data(data.group_id)
+            user = QQDataCacher.get_group_user_data(data.group_id, data.user_id)
             logger.info("群 %s(%s) 内 %s(%s) 上传了文件: %s" %
-                        (group_name, data.group_id, data.user_id, user_name, data.file))
+                        (group.group_name, group.group_id, user.get_group_name(), user.user_id, data.file))
 
         # 群管理员变动
         elif data.notice_type == "group_admin":
-            group_name = api.get("/get_group_info", {"group_id": data.group_id}).get("group_name")
-            user_name = api.get("/get_stranger_info", {"user_id": data.user_id}).get("nickname")
-            operator_name = api.get("/get_stranger_info", {"user_id": data.operator_id}).get("nickname")
+            group = QQDataCacher.get_group_data(data.group_id)
+            user = QQDataCacher.get_group_user_data(data.group_id, data.user_id)
+            operator = QQDataCacher.get_group_user_data(data.group_id, data.operator_id)
             if data.sub_type == "set":
                 logger.info("群 %s(%s) 内, %s(%s) 将 %s(%s) 设为管理员" %
-                            (group_name, data.group_id, operator_name, data.operator_id, user_name, data.user_id))
+                            (group.group_name, group.group_id, operator.get_group_name(),
+                             operator.user_id, user.get_group_name(), user.user_id))
             elif data.sub_type == "unset":
                 logger.info("群 %s(%s) 内, %s(%s) 将 %s(%s) 取消管理员" %
-                            (group_name, data.group_id, operator_name, data.operator_id, user_name, data.user_id))
+                            (group.group_name, group.group_id, operator.get_group_name(),
+                             operator.user_id, user.get_group_name(), user.user_id))
 
         # 群成员减少
         elif data.notice_type == "group_decrease":
-            group_name = api.get("/get_group_info", {"group_id": data.group_id}).get("group_name")
-            user_name = api.get("/get_stranger_info", {"user_id": data.user_id}).get("nickname")
-            operator_name = api.get("/get_stranger_info", {"user_id": data.operator_id}).get("nickname")
+            group = QQDataCacher.get_group_data(data.group_id)
+            user = QQDataCacher.get_group_user_data(data.group_id, data.user_id)
+            operator = QQDataCacher.get_group_user_data(data.group_id, data.operator_id)
             if data.sub_type == "leave":
                 logger.info("群 %s(%s) 内 %s(%s) 退出了群聊" %
-                            (data.user_id, user_name, group_name, data.group_id))
+                            (group.group_name, group.group_id, user.get_group_name(), data.user_id))
             elif data.sub_type == "kick":
                 logger.info(
                     "检测到 %s(%s) 被 %s(%s) 踢出了群聊 %s(%s)" %
-                    (data.user_id, user_name, data.operator_id, operator_name, group_name, data.group_id))
-            elif data.sub_type == "kick_me" or data.user_id == config.user_id:
+                    (user.get_group_name(), user.user_id, operator.get_group_name(),
+                     operator.user_id, group.group_name, data.group_id))
+            elif data.sub_type == "kick_me" or user.user_id == config.user_id:
                 logger.info("检测到Bot被 %s(%s) 踢出了群聊 %s(%s)" %
-                            (data.operator_id, operator_name, group_name, data.group_id))
+                            (operator.get_group_name(), operator.user_id, group.group_name, group.group_id))
 
         # 群成员增加
         elif data.notice_type == "group_increase":
-            group_name = api.get("/get_group_info", {"group_id": data.group_id}).get("group_name")
-            user_name = api.get("/get_stranger_info", {"user_id": data.user_id}).get("nickname")
-            operator_name = api.get("/get_stranger_info", {"user_id": data.operator_id}).get("nickname")
+            group = QQDataCacher.get_group_data(data.group_id)
+            user = QQDataCacher.get_group_user_data(data.group_id, data.user_id)
+            operator = QQDataCacher.get_group_user_data(data.group_id, data.operator_id)
             if data.sub_type == "approve":
                 logger.info("群%s(%s) 内管理员 %s(%s) 通过了新成员 %s(%s) 的加群请求" %
-                            (data.user_id, user_name, group_name, data.group_id, data.operator_id, operator_name))
+                            (group.group_name, group.group_id, operator.get_group_name(),
+                             operator.user_id, user.get_group_name(), user.user_id))
             elif data.sub_type == "invite":
                 logger.info("群 %s(%s) 内 %s(%s) 邀请 %s(%s) 加入了群聊" %
-                            (data.user_id, user_name, operator_name, data.operator_id, data.user_id, user_name))
+                            (group.group_name, group.group_id, operator.get_group_name(),
+                             operator.user_id, user.get_group_name(), user.user_id))
 
         # 群禁言
         elif data.notice_type == "group_ban":
-            group_name = api.get("/get_group_info", {"group_id": data.group_id}).get("group_name")
-            user_name = api.get("/get_stranger_info", {"user_id": data.user_id}).get("nickname")
-            operator_name = api.get("/get_stranger_info", {"user_id": data.operator_id}).get("nickname")
+            group = QQDataCacher.get_group_data(data.group_id)
+            user = QQDataCacher.get_group_user_data(data.group_id, data.user_id)
+            operator = QQDataCacher.get_group_user_data(data.group_id, data.operator_id)
             # 禁言
             if data.sub_type == "ban":
                 logger.info("群 %s(%s) 内 %s(%s) 被 %s(%s) 禁言了" %
-                            (data.user_id, user_name, data.operator_id, operator_name, group_name, data.group_id))
+                            (group.group_name, group.group_id, user.get_group_name(),
+                             user.user_id, operator.get_group_name(), operator.user_id))
             # 解除禁言
             elif data.sub_type == "lift_ban":
                 logger.info("群 %s(%s) 内 %s(%s) 被 %s(%s) 解除禁言" %
-                            (data.user_id, user_name, data.operator_id, operator_name, group_name, data.group_id))
+                            (group.group_name, group.group_id, user.get_group_name(),
+                             user.user_id, operator.get_group_name(), operator.user_id))
 
         # 好友添加
         elif data.notice_type == "friend_add":
-            user_name = api.get("/get_stranger_info", {"user_id": data.user_id}).get("nickname")
+            user = QQDataCacher.get_user_data(data.user_id)
             logger.info("检测到新好友 %s(%s) 添加了Bot" %
-                        (data.user_id, user_name))
+                        (user.nickname, user.user_id))
 
         # 群消息撤回
         elif data.notice_type == "group_recall":
-            group_name = api.get("/get_group_info", {"group_id": data.group_id}).get("group_name")
-            user_name = api.get("/get_stranger_info", {"user_id": data.user_id}).get("nickname")
+            group = QQDataCacher.get_group_data(data.group_id)
+            user = QQDataCacher.get_group_user_data(data.group_id, data.user_id)
             logger.info("群 %s(%s) 内 %s(%s) 撤回了一条消息: %s" %
-                        (data.user_id, user_name, group_name, data.group_id, data.message_id))
+                        (group.group_name, group.group_id, user.get_group_name(), user.user_id, data.message_id))
 
         # 好友消息撤回
         elif data.notice_type == "friend_recall":
-            user_name = api.get("/get_stranger_info", {"user_id": data.user_id}).get("nickname")
+            user = QQDataCacher.get_user_data(data.user_id)
             logger.info("检测到好友 %s(%s) 撤回了一条消息: %s" %
-                        (data.user_id, user_name, data.message_id))
+                        (user.user_id, user, data.message_id))
 
         elif data.notice_type == "notify":
             # 群内戳一戳
             if data.sub_type == "poke":
-                group_name = api.get("/get_group_info", {"group_id": data.group_id}).get("group_name")
-                user_name = api.get("/get_stranger_info", {"user_id": data.user_id}).get("nickname")
-                target_name = api.get("/get_stranger_info", {"user_id": data.target_id}).get("nickname")
+                group = QQDataCacher.get_group_data(data.group_id)
+                user = QQDataCacher.get_group_user_data(data.group_id, data.user_id)
+                target = QQDataCacher.get_group_user_data(data.group_id, data.target_id)
                 logger.info("收到群 %s(%s) 内 %s(%s) 戳了戳 %s(%s)" %
-                            (group_name, data.group_id, data.user_id, user_name, data.target_id, target_name))
+                            (group.group_name, group.group_id, user.get_group_name(), user.user_id,
+                             target.get_group_name(), target.user_id))
             # 红包运气王
             elif data.sub_type == "lucky_king":
-                group_name = api.get("/get_group_info", {"group_id": data.group_id}).get("group_name")
-                user_name = api.get("/get_stranger_info", {"user_id": data.user_id}).get("nickname")
-                target_name = api.get("/get_stranger_info", {"user_id": data.target_id}).get("nickname")
+                group = QQDataCacher.get_group_data(data.group_id)
+                user = QQDataCacher.get_group_user_data(data.group_id, data.user_id)
+                target = QQDataCacher.get_group_user_data(data.group_id, data.target_id)
                 logger.info("群 %s(%s) 内 %s(%s) 发送的红包, %s(%s)是运气王" %
-                            (group_name, data.group_id, data.user_id, user_name, data.target_id, target_name))
+                            (group.group_name, group.group_id, user.get_group_name(), user.user_id,
+                             target.get_group_name(), target.user_id))
 
             # 群成员荣誉变更
             elif data.sub_type == "honor":
-                group_name = api.get("/get_group_info", {"group_id": data.group_id}).get("group_name")
-                user_name = api.get("/get_stranger_info", {"user_id": data.user_id}).get("nickname")
+                group = QQDataCacher.get_group_data(data.group_id)
+                user = QQDataCacher.get_group_user_data(data.group_id, data.user_id)
                 if data.honor_type == "talkative":
                     logger.info("群 %s(%s) 内 %s(%s) 获得了龙王" %
-                                (group_name, data.group_id, data.user_id, user_name))
+                                (group.group_name, group.group_id, user.get_group_name(), user.user_id))
                 elif data.honor_type == "performer":
                     logger.info("群 %s(%s) 内 %s(%s) 获得了群聊之火" %
-                                (group_name, data.group_id, data.user_id, user_name))
+                                (group.group_name, group.group_id, user.get_group_name(), user.user_id))
                 elif data.honor_type == "emotion":
                     logger.info("群 %s(%s) 内 %s(%s) 获得了快乐源泉" %
-                                (group_name, data.group_id, data.user_id, user_name))
+                                (group.group_name, group.group_id, user.get_group_name(), user.user_id))
 
     # 若插件包含main函数则运行
     for plugin in PluginManager.plugins:
