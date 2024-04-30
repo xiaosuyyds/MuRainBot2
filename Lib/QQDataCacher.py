@@ -22,8 +22,12 @@ class UserData:
         self.user_id = user_id
         flag = 0
 
+        self.nickname = None
+        self.sex = None
+        self.age = None
+
         if name is not None:
-            self.nickname: str = user_id
+            self.nickname = user_id
         else:
             flag = 1
 
@@ -73,8 +77,21 @@ class GroupUserData:
         self.group_id = group_id
         flag = 0
 
+        self.nickname = None
+        self.card = None
+        self.sex = None
+        self.age = None
+        self.area = None
+        self.join_time = None
+        self.last_sent_time = None
+        self.level = None
+        self.role = None
+        self.title = None
+        self.title_expire_time = None
+        self.card_changeable = None
+
         if name is not None:
-            self.nickname: str = user_id
+            self.nickname = user_id
         else:
             flag = 1
 
@@ -172,6 +189,10 @@ class GroupData:
     ):
         self.group_id = group_id
         flag = 0
+
+        self.group_name = None
+        self.member_count = None
+        self.max_member_count = None
 
         if name is not None:
             self.group_name = name
