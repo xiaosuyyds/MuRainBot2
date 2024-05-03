@@ -60,3 +60,4 @@ class GlobalConfig(Config):
         self.api_host = self.raw_config["api"]["host"]
         self.api_port = self.raw_config["api"]["port"]
         self.max_workers = self.raw_config["thread_pool"]["max_workers"]
+        self.expire_time = self.raw_config["qq_data_cache"]["expire_time"]

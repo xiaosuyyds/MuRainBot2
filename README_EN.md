@@ -76,7 +76,7 @@
 
 </details>
 
-## How To Deploy?
+## 💻How To Deploy?
 **The author has written and tested in python3.10 without any problems, other versions have not been tested yet**
 * Download the releases or source code package of this project
 * Please download the python environment and use pip to install the libraries in [`requirements.txt`](requirements.txt)
@@ -89,7 +89,7 @@
     * Then configure MRB2's [`config.yml`](config.yml) account and QQ number
     * After configuring, run the framework first, then run `main.py`
 
-## About The Version
+## 📕About The Version
 * The current version of MRB2 is 2.0.0-dev
 * Explanation of version number and version week:
     * The version number format is `<major version>.<minor version>.<patch version>-<special reminder/version (if any)>` e.g., `2.0.0`
@@ -97,7 +97,7 @@
     * The version week format for test versions is `<year>W<week number><version number within the week A-Z>` e.g., `29W10A`
     * The version week format for official versions is `<year>Y<week number>W` e.g., `24Y09W`
 
-## Plugins
+## 🧩Plugins
 > _~~Plugins are the soul of MRB2, and MRB2 without plugins is just an empty shell~~_
 
 #### **MRB2 itself does not have any actual functionality, everything needs to be implemented by writing plugins**
@@ -117,7 +117,7 @@
 
 #### However, we have some plugins that we made ourselves, which may be included in the source code or releases later
 
-## Acknowledgements
+## ❤️Acknowledgements❤️
 
 ### Please do not submit directly to the [`master`](https://github.com/xiaosuyyds/MuRainBot2) branch, please submit to the [`dev`](https://github.com/xiaosuyyds/MuRainBot2/tree/dev) branch first, then create a PR to merge branches
 ### Thanks to all the contributors to this project, your existence makes the community a better place~!

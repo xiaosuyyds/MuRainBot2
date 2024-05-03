@@ -12,5 +12,8 @@ server: # 监听服务器设置
   host: '127.0.0.1'
   port: 5701
 
-thread_pool:
+thread_pool: # 线程池最大线程数
   max_workers: 5
+
+qq_data_cache: # QQ数据缓存设置
+  expire_time: 300  # 缓存过期时间（秒）
