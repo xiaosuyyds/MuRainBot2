@@ -171,6 +171,12 @@ class GroupUserData:
             self.title = data.get("title")
             self.title_expire_time = data.get("title_expire_time")
             self.card_changeable = data.get("card_changeable")
+        else:
+            data = api.get("/get_stranger_info", {"user_id": self.user_id})
+            if data is not None:
+                self.nickname = data.get("nickname")
+                self.sex = data.get("sex")
+                self.age = data.get("age")
 
     def get_group_name(self):
         if self.card != "" and self.card is not None:
