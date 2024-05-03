@@ -236,7 +236,24 @@ class GroupData:
         if data is not None:
             self.group_member_list = []
             for member in data:
-                self.group_member_list.append(GroupUserData(member.get("user_id"), self.group_id))
+                self.group_member_list.append(
+                    GroupUserData(
+                        member.get("user_id"),
+                        self.group_id,
+                        name=member.get("nickname"),
+                        card=member.get("card"),
+                        sex=member.get("sex"),
+                        age=member.get("age"),
+                        area=member.get("area"),
+                        join_time=member.get("join_time"),
+                        last_sent_time=member.get("last_sent_time"),
+                        level=member.get("level"),
+                        role=member.get("role"),
+                        title=member.get("title"),
+                        title_expire_time=member.get("title_expire_time"),
+                        card_changeable=member.get("card_changeable")
+                    )
+                )
         else:
             self.group_member_list = None
 
@@ -276,9 +293,10 @@ def refresh_all_cache():
 
 
 def _refresh_cache_on_regular_basis():
+    expire_time = config.expire_time
     while True:
         refresh_all_cache()
-        time.sleep(60)
+        time.sleep(expire_time)
 
 
 threading.Thread(target=_refresh_cache_on_regular_basis, daemon=True).start()
