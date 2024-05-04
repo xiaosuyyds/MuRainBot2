@@ -5,6 +5,10 @@
 #  | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
 
+import os
+# 修改工作目录
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from Lib.MuRainLib import *
 import Lib.OnebotAPI as OnebotAPI
 import Lib.QQRichText as QQRichText
