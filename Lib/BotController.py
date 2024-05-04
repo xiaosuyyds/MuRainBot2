@@ -19,11 +19,11 @@ def send_message(message: QQRichText.QQRichText | str, group_id: int = 0, user_i
     elif group_id != 0:
         api.get("/send_msg", {"group_id": group_id, "message": message})
         group_name = api.get("/get_group_info", {"group_id": group_id})["group_name"]
-        logger.info("发送消息 %s 到群 %s(%s) ".format(message, group_name, group_id))
+        logger.info("发送消息 %s 到群 %s(%s) " % (message, group_name, group_id))
     elif user_id != 0:
         api.get("/send_private_msg", {"user_id": user_id, "message": message})
         user_name = api.get("/get_stranger_info", {"user_id": user_id})["nickname"]
-        logger.info("发送消息 %s 到 %s(%s) ".format(message, user_name, user_id))
+        logger.info("发送消息 %s 到 %s(%s) " % (message, user_name, user_id))
 
 
 """ 还没写完，先注释掉

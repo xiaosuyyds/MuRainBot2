@@ -33,7 +33,7 @@ if not os.path.exists(cache_path):
 def finalize_and_cleanup():
     logger.info("MuRainBot即将关闭，正在删除缓存")
 
-    MuRainLib.clean_cache()
+    clean_cache()
 
     logger.warning("MuRainBot结束运行！\n")
 
