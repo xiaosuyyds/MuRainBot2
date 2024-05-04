@@ -265,21 +265,21 @@ class GroupData:
 
 
 def get_user_data(user_id):
-    if user_id in user_cache:
+    if user_id in list(user_cache.keys()):
         return user_cache[user_id]
 
     return UserData(user_id)
 
 
 def get_group_data(group_id):
-    if group_id in group_cache:
+    if group_id in list(group_cache.keys()):
         return group_cache[group_id]
 
     return GroupData(group_id)
 
 
 def get_group_user_data(group_id, user_id):
-    if group_id in group_cache:
+    if group_id in list(group_cache.keys()):
         for member in group_cache[group_id].group_member_list:
             if member.user_id == user_id:
                 return member
@@ -288,7 +288,7 @@ def get_group_user_data(group_id, user_id):
 
 
 def refresh_all_cache():
-    for group_id in group_cache:
+    for group_id in list(group_cache.keys()):
         group_cache[group_id].refresh_cache()
 
         for member in group_cache[group_id].group_member_list:
