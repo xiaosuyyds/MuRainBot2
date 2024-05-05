@@ -5,7 +5,6 @@ import time
 
 api = OnebotAPI.OnebotAPI()
 config = Configs.GlobalConfig()
-api.set_ip(config.api_host, config.api_port)
 
 user_cache = {}
 group_cache = {}
@@ -48,7 +47,7 @@ class UserData:
             user_cache[user_id] = self
 
     def refresh_cache(self):
-        data = api.get("/get_stranger_info", {"user_id": self.user_id})
+        data = api.get_stranger_info(self.user_id)
         if data is not None:
             self.nickname = data.get("nickname")
             self.sex = data.get("sex")
@@ -157,7 +156,7 @@ class GroupUserData:
             user_cache[user_id] = self
 
     def refresh_cache(self):
-        data = api.get("/get_group_member_info", {"group_id": self.group_id, "user_id": self.user_id})
+        data = api.get_group_member_info(self.group_id, self.user_id)
         if data is not None:
             self.nickname = data.get("nickname")
             self.card = data.get("card")
@@ -172,7 +171,7 @@ class GroupUserData:
             self.title_expire_time = data.get("title_expire_time")
             self.card_changeable = data.get("card_changeable")
         else:
-            data = api.get("/get_stranger_info", {"user_id": self.user_id})
+            data = api.get_stranger_info(self.user_id)
             if data is not None:
                 self.nickname = data.get("nickname")
                 self.sex = data.get("sex")
@@ -216,11 +215,11 @@ class GroupData:
             flag = 1
 
         if flag == 1:
-            data = api.get("/get_group_info", {"group_id": group_id})
+            data = api.get_group_info(self.group_id)
             if data is not None:
                 self.refresh_cache()
 
-        data = api.get("/get_group_member_list", {"group_id": group_id})
+        data = api.get_group_member_list(self.group_id)
         if data is not None:
             self.group_member_list = []
             for member in data:
@@ -232,13 +231,13 @@ class GroupData:
             group_cache[group_id] = self
 
     def refresh_cache(self):
-        data = api.get("/get_group_info", {"group_id": self.group_id})
+        data = api.get_group_info(self.group_id)
         if data is not None:
             self.group_name = data.get("group_name")
             self.member_count = data.get("member_count")
             self.max_member_count = data.get("max_member_count")
             self.group_member_list = []
-        data = api.get("/get_group_member_list", {"group_id": self.group_id})
+        data = api.get_group_member_list(self.group_id)
         if data is not None:
             self.group_member_list = []
             for member in data:
@@ -279,7 +278,7 @@ def get_group_data(group_id):
 
 
 def get_group_user_data(group_id, user_id):
-    if group_id in list(group_cache.keys()):
+    if group_id in list(group_cache.keys()) and group_cache[group_id].group_member_list is not None:
         for member in group_cache[group_id].group_member_list:
             if member.user_id == user_id:
                 return member

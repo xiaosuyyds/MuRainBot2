@@ -5,10 +5,11 @@
 #  | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
 
-import Lib.QQRichText as QQRichText
-import traceback
 import re
-from typing import Callable, Any, Tuple, Dict
+import traceback
+from typing import Callable
+
+import Lib.QQRichText as QQRichText
 
 register_event_list = []  # event_type, func, arg, args, kwargs, by_file
 register_keyword_list = []  # keyword, func, arg, args, kwargs, by_file

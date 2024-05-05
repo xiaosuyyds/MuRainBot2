@@ -14,7 +14,6 @@ import os
 app = Flask(__name__)
 api = OnebotAPI.OnebotAPI()
 config = Configs.GlobalConfig()
-api.set_ip(config.api_host, config.api_port)
 logger = Logger.logger
 request_list = []
 

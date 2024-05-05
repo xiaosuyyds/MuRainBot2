@@ -9,7 +9,6 @@ from Lib import *
 import logging
 
 api = OnebotAPI.OnebotAPI()
-api.set_ip(Configs.GlobalConfig().api_host, Configs.GlobalConfig().api_port)
 
 
 # TODO: 插件信息后续从类改为函数，把初始化的也放进来。

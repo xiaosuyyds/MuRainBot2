@@ -98,7 +98,7 @@ class OnebotAPI:
             "user_id": user_id,
             "message": message
         }
-        return self.set_node("/send_private_msg", data).get()
+        return self.get("/send_private_msg", data)
 
     def send_group_msg(self, group_id: int, message: str):
         """
@@ -111,7 +111,7 @@ class OnebotAPI:
             "group_id": group_id,
             "message": message
         }
-        return self.set_node("/send_group_msg", data).get()
+        return self.get("/send_group_msg", data)
 
     def send_msg(self, user_id: int = -1, group_id: int = -1, message: str = ""):
         """
@@ -141,7 +141,7 @@ class OnebotAPI:
         data = {
             "message_id": message_id
         }
-        return self.set_node("/delete_msg", data).get()
+        return self.get("/delete_msg", data)
 
     def get_msg(self, message_id: int):
         """
@@ -152,7 +152,7 @@ class OnebotAPI:
         data = {
             "message_id": message_id
         }
-        return self.set_node("/get_msg", data).get()
+        return self.get("/get_msg", data)
 
     def get_forward_msg(self, message_id: int):
         """
@@ -163,7 +163,7 @@ class OnebotAPI:
         data = {
             "message_id": message_id
         }
-        return self.set_node("/get_forward_msg", data).get()
+        return self.get("/get_forward_msg", data)
 
     def send_like(self, user_id: int, times: int = 1):
         """
@@ -176,7 +176,7 @@ class OnebotAPI:
             "user_id": user_id,
             "times": times
         }
-        return self.set_node("/send_like", data).get()
+        return self.get("/send_like", data)
 
     def set_group_kick(self, group_id: int, user_id: int, reject_add_request: bool = False):
         """
@@ -191,7 +191,7 @@ class OnebotAPI:
             "user_id": user_id,
             "reject_add_request": reject_add_request
         }
-        return self.set_node("/set_group_kick", data).get()
+        return self.get("/set_group_kick", data)
 
     def set_group_ban(self, group_id: int, user_id: int, duration: int = 30):
         """
@@ -206,7 +206,7 @@ class OnebotAPI:
             "user_id": user_id,
             "duration": duration
         }
-        return self.set_node("/set_group_ban", data).get()
+        return self.get("/set_group_ban", data)
 
     def set_group_anonymous_ban(self, group_id: int, anonymous: dict, duration: int = 600):
         """
@@ -221,7 +221,7 @@ class OnebotAPI:
             "anonymous": anonymous,
             "duration": duration
         }
-        return self.set_node("/set_group_anonymous_ban", data).get()
+        return self.get("/set_group_anonymous_ban", data)
 
     def set_group_whole_ban(self, group_id: int, enable: bool = True):
         """
@@ -234,7 +234,7 @@ class OnebotAPI:
             "group_id": group_id,
             "enable": enable
         }
-        return self.set_node("/set_group_whole_ban", data).get()
+        return self.get("/set_group_whole_ban", data)
 
     def set_group_admin(self, group_id: int, user_id: int, enable: bool = True):
         """
@@ -249,7 +249,7 @@ class OnebotAPI:
             "user_id": user_id,
             "enable": enable
         }
-        return self.set_node("/set_group_admin", data).get()
+        return self.get("/set_group_admin", data)
 
     def set_group_card(self, group_id: int, user_id: int, card: str = ""):
         """
@@ -264,7 +264,7 @@ class OnebotAPI:
             "user_id": user_id,
             "card": card
         }
-        return self.set_node("/set_group_card", data).get()
+        return self.get("/set_group_card", data)
 
     def set_group_name(self, group_id: int, group_name: str):
         """
@@ -277,7 +277,7 @@ class OnebotAPI:
             "group_id": group_id,
             "group_name": group_name
         }
-        return self.set_node("/set_group_name", data).get()
+        return self.get("/set_group_name", data)
 
     def set_group_leave(self, group_id: int, is_dismiss: bool = False):
         """
@@ -289,7 +289,7 @@ class OnebotAPI:
             "group_id": group_id,
             "is_dismiss": is_dismiss
         }
-        return self.set_node("/set_group_leave", data).get()
+        return self.get("/set_group_leave", data)
 
     def set_group_special_title(self, group_id: int, user_id: int, special_title: str = "", duration: int = -1):
         """
@@ -308,7 +308,7 @@ class OnebotAPI:
         if duration != -1:
             data["duration"] = duration
 
-        return self.set_node("/set_group_special_title", data).get()
+        return self.get("/set_group_special_title", data)
 
     def set_friend_add_request(self, flag: str, approve: bool = True, remark: str = ""):
         """
@@ -323,7 +323,7 @@ class OnebotAPI:
             "approve": approve,
             "remark": remark
         }
-        return self.set_node("/set_friend_add_request", data).get()
+        return self.get("/set_friend_add_request", data)
 
     def set_group_add_request(self, flag: str, sub_type: str = "add", approve: bool = True, reason: str = ""):
         """
@@ -340,14 +340,14 @@ class OnebotAPI:
             "approve": approve,
             "reason": reason
         }
-        return self.set_node("/set_group_add_request", data).get()
+        return self.get("/set_group_add_request", data)
 
     def get_login_info(self):
         """
         获取登录号信息
         :return:
         """
-        return self.set_node("/get_login_info").get()
+        return self.get("/get_login_info")
 
     def get_stranger_info(self, user_id: int, no_cache: bool = False):
         """
@@ -360,14 +360,14 @@ class OnebotAPI:
             "user_id": user_id,
             "no_cache": no_cache
         }
-        return self.set_node("/get_stranger_info", data).get()
+        return self.get("/get_stranger_info", data)
 
     def get_friend_list(self):
         """
         获取好友列表
         :return:
         """
-        return self.set_node("/get_friend_list").get()
+        return self.get("/get_friend_list")
 
     def get_group_info(self, group_id: int, no_cache: bool = False):
         """
@@ -380,14 +380,14 @@ class OnebotAPI:
             "group_id": group_id,
             "no_cache": no_cache
         }
-        return self.set_node("/get_group_info", data).get()
+        return self.get("/get_group_info", data)
 
     def get_group_list(self):
         """
         获取群列表
         :return:
         """
-        return self.set_node("/get_group_list").get()
+        return self.get("/get_group_list")
 
     def get_group_member_info(self, group_id: int, user_id: int, no_cache: bool = False):
         """
@@ -402,7 +402,7 @@ class OnebotAPI:
             "user_id": user_id,
             "no_cache": no_cache
         }
-        return self.set_node("/get_group_member_info", data).get()
+        return self.get("/get_group_member_info", data)
 
     def get_group_member_list(self, group_id: int, no_cache: bool = False):
         """
@@ -415,7 +415,7 @@ class OnebotAPI:
             "group_id": group_id,
             "no_cache": no_cache
         }
-        return self.set_node("/get_group_member_list", data).get()
+        return self.get("/get_group_member_list", data)
 
     def get_group_honor_info(self, group_id: int, type_: str = "all"):
         """
@@ -428,28 +428,28 @@ class OnebotAPI:
             "group_id": group_id,
             "type": type_
         }
-        return self.set_node("/get_group_honor_info", data).get()
+        return self.get("/get_group_honor_info", data)
 
     def get_cookies(self):
         """
         获取Cookies
         :return:
         """
-        return self.set_node("/get_cookies").get()
+        return self.get("/get_cookies")
 
     def get_csrf_token(self):
         """
         获取CSRF Token
         :return:
         """
-        return self.set_node("/get_csrf_token").get()
+        return self.get("/get_csrf_token")
 
     def get_credentials(self):
         """
         获取Credentials
         :return:
         """
-        return self.set_node("/get_credentials").get()
+        return self.get("/get_credentials")
 
     def get_record(self, file: str, out_format: str = "mp3", out_file: str = ""):
         """
@@ -464,7 +464,7 @@ class OnebotAPI:
             "out_format": out_format,
             "out_file": out_file
         }
-        return self.set_node("/get_record", data).get()
+        return self.get("/get_record", data)
 
     def get_image(self, file: str):
         """
@@ -475,46 +475,46 @@ class OnebotAPI:
         data = {
             "file": file
         }
-        return self.set_node("/get_image", data).get()
+        return self.get("/get_image", data)
 
     def can_send_image(self):
         """
         检查是否可以发送图片
         :return:
         """
-        return self.set_node("/can_send_image").get()
+        return self.get("/can_send_image")
 
     def can_send_record(self):
         """
         检查是否可以发送语音
         :return:
         """
-        return self.set_node("/can_send_record").get()
+        return self.get("/can_send_record")
 
     def get_status(self):
         """
         获取运行状态
         :return:
         """
-        return self.set_node("/get_status").get()
+        return self.get("/get_status")
 
     def get_version_info(self):
         """
         获取版本信息
         :return:
         """
-        return self.set_node("/get_version_info").get()
+        return self.get("/get_version_info")
 
     def set_restart(self):
         """
         重启OneBot
         :return:
         """
-        return self.set_node("/set_restart").get()
+        return self.get("/set_restart")
 
     def clean_cache(self):
         """
         清理缓存
         :return:
         """
-        return self.set_node("/clean_cache").get()
+        return self.get("/clean_cache")
