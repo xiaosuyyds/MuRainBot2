@@ -9,13 +9,15 @@
 OnebotAPI
 可以方便的调用Onebot的API
 """
+import Lib.Configs as Configs
 import requests
 import urllib.parse
 
+cconfig = Configs.GlobalConfig()
 
-# TODO: API调用模板（给每个API写个class方便调用）
+
 class OnebotAPI:
-    def __init__(self, host: str = "", port: int = -1, original: bool = False):
+    def __init__(self, host: str = cconfig.api_host, port: int = cconfig.api_port, original: bool = False):
         """
         :param host: 调用的ip
         :param port: 调用的端口
@@ -46,7 +48,7 @@ class OnebotAPI:
             data = {}
         self.node = node
         self.data = data
-        return str(self)
+        return self
 
     def set_ip(self, host: str, port: int):
         self.host = host
@@ -84,3 +86,435 @@ class OnebotAPI:
         except Exception as e:
             # 返回异常信息
             return e
+
+    def send_private_msg(self, user_id: int, message: str):
+        """
+        发送私聊消息
+        :param user_id: 用户id
+        :param message: 消息内容
+        :return:
+        """
+        data = {
+            "user_id": user_id,
+            "message": message
+        }
+        return self.set_node("/send_private_msg", data).get()
+
+    def send_group_msg(self, group_id: int, message: str):
+        """
+        发送群消息
+        :param group_id: 群号
+        :param message: 消息内容
+        :return:
+        """
+        data = {
+            "group_id": group_id,
+            "message": message
+        }
+        return self.set_node("/send_group_msg", data).get()
+
+    def send_msg(self, user_id: int = -1, group_id: int = -1, message: str = ""):
+        """
+        发送消息
+        :param user_id: 用户id
+        :param group_id: 群号
+        :param message: 消息内容
+        :return:
+        """
+        if user_id != -1 and group_id != -1:
+            raise ValueError('user_id and group_id cannot be both not -1.')
+        if user_id == -1 and group_id == -1:
+            raise ValueError('user_id and group_id cannot be both -1.')
+        if user_id != -1:
+            return self.send_private_msg(user_id, message)
+        elif group_id != -1:
+            return self.send_group_msg(group_id, message)
+        else:
+            raise ValueError('user_id and group_id cannot be both -1.')
+
+    def delete_msg(self, message_id: int):
+        """
+        删除消息
+        :param message_id: 消息id
+        :return:
+        """
+        data = {
+            "message_id": message_id
+        }
+        return self.set_node("/delete_msg", data).get()
+
+    def get_msg(self, message_id: int):
+        """
+        获取消息
+        :param message_id: 消息id
+        :return:
+        """
+        data = {
+            "message_id": message_id
+        }
+        return self.set_node("/get_msg", data).get()
+
+    def get_forward_msg(self, message_id: int):
+        """
+        获取合并转发消息
+        :param message_id: 消息id
+        :return:
+        """
+        data = {
+            "message_id": message_id
+        }
+        return self.set_node("/get_forward_msg", data).get()
+
+    def send_like(self, user_id: int, times: int = 1):
+        """
+        发送点赞
+        :param user_id: 用户id
+        :param times: 点赞次数
+        :return:
+        """
+        data = {
+            "user_id": user_id,
+            "times": times
+        }
+        return self.set_node("/send_like", data).get()
+
+    def set_group_kick(self, group_id: int, user_id: int, reject_add_request: bool = False):
+        """
+        群组踢人
+        :param group_id: 群号
+        :param user_id: 用户id
+        :param reject_add_request: 拒绝加群请求
+        :return:
+        """
+        data = {
+            "group_id": group_id,
+            "user_id": user_id,
+            "reject_add_request": reject_add_request
+        }
+        return self.set_node("/set_group_kick", data).get()
+
+    def set_group_ban(self, group_id: int, user_id: int, duration: int = 30):
+        """
+        群组单人禁言
+        :param group_id: 群号
+        :param user_id: 用户id
+        :param duration: 禁言时长，单位秒，无法取消禁言
+        :return:
+        """
+        data = {
+            "group_id": group_id,
+            "user_id": user_id,
+            "duration": duration
+        }
+        return self.set_node("/set_group_ban", data).get()
+
+    def set_group_anonymous_ban(self, group_id: int, anonymous: dict, duration: int = 600):
+        """
+        群组匿名用户禁言
+        :param group_id: 群号
+        :param anonymous: 匿名用户对象
+        :param duration: 禁言时长，单位秒，无法取消禁言
+        :return:
+        """
+        data = {
+            "group_id": group_id,
+            "anonymous": anonymous,
+            "duration": duration
+        }
+        return self.set_node("/set_group_anonymous_ban", data).get()
+
+    def set_group_whole_ban(self, group_id: int, enable: bool = True):
+        """
+        群组全员禁言
+        :param group_id: 群号
+        :param enable: 是否禁言
+        :return:
+        """
+        data = {
+            "group_id": group_id,
+            "enable": enable
+        }
+        return self.set_node("/set_group_whole_ban", data).get()
+
+    def set_group_admin(self, group_id: int, user_id: int, enable: bool = True):
+        """
+        群组设置管理员
+        :param group_id: 群号
+        :param user_id: 用户id
+        :param enable: 是否设置管理员
+        :return:
+        """
+        data = {
+            "group_id": group_id,
+            "user_id": user_id,
+            "enable": enable
+        }
+        return self.set_node("/set_group_admin", data).get()
+
+    def set_group_card(self, group_id: int, user_id: int, card: str = ""):
+        """
+        设置群名片（群备注）
+        :param group_id: 群号
+        :param user_id: 用户id
+        :param card: 群名片内容
+        :return:
+        """
+        data = {
+            "group_id": group_id,
+            "user_id": user_id,
+            "card": card
+        }
+        return self.set_node("/set_group_card", data).get()
+
+    def set_group_name(self, group_id: int, group_name: str):
+        """
+        设置群名
+        :param group_id: 群号
+        :param group_name: 群名
+        :return:
+        """
+        data = {
+            "group_id": group_id,
+            "group_name": group_name
+        }
+        return self.set_node("/set_group_name", data).get()
+
+    def set_group_leave(self, group_id: int, is_dismiss: bool = False):
+        """
+        :param group_id: 群号
+        :param is_dismiss: 是否解散，如果登录号是群主，则仅在此项为True时能够解散
+        :return:
+        """
+        data = {
+            "group_id": group_id,
+            "is_dismiss": is_dismiss
+        }
+        return self.set_node("/set_group_leave", data).get()
+
+    def set_group_special_title(self, group_id: int, user_id: int, special_title: str = "", duration: int = -1):
+        """
+        设置群组专属头衔
+        :param group_id: 群号
+        :param user_id: 要设置的QQ号
+        :param special_title: 专属头衔，不填或空字符串表示删除专属头衔
+        :param duration: 专属头衔有效期，-1表示永久，其他值表示在此时间之前专属头衔会消失
+        :return:
+        """
+        data = {
+            "group_id": group_id,
+            "user_id": user_id,
+            "special_title": special_title,
+        }
+        if duration != -1:
+            data["duration"] = duration
+
+        return self.set_node("/set_group_special_title", data).get()
+
+    def set_friend_add_request(self, flag: str, approve: bool = True, remark: str = ""):
+        """
+        设置好友添加请求
+        :param flag: 请求flag
+        :param approve: 是否同意请求
+        :param remark: 添加后的好友备注
+        :return:
+        """
+        data = {
+            "flag": flag,
+            "approve": approve,
+            "remark": remark
+        }
+        return self.set_node("/set_friend_add_request", data).get()
+
+    def set_group_add_request(self, flag: str, sub_type: str = "add", approve: bool = True, reason: str = ""):
+        """
+        设置群添加请求
+        :param flag: 请求flag
+        :param sub_type: 添加请求类型，请参考api文档
+        :param approve: 是否同意请求
+        :param reason: 拒绝理由
+        :return:
+        """
+        data = {
+            "flag": flag,
+            "sub_type": sub_type,
+            "approve": approve,
+            "reason": reason
+        }
+        return self.set_node("/set_group_add_request", data).get()
+
+    def get_login_info(self):
+        """
+        获取登录号信息
+        :return:
+        """
+        return self.set_node("/get_login_info").get()
+
+    def get_stranger_info(self, user_id: int, no_cache: bool = False):
+        """
+        获取陌生人信息
+        :param user_id: 对方QQ号
+        :param no_cache: 是否不使用缓存（使用缓存可能更新不及时，但响应更快）
+        :return:
+        """
+        data = {
+            "user_id": user_id,
+            "no_cache": no_cache
+        }
+        return self.set_node("/get_stranger_info", data).get()
+
+    def get_friend_list(self):
+        """
+        获取好友列表
+        :return:
+        """
+        return self.set_node("/get_friend_list").get()
+
+    def get_group_info(self, group_id: int, no_cache: bool = False):
+        """
+        获取群信息
+        :param group_id: 群号
+        :param no_cache: 是否不使用缓存（使用缓存可能更新不及时，但响应更快）
+        :return:
+        """
+        data = {
+            "group_id": group_id,
+            "no_cache": no_cache
+        }
+        return self.set_node("/get_group_info", data).get()
+
+    def get_group_list(self):
+        """
+        获取群列表
+        :return:
+        """
+        return self.set_node("/get_group_list").get()
+
+    def get_group_member_info(self, group_id: int, user_id: int, no_cache: bool = False):
+        """
+        获取群成员信息
+        :param group_id: 群号
+        :param user_id: QQ号
+        :param no_cache: 是否不使用缓存（使用缓存可能更新不及时，但响应更快）
+        :return:
+        """
+        data = {
+            "group_id": group_id,
+            "user_id": user_id,
+            "no_cache": no_cache
+        }
+        return self.set_node("/get_group_member_info", data).get()
+
+    def get_group_member_list(self, group_id: int, no_cache: bool = False):
+        """
+        获取群成员列表
+        :param group_id: 群号
+        :param no_cache: 是否不使用缓存（使用缓存可能更新不及时，但响应更快）
+        :return:
+        """
+        data = {
+            "group_id": group_id,
+            "no_cache": no_cache
+        }
+        return self.set_node("/get_group_member_list", data).get()
+
+    def get_group_honor_info(self, group_id: int, type_: str = "all"):
+        """
+        获取群荣誉信息
+        :param group_id: 群号
+        :param type_: 要获取的群荣誉类型，可传入 talkative performer legend strong_newbie emotion 以分别获取单个类型的群荣誉数据，或传入 all 获取所有数据
+        :return:
+        """
+        data = {
+            "group_id": group_id,
+            "type": type_
+        }
+        return self.set_node("/get_group_honor_info", data).get()
+
+    def get_cookies(self):
+        """
+        获取Cookies
+        :return:
+        """
+        return self.set_node("/get_cookies").get()
+
+    def get_csrf_token(self):
+        """
+        获取CSRF Token
+        :return:
+        """
+        return self.set_node("/get_csrf_token").get()
+
+    def get_credentials(self):
+        """
+        获取Credentials
+        :return:
+        """
+        return self.set_node("/get_credentials").get()
+
+    def get_record(self, file: str, out_format: str = "mp3", out_file: str = ""):
+        """
+        获取语音
+        :param file: 文件ID
+        :param out_format: 输出格式，mp3或amr，默认mp3
+        :param out_file: 输出文件名，默认使用文件ID
+        :return:
+        """
+        data = {
+            "file": file,
+            "out_format": out_format,
+            "out_file": out_file
+        }
+        return self.set_node("/get_record", data).get()
+
+    def get_image(self, file: str):
+        """
+        获取图片
+        :param file: 文件ID
+        :return:
+        """
+        data = {
+            "file": file
+        }
+        return self.set_node("/get_image", data).get()
+
+    def can_send_image(self):
+        """
+        检查是否可以发送图片
+        :return:
+        """
+        return self.set_node("/can_send_image").get()
+
+    def can_send_record(self):
+        """
+        检查是否可以发送语音
+        :return:
+        """
+        return self.set_node("/can_send_record").get()
+
+    def get_status(self):
+        """
+        获取运行状态
+        :return:
+        """
+        return self.set_node("/get_status").get()
+
+    def get_version_info(self):
+        """
+        获取版本信息
+        :return:
+        """
+        return self.set_node("/get_version_info").get()
+
+    def set_restart(self):
+        """
+        重启OneBot
+        :return:
+        """
+        return self.set_node("/set_restart").get()
+
+    def clean_cache(self):
+        """
+        清理缓存
+        :return:
+        """
+        return self.set_node("/clean_cache").get()
