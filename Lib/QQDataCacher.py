@@ -278,7 +278,7 @@ def get_group_data(group_id):
 
 
 def get_group_user_data(group_id, user_id):
-    if group_id in list(group_cache.keys()):
+    if group_id in list(group_cache.keys()) and group_cache[group_id].group_member_list is not None:
         for member in group_cache[group_id].group_member_list:
             if member.user_id == user_id:
                 return member
