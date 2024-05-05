@@ -79,9 +79,6 @@ if __name__ == '__main__':
     logger.info("读取到监听服务器ip，将以此ip启动监听服务器: {}:{}"
                 .format(Configs.GlobalConfig().server_host, Configs.GlobalConfig().server_port))
 
-    # 设置API
-    api.set_ip(Configs.GlobalConfig().api_host, Configs.GlobalConfig().api_port)
-
     logger.info("读取到监听api，将以此url调用API: {}"
                 .format(str(api)))
 
