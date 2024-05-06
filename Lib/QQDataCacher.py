@@ -290,8 +290,9 @@ def refresh_all_cache():
     for group_id in list(group_cache.keys()):
         group_cache[group_id].refresh_cache()
 
-        for member in group_cache[group_id].group_member_list:
-            member.refresh_cache()
+        if group_cache[group_id].group_member_list is not None:
+            for member in group_cache[group_id].group_member_list:
+                member.refresh_cache()
 
     for user_id in user_cache:
         user_cache[user_id].refresh_cache()
