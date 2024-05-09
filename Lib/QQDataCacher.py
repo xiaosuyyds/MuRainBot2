@@ -47,7 +47,7 @@ class UserData:
             user_cache[user_id] = self
 
     def refresh_cache(self):
-        data = api.get_stranger_info(self.user_id)
+        data = api.get_stranger_info(self.user_id, no_cache=True)
         if data is not None and isinstance(data, dict):
             self.nickname = data.get("nickname")
             self.sex = data.get("sex")
@@ -156,7 +156,7 @@ class GroupUserData:
             user_cache[user_id] = self
 
     def refresh_cache(self):
-        data = api.get_group_member_info(self.group_id, self.user_id)
+        data = api.get_group_member_info(self.group_id, self.user_id, no_cache=True)
         if data is not None and isinstance(data, dict):
             self.nickname = data.get("nickname")
             self.card = data.get("card")
@@ -215,11 +215,11 @@ class GroupData:
             flag = 1
 
         if flag == 1:
-            data = api.get_group_info(self.group_id)
+            data = api.get_group_info(self.group_id, no_cache=True)
             if data is not None:
                 self.refresh_cache()
 
-        data = api.get_group_member_list(self.group_id)
+        data = api.get_group_member_list(self.group_id, no_cache=True)
         if data is not None:
             self.group_member_list = []
             for member in data:
@@ -231,13 +231,13 @@ class GroupData:
             group_cache[group_id] = self
 
     def refresh_cache(self):
-        data = api.get_group_info(self.group_id)
+        data = api.get_group_info(self.group_id, no_cache=True)
         if data is not None:
             self.group_name = data.get("group_name")
             self.member_count = data.get("member_count")
             self.max_member_count = data.get("max_member_count")
             self.group_member_list = []
-        data = api.get_group_member_list(self.group_id)
+        data = api.get_group_member_list(self.group_id, no_cache=True)
         if data is not None and isinstance(data, dict):
             self.group_member_list = []
             for member in data:
