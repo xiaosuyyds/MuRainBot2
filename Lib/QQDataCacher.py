@@ -47,8 +47,8 @@ class UserData:
             user_cache[user_id] = self
 
     def refresh_cache(self):
-        data = api.get_stranger_info(self.user_id)
-        if data is not None:
+        data = api.get_stranger_info(self.user_id, no_cache=True)
+        if data is not None and isinstance(data, dict):
             self.nickname = data.get("nickname")
             self.sex = data.get("sex")
             self.age = data.get("age")
@@ -156,8 +156,8 @@ class GroupUserData:
             user_cache[user_id] = self
 
     def refresh_cache(self):
-        data = api.get_group_member_info(self.group_id, self.user_id)
-        if data is not None:
+        data = api.get_group_member_info(self.group_id, self.user_id, no_cache=True)
+        if data is not None and isinstance(data, dict):
             self.nickname = data.get("nickname")
             self.card = data.get("card")
             self.sex = data.get("sex")
@@ -215,11 +215,11 @@ class GroupData:
             flag = 1
 
         if flag == 1:
-            data = api.get_group_info(self.group_id)
+            data = api.get_group_info(self.group_id, no_cache=True)
             if data is not None:
                 self.refresh_cache()
 
-        data = api.get_group_member_list(self.group_id)
+        data = api.get_group_member_list(self.group_id, no_cache=True)
         if data is not None:
             self.group_member_list = []
             for member in data:
@@ -231,14 +231,14 @@ class GroupData:
             group_cache[group_id] = self
 
     def refresh_cache(self):
-        data = api.get_group_info(self.group_id)
+        data = api.get_group_info(self.group_id, no_cache=True)
         if data is not None:
             self.group_name = data.get("group_name")
             self.member_count = data.get("member_count")
             self.max_member_count = data.get("max_member_count")
             self.group_member_list = []
-        data = api.get_group_member_list(self.group_id)
-        if data is not None:
+        data = api.get_group_member_list(self.group_id, no_cache=True)
+        if data is not None and isinstance(data, dict):
             self.group_member_list = []
             for member in data:
                 self.group_member_list.append(
@@ -290,8 +290,9 @@ def refresh_all_cache():
     for group_id in list(group_cache.keys()):
         group_cache[group_id].refresh_cache()
 
-        for member in group_cache[group_id].group_member_list:
-            member.refresh_cache()
+        if group_cache[group_id].group_member_list is not None:
+            for member in group_cache[group_id].group_member_list:
+                member.refresh_cache()
 
     for user_id in user_cache:
         user_cache[user_id].refresh_cache()
