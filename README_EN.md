@@ -42,7 +42,7 @@
 │   │   ...
 │   ├─ json     MRB2 and the json temporary/cached files of the plugin that do not belong to a separate group chat
 │   ...
-├─ go-cqhttp    QQBot core framework, here exemplified by go-cqhttp
+├─ Lagrange.Core    QQBot core framework, here exemplified by Lagrange.Core
 ├─ Lib          MRB2's Lib library, plugins and MRB2 both depend on this Lib
 │   ├─ __init__.py     MRB2Lib
 │   ├─ BotController.py   One of MRB2's Lib libraries, used to control the Bot
@@ -81,9 +81,9 @@
 * Download the releases or source code package of this project
 * Please download the python environment and use pip to install the libraries in [`requirements.txt`](requirements.txt)
 * **Releases**
-    * First, configure the account and password in go-cqhttp's `config.yml`, if necessary, you can modify the HTTP ports
+    * First, configure the account and password in Lagrange.OneBot's `config.yml`, if necessary, you can modify the HTTP ports
     * Then configure MRB2's [`config.yml`](config.yml) account and QQ number
-    * After configuring, run `go-cqhttp` and `Qsgin` server first, then run `main.py`
+    * After configuring, run `Lagrange.OneBot` first, then run `main.py`
 * **Source code package**
     * Configure the framework yourself, and modify the HTTP ports to match the framework
     * Then configure MRB2's [`config.yml`](config.yml) account and QQ number
