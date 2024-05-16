@@ -1,11 +1,12 @@
 import Lib.OnebotAPI as OnebotAPI
 import Lib.Configs as Configs
+import Lib.Logger as Logger
 import threading
 import time
 
 api = OnebotAPI.OnebotAPI()
 config = Configs.GlobalConfig()
-
+logger = Logger.logger
 user_cache = {}
 group_cache = {}
 
@@ -301,8 +302,10 @@ def refresh_all_cache():
 def _refresh_cache_on_regular_basis():
     expire_time = config.expire_time
     while True:
-        refresh_all_cache()
         time.sleep(expire_time)
+        logger.info("开始刷新QQ信息缓存...")
+        refresh_all_cache()
+        logger.info("QQ信息缓存刷新完成。")
 
 
 threading.Thread(target=_refresh_cache_on_regular_basis, daemon=True).start()

@@ -44,7 +44,7 @@
 │   │   ...
 │   ├─ json     不属于某个单独群聊的MRB2及插件的json临时/缓存文件
 │   ...
-├─ go-cqhttp    QQBot内核框架，此处以go-cqhttp示例
+├─ Lagrange.Core    QQBot内核框架，此处以Lagrange.Core示例
 ├─ Lib          MRB2的Lib库，插件和MRB2均需要依赖此Lib
 │   ├─ __init__.py     MRB2Lib
 │   ├─ BotController.py   MRB2的Lib库之一，用于控制Bot
@@ -84,9 +84,9 @@
 * 下载本项目的releases或源码包
 * 请下载python环境，并使用pip安装[`requirements.txt`](requirements.txt)内的库
 * **releases**
-  * 首先配置go-cqhttp的`config.yml`内的账号密码，如有需要可以修改正反向HTTP端口
+  * 首先配置Lagrange.OneBot的`config.yml`内的账号密码，如有需要可以修改正反向HTTP端口
   * 随后配置一下MRB2的[`config.yml`](config.yml)账号和QQ号是
-  * 配置好之后运行先运行`go-cqhttp`和`Qsgin`服务器然后运行`main.py`即可
+  * 配置好之后运行先运行`Lagrange.OneBot`然后运行`main.py`即可
 * **源码包**
   * 自行配置框架，并修改正反向HTTP端口，与框架匹配
   * 随后配置一下MRB2的[`config.yml`](config.yml)账号和QQ号
