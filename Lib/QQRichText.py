@@ -218,17 +218,19 @@ class QQRichText:
 
         if isinstance(rich, str):
             rich_text = rich
+        elif isinstance(rich, Text) :
+            rich_text = rich.raw_text
         elif isinstance(rich, list) or isinstance(rich, tuple):
             rich_list = list(rich)
         elif isinstance(rich, QQRichText):
             rich_list = rich.get()
         elif isinstance(rich, dict):
             rich_list.append(rich)
+        elif (isinstance(rich, At) or isinstance(rich, Reply) or isinstance(rich, Image) or
+              isinstance(rich, Face) or isinstance(rich, Record)):
+            rich_list.append(rich.get())
         else:
-            try:
-                rich_list.append(rich.get())
-            except (TypeError, AttributeError):
-                raise ValueError("参数类型错误，未知的rich类型")
+            raise ValueError("参数类型错误，未知的rich类型")
 
         # 富文本解析
         if rich_text != "":
