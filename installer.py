@@ -7,9 +7,8 @@
 
 import os
 import sys
-
+import platform
 import requests
-import bs4
 import zipfile
 
 url = "https://github.com/xiaosuyyds/MuRainBot2/archive/refs/heads/master.zip"
@@ -102,6 +101,8 @@ print("将安装LagrangeDev/Lagrange.Core")
 
 # 由于github下载工作流附件需要登录故放弃
 """
+import bs4
+
 lagrange_url = "https://github.com/LagrangeDev/Lagrange.Core"
 # 获取仓库的最新工作流
 workflow_runs_url = f'{lagrange_url}/actions/workflows/Lagrange.OneBot-build.yml'
@@ -122,21 +123,58 @@ latest_workflow_run_artifacts = [url for url in latest_workflow_run_artifacts if
 print("最新工作流产物:", latest_workflow_run_artifacts)
 """
 
-lagrange_url = "https://github.com/LagrangeDev/Lagrange.Core/releases/expanded_assets/nightly"
+lagrange_url = "https://api.github.com/repos/LagrangeDev/Lagrange.Core/releases"
 response = requests.get(lagrange_url, proxies={'http': '127.0.0.1:10809', 'https': '127.0.0.1:10809'})
-soup = bs4.BeautifulSoup(response.content.decode("utf-8"), "html.parser")
-latest_release_url_ = soup.find_all("a", class_="Truncate")
+latest_release_url_ = response.json()[0]["assets"]
 latest_release_url = []
-for url in latest_release_url_:
-    if "Source code" not in url.find("span", class_="Truncate-text text-bold").text:
-        latest_release_url.append(
-            {"name": url.find("span", class_="Truncate-text text-bold").text, "url": "https://github.com" + url["href"]}
-        )
+
+for release in latest_release_url_:
+    file = {"name": release["name"], "url": release["browser_download_url"]}
+    latest_release_url.append(file)
+
+
 print("请选择要安装的Lagrange.Core版本:")
 for i, release in enumerate(latest_release_url):
     print(f"{i+1}.{release['name']}")
 
-choice = int(input("请输入版本号: "))
+choice = input("请输入版本号（不输入将安装自动识别的版本）: ")
+if choice == "":
+    system = platform.system()
+    cpu_architecture = platform.machine()
+
+    if cpu_architecture == "AMD64":
+        cpu_architecture = "x64"
+    elif cpu_architecture == "ARM64":
+        cpu_architecture = "arm64"
+    elif cpu_architecture == "ARM":
+        cpu_architecture = "arm"
+    elif cpu_architecture == "x86":
+        cpu_architecture = "x86"
+    elif cpu_architecture == "x64" or cpu_architecture == "x86_64":
+        cpu_architecture = "x64"
+
+    if system == "Windows":
+        system = "win"
+        if cpu_architecture == "arm64":
+            cpu_architecture = "x64"
+        elif cpu_architecture == "arm":
+            cpu_architecture = "x86"
+    elif system == "Linux":
+        system = "linux"
+    elif system == "Darwin":
+        system = "osx"
+        if cpu_architecture != "arm64" and cpu_architecture != "arm":
+            cpu_architecture = "x64"
+
+    for i in range(len(latest_release_url)):
+        release = latest_release_url[i]
+        if system in release["name"] and cpu_architecture in release["name"]:
+            choice = i + 1
+            print(f"自动识别到您当前的系统是{system}，架构是{cpu_architecture}，已为您选择{release['name']}")
+            break
+
+choice = int(choice)
+
 if choice < 1 or choice > len(latest_release_url):
     print("无效的选择")
     exit()
