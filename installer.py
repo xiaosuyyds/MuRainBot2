@@ -5,11 +5,11 @@
 #  | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
 
+from tqdm import tqdm
 import os
 import sys
 import platform
 import time
-import select
 import requests
 import zipfile
 import subprocess
@@ -42,19 +42,17 @@ print("开始下载MuRainBot2")
 
 # 下载项目
 try:
-    response = requests.get(url)
-    response.close()
-except requests.exceptions.ProxyError:
     proxy = {'http': '127.0.0.1:10809', 'https': '127.0.0.1:10809'}
-    response = requests.get(url, proxies=proxy)
-    response.close()
+    with open(zip_path, "wb") as f, requests.get(url, stream=True, proxies=proxy) as res:
+        with tqdm(total=int(res.headers.get('content-length', 0)), unit='iB', unit_scale=True) as pbar:
+            for chunk in res.iter_content(chunk_size=64 * 1024):
+                if not chunk:
+                    break
+                f.write(chunk)
+                pbar.update(len(chunk))
 except Exception as e:
     print("下载项目文件时遇到错误:", repr(e))
     exit()
-
-zip_file = response.content
-with open(zip_path, "wb") as f:
-    f.write(zip_file)
 
 # 解压文件
 zip_file = zipfile.ZipFile(zip_path, 'r')
@@ -97,6 +95,7 @@ current_interpreter = sys.executable
 os.system("%s -m pip install -r %s" % (current_interpreter, os.path.join(mrb2_path, "requirements.txt")))
 
 print("依赖安装完成。")
+print("MuRainBot2安装完毕...")
 
 # 安装OneBot实现
 print("开始安装OneBot实现...")
@@ -128,15 +127,10 @@ print("最新工作流产物:", latest_workflow_run_artifacts)
 
 lagrange_url = "https://api.github.com/repos/LagrangeDev/Lagrange.Core/releases"
 response = requests.get(lagrange_url, proxies={'http': '127.0.0.1:10809', 'https': '127.0.0.1:10809'})
-latest_release_url_ = response.json()[0]["assets"]
-latest_release_url = []
-
-for release in latest_release_url_:
-    file = {"name": release["name"], "url": release["browser_download_url"]}
-    latest_release_url.append(file)
+latest_release_url = response.json()[0]["assets"]
 
 
-print("请选择要安装的Lagrange.Core版本:")
+print("请选择要安装的Lagrange.Onebot版本:")
 for i, release in enumerate(latest_release_url):
     print(f"{i+1}.{release['name']}")
 
@@ -184,22 +178,27 @@ if choice < 1 or choice > len(latest_release_url):
 
 choice = latest_release_url[choice-1]
 
-print("正在下载Lagrange.Core...")
-response = requests.get(choice["url"], proxies={'http': '127.0.0.1:10809', 'https': '127.0.0.1:10809'})
-with open(choice["name"], "wb") as f:
-    f.write(response.content)
+print("青，出于蓝而胜于蓝，冰，水为之而寒于水，正在为你下载Lagrange.Onebot...")
+proxy = {'http': '127.0.0.1:10809', 'https': '127.0.0.1:10809'}
+with open(choice["name"], "wb") as f, requests.get(choice["browser_download_url"], stream=True, proxies=proxy) as res:
+    with Lagrange.Onebot(total=int(res.headers.get('content-length', 0)), unit='iB', unit_scale=True) as pbar:
+        for chunk in res.iter_content(chunk_size=64 * 1024):
+            if not chunk:
+                break
+            f.write(chunk)
+            pbar.update(len(chunk))
 
-print("Lagrange.Core下载完成")
+print("Lagrange.Onebot下载完成")
 
-print("正在解压Lagrange.Core...")
-print("Lagrange.Core解压完成")
+print("正在解压Lagrange.Onebot...")
+print("Lagrange.Onebot解压完成")
 
 with zipfile.ZipFile(choice["name"], 'r') as zip_ref:
     zip_ref.extractall()
 os.rename(os.path.join(work_path, "publish"), onebot_path)
 os.remove(choice["name"])
 
-# 寻找Lagrange.Core的执行文件
+# 寻找Lagrange.Onebot的执行文件
 flag = 0
 lagrange_path = ""
 for root, dirs, files in os.walk(onebot_path):
@@ -209,16 +208,19 @@ for root, dirs, files in os.walk(onebot_path):
             flag = 1
             break
 if flag == 0:
-    print("未找到Lagrange.Core的执行文件")
+    print("未找到Lagrange.Onebot的执行文件")
     exit()
 
-print("Lagrange.Core安装完成")
+print("已为您下载最新的Lagrange.Onebot，但尚未完全安装完毕，请坐和放宽\n接下来进入我们需要更改一些配置文件...")
 
-print("MuRainBot2安装完毕...")
-print("--配置阶段--")
 
-uid = input("请输入bot的QQ号: ")
-password = input("请输入bot的密码: ")
+uid = input("请输入bot的QQ号(不输入则请勾选“下次登录无需扫码”): ")
+password = input("请输入bot的密码(不输入则请勾选“下次登录无需扫码”): ")
+
+if uid == "":
+    uid = 0
+uid = int(uid)
+
 
 os.chdir(onebot_path)
 
@@ -270,7 +272,7 @@ flag = 0
 
 def login():
     global flag, uid
-    print("正在进行首次登录流程...")
+    print("海内存知己，天涯若比邻。正在进行首次登录流程，请不要结束进程...")
     p = subprocess.Popen(
         lagrange_path,
         stdout=subprocess.PIPE,
@@ -329,3 +331,10 @@ else:
         json.dump(config, f, ensure_ascii=False, indent=4)
 
     print("配置文件已修改")
+
+print("您本次 Lagrange.Onebot 安装耗时 1145.14 秒，打败全球 1.919% 的用户")
+print("Lagrange.Onebot安装完成，期待与您的下次见面...")
+
+print("MuRainBot2 安装程序运行完成...")
+print("请手动启动Lagrange.Onebot和main.py")
+input("按任意键退出...")
