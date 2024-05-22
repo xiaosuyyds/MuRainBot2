@@ -8,8 +8,12 @@
 import os
 import sys
 import platform
+import time
+import select
 import requests
 import zipfile
+import subprocess
+import json
 
 url = "https://github.com/xiaosuyyds/MuRainBot2/archive/refs/heads/master.zip"
 
@@ -17,7 +21,6 @@ work_path = os.path.abspath(os.path.dirname(__file__))
 mrb2_path = os.path.join(work_path, "MuRainBot2")
 zip_path = os.path.join(work_path, "MuRainBot2.zip")
 onebot_path = os.path.join(mrb2_path, "OneBot")
-
 
 if os.path.exists(mrb2_path):
     # 删除旧文件夹的所有文件
@@ -58,7 +61,7 @@ zip_file = zipfile.ZipFile(zip_path, 'r')
 zip_file.extractall(mrb2_path)
 zip_file.close()
 
-# 复制./MuRainBot2/MuRainBot2-master文件到./MuRainBot2
+# 复制所有子文件./MuRainBot2/MuRainBot2-master文件到./MuRainBot2
 for root, dirs, files in os.walk(os.path.join(mrb2_path, "MuRainBot2-master")):
     for name in files:
         src = os.path.join(root, name)
@@ -189,10 +192,140 @@ with open(choice["name"], "wb") as f:
 print("Lagrange.Core下载完成")
 
 print("正在解压Lagrange.Core...")
+print("Lagrange.Core解压完成")
+
 with zipfile.ZipFile(choice["name"], 'r') as zip_ref:
     zip_ref.extractall()
 os.rename(os.path.join(work_path, "publish"), onebot_path)
 os.remove(choice["name"])
-print("Lagrange.Core解压完成")
+
+# 寻找Lagrange.Core的执行文件
+flag = 0
+lagrange_path = ""
+for root, dirs, files in os.walk(onebot_path):
+    for file in files:
+        if "Lagrange.OneBot" in file:
+            lagrange_path = os.path.join(root, file)
+            flag = 1
+            break
+if flag == 0:
+    print("未找到Lagrange.Core的执行文件")
+    exit()
+
+print("Lagrange.Core安装完成")
 
 print("MuRainBot2安装完毕...")
+print("--配置阶段--")
+
+uid = input("请输入bot的QQ号: ")
+password = input("请输入bot的密码: ")
+
+os.chdir(onebot_path)
+
+p = subprocess.Popen(
+    lagrange_path,
+    shell=True,
+    stdout=subprocess.PIPE,
+    stdin=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+)
+
+# 获取实时输出
+for line in iter(p.stdout.readline, b''):
+    if "Please Edit the appsettings." in line.decode('utf-8'):
+        break
+
+p.kill()
+
+lagrange_config_path = os.path.join(onebot_path, "appsettings.json")
+
+# 修改配置文件
+with open(lagrange_config_path, "r", encoding="utf-8") as f:
+    config = json.load(f)
+    config["Account"]["Uin"] = uid
+    config["SignServerUrl"] = "https://sign.lagrangecore.org/api/sign"
+    config["Implementations"] = [
+        {
+            "Type": "HttpPost",
+            "Host": "127.0.0.1",
+            "Port": 5701,
+            "Suffix": "/",
+            "HeartBeatInterval": 5000,
+            "AccessToken": ""
+        },
+        {
+            "Type": "Http",
+            "Host": "127.0.0.1",
+            "Port": 5700,
+            "AccessToken": ""
+        }
+    ]
+print("配置文件已修改")
+
+with open(lagrange_config_path, "w", encoding="utf-8") as f:
+    json.dump(config, f, ensure_ascii=False, indent=4)
+
+flag = 0
+
+
+def login():
+    global flag, uid
+    print("正在进行首次登录流程...")
+    p = subprocess.Popen(
+        lagrange_path,
+        stdout=subprocess.PIPE,
+        stdin=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    time.sleep(1)
+    # 获取实时输出
+    for line in iter(p.stdout.readline, b''):
+        if "QrCode Fetched, Expiration: 120 seconds" in line.decode('utf-8'):
+            print("请扫码登陆")
+            os.system("cmd.exe /c " + os.path.join(onebot_path, "qr-%s.png" % uid))
+        elif "Login Success" in line.decode('utf-8'):
+            print("登录成功")
+            try:
+                user_info = requests.get("http://127.0.0.1:5700/get_login_info").json()["data"]
+                if user_info is not None:
+                    user_name = user_info["nickname"]
+                    uid = user_info["user_id"]
+                    print("登录账号的用户名: %s(%s)" % (user_name, uid))
+
+                    # 修改MRB2的配置文件
+                    with open(os.path.join(mrb2_path, "config.yml"), "r", encoding="utf-8") as f:
+                        config = f.read()
+                        config = config.replace("user_id: 123456", "user_id: " + str(uid))
+                        config = config.replace("nick_name: \"\"", "nick_name: \"" + user_name + "\"")
+
+                    with open(os.path.join(mrb2_path, "config.yml"), "w", encoding="utf-8") as f:
+                        f.write(config)
+                else:
+                    print("获取登录账号的用户信息失败")
+            except Exception as e:
+                print("获取登录账号的用户信息失败:", repr(e))
+
+            flag = 1
+            break
+        elif "QrCode Expired, Please Fetch QrCode Again" in line.decode('utf-8'):
+            print("二维码已过期，请重新扫码")
+            p.kill()
+            login()
+            break
+    p.kill()
+
+
+login()
+
+if flag == 0:
+    print("登录失败，请重新运行安装程序")
+    exit()
+else:
+    with open(lagrange_config_path, "r", encoding="utf-8") as f:
+        config = json.load(f)
+        config["Account"]["Password"] = password
+
+    with open(lagrange_config_path, "w", encoding="utf-8") as f:
+        json.dump(config, f, ensure_ascii=False, indent=4)
+
+    print("配置文件已修改")
