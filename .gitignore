@@ -11,3 +11,5 @@
 /.idea
 *.pyc
 test.py
+*.zip
+/MURainBot2
