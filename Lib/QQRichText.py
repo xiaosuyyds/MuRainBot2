@@ -76,7 +76,7 @@ def array_2_cq(cq_array: list | dict) -> str:
     for segment in cq_array:
         # 纯文本
         if segment.get("type") == "text":
-            text += cq_encode(segment.get("data"))
+            text += cq_encode(segment.get("data").get("text"))
         # CQ码
         else:
             if segment.get("data"):  # 特判
@@ -445,14 +445,34 @@ class QQRichText:
 
         elif isinstance(self.rich_array, dict):
             self.rich_array = [self.rich_array]
-
+        elif isinstance(self.rich_array, (list, tuple)):
+            array = []
+            for item in self.rich_array:
+                if isinstance(item, dict):
+                    array.append(item)
+                elif isinstance(item, str):
+                    array.append(cq_2_array(item))
+                else:
+                    for segment in segments:
+                        if isinstance(item, segment):
+                            array.append(item.array)
+                            break
+                    else:
+                        if isinstance(self.rich_array, QQRichText):
+                            array += self.rich_array.rich_array
+                        else:
+                            raise TypeError("QQRichText: 输入类型错误")
+            self.rich_array = array
         else:
             for segment in segments:
                 if isinstance(self.rich_array, segment):
                     self.rich_array = [self.rich_array.array]
                     break
             else:
-                raise TypeError("QQRichText: 输入类型错误")
+                if isinstance(self.rich_array, QQRichText):
+                    self.rich_array = self.rich_array.rich_array
+                else:
+                    raise TypeError("QQRichText: 输入类型错误")
 
     def __str__(self):
         self.rich_string = array_2_cq(self.rich_array)
@@ -502,3 +522,4 @@ if __name__ == "__main__":
 
     print(QQRichText(At(114514)))
     print(Segment(At(1919810)))
+    print(QQRichText({"type": "at", "data": {"qq": "1919810"}}))
