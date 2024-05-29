@@ -233,7 +233,7 @@ class GroupData:
 
     def refresh_cache(self):
         data = api.get_group_info(self.group_id, no_cache=True)
-        if data is not None:
+        if data is not None and isinstance(data, dict):
             self.group_name = data.get("group_name")
             self.member_count = data.get("member_count")
             self.max_member_count = data.get("max_member_count")
