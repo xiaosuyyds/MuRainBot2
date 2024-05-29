@@ -37,8 +37,7 @@ def cq_encode(text, in_cq: bool = False) -> str:
 
 
 def cq_2_array(cq: str) -> list:
-
-    if isinstance(cq, str):
+    if not isinstance(cq, str):
         raise TypeError("cq_2_array: 输入类型错误")
 
     # 匹配CQ码或纯文本（纯文本不含[]，利用这一点区分CQ码和纯文本）
@@ -65,7 +64,9 @@ def cq_2_array(cq: str) -> list:
         else:  # 纯文本
             cq_array.append({
                 "type": "text",
-                "data": cq_decode(rich[2])
+                "data": {
+                    "text": cq_decode(rich[2])
+                }
             })
     return cq_array
 
@@ -75,7 +76,7 @@ def array_2_cq(cq_array: list | dict) -> str:
     if isinstance(cq_array, dict):
         cq_array = [cq_array]
 
-    if isinstance(cq_array, (list, tuple)):
+    if not isinstance(cq_array, (list, tuple)):
         raise TypeError("array_2_cq: 输入类型错误")
 
     # 将json形式的富文本转换为CQ码
