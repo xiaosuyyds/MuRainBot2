@@ -85,8 +85,6 @@
 * 请下载python环境，并使用pip安装[`requirements.txt`](requirements.txt)内的库
 * [**installer.py**](installer.py)
   * 运行[`installer.py`](installer.py)随后静待安装成功
-  * 然后配置Lagrange.OneBot的`config.yml`内的账号密码，如有需要可以修改正反向HTTP端口
-  * 随后配置一下MRB2的[`config.yml`](config.yml)账号和QQ号
   * 配置好之后运行先运行`Lagrange.OneBot`然后运行`main.py`即可
 * ~~**releases**~~
   * 首先配置Lagrange.OneBot的`config.yml`内的账号密码，如有需要可以修改正反向HTTP端口

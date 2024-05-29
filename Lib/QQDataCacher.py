@@ -221,7 +221,7 @@ class GroupData:
                 self.refresh_cache()
 
         data = api.get_group_member_list(self.group_id, no_cache=True)
-        if data is not None:
+        if data is not None and isinstance(data, dict):
             self.group_member_list = []
             for member in data:
                 self.group_member_list.append(GroupUserData(member.get("user_id"), group_id))
@@ -233,7 +233,7 @@ class GroupData:
 
     def refresh_cache(self):
         data = api.get_group_info(self.group_id, no_cache=True)
-        if data is not None:
+        if data is not None and isinstance(data, dict):
             self.group_name = data.get("group_name")
             self.member_count = data.get("member_count")
             self.max_member_count = data.get("max_member_count")
