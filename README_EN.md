@@ -82,8 +82,6 @@
 * Please download the python environment and use pip to install the libraries in [`requirements.txt`](requirements.txt)
 * [**installer.py**](installer.py)
   * Run [`installer.py`](installer.py) and wait for the installation to complete
-  * Then configure the account password in the `config.yml` file of Lagrange.OneBot, and modify the reverse HTTP port if needed
-  * After that, configure the account and QQ number in the [`config.yml`](config.yml) file of MRB2
   * After configuring, run `Lagrange.OneBot` first and then run `main.py`
 *  ~~**Releases**~~
     * First, configure the account and password in Lagrange.OneBot's `config.yml`, if necessary, you can modify the HTTP ports
