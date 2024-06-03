@@ -35,13 +35,21 @@ def reboot() -> None:
         sys.exit()
 
 
-def download_file_to_cache(url: str, headers=None) -> str | None:
+def download_file_to_cache(url: str, headers=None, file_name: str = "", download_path: str = None) -> str | None:
     if headers is None:
         headers = {}
 
     # 路径拼接
-    file_name = url.split("/")[-1] + str(random.randint(10000, 99999)) + str(time.time()) + ".cache"
-    file_path = os.path.join(cache_path, file_name)
+    flag = False
+    if file_name == "":
+        file_name = url.split("/")[-1] + str(random.randint(10000, 99999)) + str(time.time()) + ".cache"
+    else:
+        flag = True
+
+    if download_path is None:
+        file_path = os.path.join(cache_path, file_name)
+    else:
+        file_path = os.path.join(download_path, file_name)
 
     # 路径不存在特判
     if not os.path.exists(cache_path):
@@ -60,21 +68,24 @@ def download_file_to_cache(url: str, headers=None) -> str | None:
             os.remove(file_path)
         return None
 
-    # 计算MD5
-    md5_hash = hashlib.md5()
-    with open(file_path, "rb") as f:
-        for byte_block in iter(lambda: f.read(4096), b""):
-            md5_hash.update(byte_block)
-        rename = md5_hash.hexdigest() + ".cache"
-        rename_path = os.path.join(cache_path, rename)
+    if not flag:
+        # 计算MD5
+        md5_hash = hashlib.md5()
+        with open(file_path, "rb") as f:
+            for byte_block in iter(lambda: f.read(4096), b""):
+                md5_hash.update(byte_block)
+            rename = md5_hash.hexdigest() + ".cache"
+            rename_path = os.path.join(cache_path, rename)
 
-    # 重命名（MD5）
-    if os.path.exists(rename_path):
-        os.remove(rename_path)
+        # 重命名（MD5）
+        if os.path.exists(rename_path):
+            os.remove(rename_path)
 
-    os.rename(file_path, rename_path)
+        os.rename(file_path, rename_path)
 
-    return rename_path
+        return rename_path
+    else:
+        return file_path
 
 
 # 删除缓存文件
