@@ -5,11 +5,14 @@
 #  | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
 
+# TODO: 写的太烂了，之后有时间的话重构
+
 import re
 import traceback
 from typing import Callable
 
 import Lib.QQRichText as QQRichText
+import Lib.BotController as BotController
 
 register_event_list = []  # event_type, func, arg, args, kwargs, by_file
 register_keyword_list = []  # keyword, func, arg, args, kwargs, by_file
@@ -111,7 +114,7 @@ class Event:
                     break
 
         # 关键词检测
-        if self.event_class is list:
+        if isinstance(self.event_class, (tuple, list, BotController.Event)):
             if self.event_class[0] == "message":
                 message = str(QQRichText.QQRichText(event_data["message"]))
                 for keyword, func, model, arg, args, by_file in register_keyword_list:

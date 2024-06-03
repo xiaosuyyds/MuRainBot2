@@ -84,8 +84,7 @@ def array_2_cq(cq_array: list | dict) -> str:
     for segment in cq_array:
         # 纯文本
         if segment.get("type") == "text":
-            print(segment)
-            text += cq_encode(segment.get("data"))
+            text += cq_encode(segment.get("data").get("text"))
         # CQ码
         else:
             if segment.get("data"):  # 特判
