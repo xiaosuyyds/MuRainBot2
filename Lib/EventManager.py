@@ -5,8 +5,6 @@
 #  | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
 
-# TODO: 写的太烂了，之后有时间的话重构
-
 import re
 import traceback
 from typing import Callable
@@ -31,7 +29,14 @@ def register_event(event_type: tuple[str, str] | str | tuple[tuple[str, str] | s
         # print("运行run")
         # func(*args, **kwargs)
         # print("func运行结束")
-        register_event_list.append((event_type, func, arg, args, kwargs, traceback.extract_stack()[-2].filename))
+        register_event_list.append({
+            'event_type': event_type,
+            'func': func,
+            'arg': arg,
+            'args': args,
+            'kwargs': kwargs,
+            'by_file': traceback.extract_stack()[-2].filename
+        })
         register_event_list.sort(key=lambda x: x[2], reverse=True)
 
         return func
@@ -48,8 +53,8 @@ def unregister_event(event_type: tuple[str, str] | str | tuple[tuple[str, str] |
     :return: None
     """
     for i in register_event_list:
-        if (i[0] == event_type and
-                i[5] == traceback.extract_stack()[-2].filename):
+        if (i["event_type"] == event_type and
+                i["by_file"] == traceback.extract_stack()[-2].filename):
             register_event_list.remove(i)
 
 
@@ -72,7 +77,14 @@ def register_keyword(keyword: str, func, model: str = "INCLUDE", arg: int = 0, *
 
     if args is None:
         args = []
-    register_keyword_list.append((keyword, func, model, arg, args, traceback.extract_stack()[-2].filename))
+    register_keyword_list.append({
+        'keyword': keyword,
+        'func': func,
+        'model': model,
+        'arg': arg,
+        'args': args,
+        'by_file': traceback.extract_stack()[-2].filename
+    })
     register_keyword_list.sort(key=lambda x: x[2], reverse=True)
     return
 
@@ -86,8 +98,8 @@ def unregister_keyword(keyword: str):
     :return: None
     """
     for i in range(len(register_keyword_list)):
-        if (register_keyword_list[i][0] == keyword and
-                register_event_list[i][4] == traceback.extract_stack()[-2].filename):
+        if (register_keyword_list[i]["keyword"] == keyword and
+                register_event_list[i]["by_file"] == traceback.extract_stack()[-2].filename):
             del register_keyword_list[i]
 
 
@@ -107,17 +119,27 @@ class Event:
             raise ValueError("不能将all或是*设为事件，因为会发生冲突。")
 
         # 事件扫描
-        for event_class, func, arg, args, kwargs, by_file in register_event_list:
+        for register_event in register_event_list:
+            event_class = register_event["event_type"]
+            func = register_event["func"]
+            args = register_event["args"]
+            kwargs = register_event["kwargs"]
+            # 优先级检测
             if event_class == self.event_class or event_class == "all" or event_class == "*":
                 return_ = func(self.event_class, self.event_data, *args, **kwargs)
                 if isinstance(return_, bool) and return_:
                     break
 
         # 关键词检测
-        if isinstance(self.event_class, (tuple, list, BotController.Event)):
+        if isinstance(self.event_class, (tuple, list)):
             if self.event_class[0] == "message":
                 message = str(QQRichText.QQRichText(event_data["message"]))
-                for keyword, func, model, arg, args, by_file in register_keyword_list:
+                for register_keyword in register_keyword_list:
+                    keyword = register_keyword["keyword"]
+                    func = register_keyword["func"]
+                    model = register_keyword["model"]
+                    args = register_keyword["args"]
+
                     if model == "BEGIN":
                         if message.startswith(keyword):
                             return_ = func(self.event_class, self.event_data, *args)

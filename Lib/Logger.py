@@ -9,7 +9,6 @@ import sys
 
 import coloredlogs
 
-logger = None
 work_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 data_path = os.path.join(work_path, "data")
 logs_path = os.path.join(work_path, "logs")
@@ -55,6 +54,7 @@ def init(logs_path: str = logs_path):
     file_handler.suffix = "%Y-%m-%d.log"
     file_handler.setFormatter(logging.Formatter(fmt))
     logger.addHandler(file_handler)
+    return logger
 
 
-init()
+logger = init()
