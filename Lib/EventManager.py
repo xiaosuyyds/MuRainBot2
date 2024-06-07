@@ -37,7 +37,7 @@ def register_event(event_type: tuple[str, str] | str | tuple[tuple[str, str] | s
             'kwargs': kwargs,
             'by_file': traceback.extract_stack()[-2].filename
         })
-        register_event_list.sort(key=lambda x: x[2], reverse=True)
+        register_event_list.sort(key=lambda x: x["arg"], reverse=True)
 
         return func
 
@@ -85,7 +85,7 @@ def register_keyword(keyword: str, func, model: str = "INCLUDE", arg: int = 0, *
         'args': args,
         'by_file': traceback.extract_stack()[-2].filename
     })
-    register_keyword_list.sort(key=lambda x: x[2], reverse=True)
+    register_keyword_list.sort(key=lambda x: x["arg"], reverse=True)
     return
 
 
