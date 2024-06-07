@@ -35,7 +35,8 @@ def reboot() -> None:
         sys.exit()
 
 
-def download_file_to_cache(url: str, headers=None, file_name: str = "", download_path: str = None) -> str | None:
+def download_file_to_cache(url: str, headers=None, file_name: str = "",
+                           download_path: str = None, stream=False) -> str | None:
     if headers is None:
         headers = {}
 
@@ -57,11 +58,18 @@ def download_file_to_cache(url: str, headers=None, file_name: str = "", download
 
     try:
         # 下载
-        with open(file_path, "wb") as f, requests.get(url, stream=True, headers=headers) as res:
-            for chunk in res.iter_content(chunk_size=64 * 1024):
-                if not chunk:
-                    break
-                f.write(chunk)
+        if stream:
+            with open(file_path, "wb") as f, requests.get(url, stream=True, headers=headers) as res:
+                for chunk in res.iter_content(chunk_size=64 * 1024):
+                    if not chunk:
+                        break
+                    f.write(chunk)
+        else:
+            # 不使用流式传输
+            res = requests.get(url, headers=headers, verify=False)
+
+            with open(file_path, "wb") as f:
+                f.write(res.content)
     except requests.exceptions.RequestException as e:
         logging.warning(f"下载文件失败: {e}")
         if os.path.exists(file_path):
