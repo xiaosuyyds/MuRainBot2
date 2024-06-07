@@ -56,7 +56,7 @@ def cq_2_array(cq: str) -> list:
                 "type": rich[0],  # CQ码类型
                 "data": dict(
                     map(
-                        lambda x: cq_decode(x, in_cq=True).split("="),
+                        lambda x: cq_decode(x, in_cq=True).split("=", 1),
                         rich[1].split(",")
                     )
                 ) if rich[1] else {},
