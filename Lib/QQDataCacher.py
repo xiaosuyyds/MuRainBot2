@@ -303,9 +303,9 @@ def _refresh_cache_on_regular_basis():
     expire_time = config.expire_time
     while True:
         time.sleep(expire_time)
-        logger.info("开始刷新QQ信息缓存...")
+        logger.debug("开始刷新QQ信息缓存...")
         refresh_all_cache()
-        logger.info("QQ信息缓存刷新完成。")
+        logger.debug("QQ信息缓存刷新完成。")
 
 
 threading.Thread(target=_refresh_cache_on_regular_basis, daemon=True).start()
