@@ -6,6 +6,7 @@ import logging
 import logging.handlers as handlers
 import os
 import sys
+from Lib.Configs import GlobalConfig
 
 import coloredlogs
 
@@ -36,7 +37,14 @@ def init(logs_path: str = logs_path):
     # 设置文件日志
     global logger
     logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
+
+    if GlobalConfig().debug:
+        logger.setLevel(logging.DEBUG)
+        coloredlogs.set_level(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
+        coloredlogs.set_level(logging.INFO)
+
     log_name = "latest.log"
     log_path = os.path.join(logs_path, log_name)
     # 如果指定路径不存在，则尝试创建路径

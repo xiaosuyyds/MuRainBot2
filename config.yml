@@ -17,3 +17,6 @@ thread_pool: # 线程池最大线程数
 
 qq_data_cache: # QQ数据缓存设置
   expire_time: 300  # 缓存过期时间（秒）
+
+debug: # 调试模式
+  enable: false # 是否启用调试模式
