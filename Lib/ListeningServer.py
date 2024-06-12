@@ -24,10 +24,11 @@ data_path = os.path.join(work_path, "data")
 # 上报
 @app.route("/", methods=["POST"])
 def post_data():
+    logger.debug("收到上报: %s" % request.get_json())
     data = BotController.Event(request.get_json())
     # 检测是否为重复上报
-    logger.debug("收到上报: %s" % data)
     if data in request_list:
+        logger.warning("检测到重复上报，忽略")
         return "ok", 204
     else:
         request_list.append(data)
