@@ -25,9 +25,11 @@ data_path = os.path.join(work_path, "data")
 @app.route("/", methods=["POST"])
 def post_data():
     data = BotController.Event(request.get_json())
+    logger.debug("收到上报: %s" % data.event_json)
+
     # 检测是否为重复上报
-    logger.debug("收到上报: %s" % data)
     if data in request_list:
+        logger.warning("检测到重复上报，忽略")
         return "ok", 204
     else:
         request_list.append(data)
@@ -35,8 +37,10 @@ def post_data():
         request_list.pop(0)
 
     if data.post_type + "_type" in data:
+        logger.debug("广播事件：%s" % data.post_type + "_type")
         EventManager.Event((data.post_type, data[data.post_type + "_type"]), data)
     else:
+        logger.debug("广播事件：%s" % data.post_type)
         EventManager.Event(data.post_type, data)
 
     if data.post_type == "message" or data.post_type == "message_sent":
@@ -217,6 +221,19 @@ def post_data():
                 elif data.honor_type == "emotion":
                     logger.info("群 %s(%s) 内 %s(%s) 获得了快乐源泉" %
                                 (group.group_name, group.group_id, user.get_group_name(), user.user_id))
+    # 元事件
+    elif data.post_type == "meta_event":
+        if data.meta_event_type == "lifecycle":
+            if data.sub_type == "enable":
+                logger.info("收到元事件：OneBot 启用")
+            elif data.sub_type == "disable":
+                logger.info("收到元事件：OneBot 停用")
+            elif data.sub_type == "connect":
+                logger.info("收到元事件：WebSocket 连接成功")
+        elif data.meta_event_type == "lifecycle":
+            logger.debug("收到心跳包")
+    else:
+        logger.warning("收到未知的上报: %s" % data.event_json)
 
     # 若插件包含main函数则运行
     for plugin in PluginManager.plugins:

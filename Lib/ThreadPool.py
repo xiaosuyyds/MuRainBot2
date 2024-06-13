@@ -8,8 +8,6 @@ from concurrent.futures import ThreadPoolExecutor
 
 import atexit
 
-from Lib.Logger import logger
-
 thread_pool = None
 
 
@@ -30,6 +28,5 @@ def async_task(func):
 @atexit.register
 def shutdown():
     if isinstance(thread_pool, ThreadPoolExecutor):
-        if isinstance(logger, logging.Logger):
-            logger.info("Closing Thread Pool")
+        logging.info("Closing Thread Pool")
         thread_pool.shutdown()
