@@ -14,34 +14,17 @@ group_cache = {}
 class UserData:
     def __init__(
             self,
-            user_id,
+            user_id: int,
             name: str | None = None,
             sex: str | None = None,
             age: int | None = None,
     ):
         self.user_id = user_id
-        flag = 0
+        self.nickname = name
+        self.sex = sex
+        self.age = age
 
-        self.nickname = None
-        self.sex = None
-        self.age = None
-
-        if name is not None:
-            self.nickname = user_id
-        else:
-            flag = 1
-
-        if sex is not None:
-            self.sex = sex
-        else:
-            flag = 1
-
-        if age is not None:
-            self.age = age
-        else:
-            flag = 1
-
-        if flag == 1:
+        if self.nickname  or self.sex  or self.age is None:
             self.refresh_cache()
 
         if user_id not in user_cache:
@@ -49,7 +32,7 @@ class UserData:
 
     def refresh_cache(self):
         data = api.get_stranger_info(self.user_id, no_cache=True)
-        if data is not None and isinstance(data, dict):
+        if data is None and isinstance(data, dict):
             self.nickname = data.get("nickname")
             self.sex = data.get("sex")
             self.age = data.get("age")
@@ -58,8 +41,8 @@ class UserData:
 class GroupUserData:
     def __init__(
             self,
-            user_id,
-            group_id,
+            user_id: int,
+            group_id: int,
             name: str | None = None,
             card: str | None = None,
             sex: str | None = None,
@@ -75,82 +58,24 @@ class GroupUserData:
     ):
         self.user_id = user_id
         self.group_id = group_id
-        flag = 0
 
-        self.nickname = None
-        self.card = None
-        self.sex = None
-        self.age = None
-        self.area = None
-        self.join_time = None
-        self.last_sent_time = None
-        self.level = None
-        self.role = None
-        self.title = None
-        self.title_expire_time = None
-        self.card_changeable = None
-
-        if name is not None:
-            self.nickname = user_id
-        else:
-            flag = 1
-
-        if card is not None:
-            self.card = card
-        else:
-            flag = 1
-
-        if sex is not None:
-            self.sex = sex
-        else:
-            flag = 1
-
-        if age is not None:
-            self.age = age
-        else:
-            flag = 1
-
-        if area is not None:
-            self.area = area
-        else:
-            flag = 1
-
-        if join_time is not None:
-            self.join_time = join_time
-        else:
-            flag = 1
-
-        if last_sent_time is not None:
-            self.last_sent_time = last_sent_time
-        else:
-            flag = 1
-
-        if level is not None:
-            self.level = level
-        else:
-            flag = 1
-
-        if role is not None:
-            self.role = role
-        else:
-            flag = 1
-
-        if title is not None:
-            self.title = title
-        else:
-            flag = 1
-
-        if title_expire_time is not None:
-            self.title_expire_time = title_expire_time
-        else:
-            flag = 1
-
-        if card_changeable is not None:
-            self.card_changeable = card_changeable
-        else:
-            flag = 1
-
-        if flag == 1:
+        self.nickname = name
+        self.card = card
+        self.sex = sex
+        self.age = age
+        self.area = area
+        self.join_time = join_time
+        self.last_sent_time = last_sent_time
+        self.level = level
+        self.role = role
+        self.title = title
+        self.title_expire_time = title_expire_time
+        self.card_changeable = card_changeable
+        if (self.nickname is None or self.card is None or self.sex is None or self.age is None
+                or self.area is None or self.join_time is None
+                or self.last_sent_time is None or self.level is None
+                or self.role is None or self.title is None
+                or self.title_expire_time is None or self.card_changeable is None):
             self.refresh_cache()
 
         if user_id not in user_cache:
@@ -194,28 +119,12 @@ class GroupData:
             max_member_count: int | None = None,
     ):
         self.group_id = group_id
-        flag = 0
 
-        self.group_name = None
-        self.member_count = None
-        self.max_member_count = None
+        self.group_name = name
+        self.member_count = member_count
+        self.max_member_count = max_member_count
 
-        if name is not None:
-            self.group_name = name
-        else:
-            flag = 1
-
-        if member_count is not None:
-            self.member_count = member_count
-        else:
-            flag = 1
-
-        if max_member_count is not None:
-            self.max_member_count = max_member_count
-        else:
-            flag = 1
-
-        if flag == 1:
+        if self.group_name is None or self.member_count is None or self.max_member_count is None:
             data = api.get_group_info(self.group_id, no_cache=True)
             if data is not None:
                 self.refresh_cache()
