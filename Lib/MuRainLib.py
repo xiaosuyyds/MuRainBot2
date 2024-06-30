@@ -43,7 +43,7 @@ def download_file_to_cache(url: str, headers=None, file_name: str = "",
     # 路径拼接
     flag = False
     if file_name == "":
-        file_name = url.split("/")[-1] + str(random.randint(10000, 99999)) + str(time.time()) + ".cache"
+        file_name = hex(int(hash(url.split("/")[-1]) + random.randint(10000, 99999) + time.time()))[2:] + ".cache"
     else:
         flag = True
 
