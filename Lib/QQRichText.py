@@ -510,7 +510,7 @@ class QQRichText:
             except (TypeError, AttributeError):
                 return False
 
-    def send(self, user_id=None, group_id=None):
+    def send(self, user_id=-1, group_id=-1):
         OnebotAPI.OnebotAPI().send_msg(user_id=user_id, group_id=group_id, message=str(self))
 
 
