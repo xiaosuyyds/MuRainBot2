@@ -38,10 +38,11 @@ def post_data():
 
     if data.post_type + "_type" in data:
         logger.debug("广播事件：%s" % data.post_type + "_type")
-        EventManager.Event((data.post_type, data[data.post_type + "_type"]), data)
+        threading.Thread(
+            target=lambda: EventManager.Event((data.post_type, data[data.post_type + "_type"]), data)).start()
     else:
         logger.debug("广播事件：%s" % data.post_type)
-        EventManager.Event(data.post_type, data)
+        threading.Thread(target=lambda: EventManager.Event(data.post_type, data)).start()
 
     if data.post_type == "message" or data.post_type == "message_sent":
         # 私聊消息

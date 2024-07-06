@@ -36,14 +36,33 @@ def reboot() -> None:
 
 
 def download_file_to_cache(url: str, headers=None, file_name: str = "",
-                           download_path: str = None, stream=False) -> str | None:
+                           download_path: str = None, stream=False, fake_headers: bool = True) -> str | None:
     if headers is None:
         headers = {}
+
+    if fake_headers:
+        headers["User-Agent"] = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+                                 "Chrome/113.0.0.0 Safari/537.36 Edg/113.0.1774.42")
+        headers["Accept-Language"] = "zh-CN,zh;q=0.9,en;q=0.8,da;q=0.7,ko;q=0.6"
+        headers["Accept-Encoding"] = "gzip, deflate, br"
+        headers["Accept"] = ("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,"
+                             "application/signed-exchange;v=b3;q=0.7")
+        headers["Connection"] = "keep-alive"
+        headers["Upgrade-Insecure-Requests"] = "1"
+        headers["Cache-Control"] = "max-age=0"
+        headers["Sec-Fetch-Dest"] = "document"
+        headers["Sec-Fetch-Mode"] = "navigate"
+        headers["Sec-Fetch-Site"] = "none"
+        headers["Sec-Fetch-User"] = "?1"
+        headers["Sec-Ch-Ua"] = "\"Chromium\";v=\"113\", \"Not-A.Brand\";v=\"24\", \"Microsoft Edge\";v=\"113\""
+        headers["Sec-Ch-Ua-Mobile"] = "?0"
+        headers["Sec-Ch-Ua-Platform"] = "\"Windows\""
+        headers["Host"] = url.split("/")[2]
 
     # 路径拼接
     flag = False
     if file_name == "":
-        file_name = url.split("/")[-1] + str(random.randint(10000, 99999)) + str(time.time()) + ".cache"
+        file_name = hex(int(hash(url.split("/")[-1]) + random.randint(10000, 99999) + time.time()))[2:] + ".cache"
     else:
         flag = True
 
