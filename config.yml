@@ -21,5 +21,5 @@ qq_data_cache: # QQ数据缓存设置
 debug: # 调试模式
   enable: false # 是否启用调试模式
 
-auto_start_onebot: # 在Onebot实现端状态异常时自动重启Onebot实现端（需开启心跳包）
+auto_restart_onebot: # 在Onebot实现端状态异常时自动重启Onebot实现端（需开启心跳包）
   enable: true # 是否启用自动重启

@@ -32,7 +32,7 @@ def heartbeat_check():
         if heartbeat_interval > 0:
             if time.time() - last_heartbeat_time > heartbeat_interval * 2:
                 logger.warning("心跳包超时！请检查 Onebot 实现端是否正常运行！")
-                if config.auto_start_onebot:
+                if config.auto_restart_onebot:
                     logger.warning("将自动重启 Onebot 实现端！")
                     api.set_restart()
         time.sleep(1)
@@ -257,7 +257,7 @@ def post_data():
             # 检查心跳包是否正常
             if data.status.get("online") is not True or data.status.get("good") is not True:
                 logger.warning("心跳包异常，当前状态：%s" % data.status)
-                if config.auto_start_onebot:
+                if config.auto_restart_onebot:
                     logger.warning("将自动重启 Onebot 实现端！")
                     api.set_restart()
 
