@@ -38,6 +38,9 @@ def heartbeat_check():
         time.sleep(1)
 
 
+threading.Thread(target=heartbeat_check, daemon=True).start()
+
+
 # 上报
 @app.route("/", methods=["POST"])
 def post_data():
@@ -259,8 +262,9 @@ def post_data():
                     api.set_restart()
 
             # 检查心跳包间隔是否正常
-            if last_heartbeat_time != 0 and last_heartbeat_time - data.time / 1000 > data.interval * 1.5:
-                logger.warning("心跳包间隔异常，当前间隔：%s，请检查 Onebot 实现端！" % (data.time - last_heartbeat_time))
+            if last_heartbeat_time != 0 and data.time - last_heartbeat_time > data.interval / 1000 * 1.5:
+                logger.warning("心跳包间隔异常，当前间隔: %ss，设置间隔为: %ss，请检查 Onebot 实现端！"
+                               % (data.time - last_heartbeat_time, data.interval / 1000))
 
             last_heartbeat_time = data.time
             heartbeat_interval = data.interval / 1000
