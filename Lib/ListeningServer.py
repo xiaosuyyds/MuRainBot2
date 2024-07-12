@@ -10,6 +10,7 @@ import Lib.Logger as Logger
 import Lib.PluginManager as PluginManager
 import Lib.QQDataCacher as QQDataCacher
 import os
+import time
 
 app = Flask(__name__)
 api = OnebotAPI.OnebotAPI()
@@ -21,9 +22,26 @@ work_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 data_path = os.path.join(work_path, "data")
 
 
+last_heartbeat_time = 0  # 上一次心跳包的时间
+heartbeat_interval = -1  # 心跳包间隔
+
+
+def heartbeat_check():
+    global last_heartbeat_time, heartbeat_interval
+    while True:
+        if heartbeat_interval > 0:
+            if time.time() - last_heartbeat_time > heartbeat_interval * 2:
+                logger.warning("心跳包超时！请检查 Onebot 实现端是否正常运行！")
+                if config.auto_reboot:
+                    logger.warning("将自动重启 Onebot 实现端！")
+                    api.set_restart()
+        time.sleep(1)
+
+
 # 上报
 @app.route("/", methods=["POST"])
 def post_data():
+    global last_heartbeat_time, heartbeat_interval
     data = BotController.Event(request.get_json())
     logger.debug("收到上报: %s" % data.event_json)
 
@@ -231,8 +249,21 @@ def post_data():
                 logger.info("收到元事件：OneBot 停用")
             elif data.sub_type == "connect":
                 logger.info("收到元事件：WebSocket 连接成功")
-        elif data.meta_event_type == "lifecycle":
+        elif data.meta_event_type == "heartbeat":
             logger.debug("收到心跳包")
+            # 检查心跳包是否正常
+            if data.status.get("online") is not True or data.status.get("good") is not True:
+                logger.warning("心跳包异常，当前状态：%s" % data.status)
+                if config.auto_reboot:
+                    logger.warning("将自动重启 Onebot 实现端！")
+                    api.set_restart()
+
+            # 检查心跳包间隔是否正常
+            if last_heartbeat_time != 0 and last_heartbeat_time - data.time / 1000 > data.interval * 1.5:
+                logger.warning("心跳包间隔异常，当前间隔：%s，请检查 Onebot 实现端！" % (data.time - last_heartbeat_time))
+
+            last_heartbeat_time = data.time
+            heartbeat_interval = data.interval / 1000
     else:
         logger.warning("收到未知的上报: %s" % data.event_json)
 
