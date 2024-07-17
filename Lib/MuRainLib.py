@@ -85,7 +85,7 @@ def download_file_to_cache(url: str, headers=None, file_name: str = "",
                     f.write(chunk)
         else:
             # 不使用流式传输
-            res = requests.get(url, headers=headers, verify=False)
+            res = requests.get(url, headers=headers)
 
             with open(file_path, "wb") as f:
                 f.write(res.content)

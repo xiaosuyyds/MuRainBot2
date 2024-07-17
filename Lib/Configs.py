@@ -62,3 +62,4 @@ class GlobalConfig(Config):
         self.max_workers = self.raw_config["thread_pool"]["max_workers"]
         self.expire_time = self.raw_config["qq_data_cache"]["expire_time"]
         self.debug = self.raw_config["debug"]["enable"]
+        self.auto_restart_onebot = self.raw_config["auto_restart_onebot"]["enable"]

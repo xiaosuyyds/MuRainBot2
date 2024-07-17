@@ -10,6 +10,7 @@ import Lib.Logger as Logger
 import Lib.PluginManager as PluginManager
 import Lib.QQDataCacher as QQDataCacher
 import os
+import time
 
 app = Flask(__name__)
 api = OnebotAPI.OnebotAPI()
@@ -21,9 +22,29 @@ work_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 data_path = os.path.join(work_path, "data")
 
 
+last_heartbeat_time = 0  # 上一次心跳包的时间
+heartbeat_interval = -1  # 心跳包间隔
+
+
+def heartbeat_check():
+    global last_heartbeat_time, heartbeat_interval
+    while True:
+        if heartbeat_interval > 0:
+            if time.time() - last_heartbeat_time > heartbeat_interval * 2:
+                logger.warning("心跳包超时！请检查 Onebot 实现端是否正常运行！")
+                if config.auto_restart_onebot:
+                    logger.warning("将自动重启 Onebot 实现端！")
+                    api.set_restart()
+        time.sleep(1)
+
+
+threading.Thread(target=heartbeat_check, daemon=True).start()
+
+
 # 上报
 @app.route("/", methods=["POST"])
 def post_data():
+    global last_heartbeat_time, heartbeat_interval
     data = BotController.Event(request.get_json())
     logger.debug("收到上报: %s" % data.event_json)
 
@@ -115,15 +136,15 @@ def post_data():
         elif data.notice_type == "group_admin":
             group = QQDataCacher.get_group_data(data.group_id)
             user = QQDataCacher.get_group_user_data(data.group_id, data.user_id)
-            operator = QQDataCacher.get_group_user_data(data.group_id, data.operator_id)
+
             if data.sub_type == "set":
-                logger.info("群 %s(%s) 内, %s(%s) 将 %s(%s) 设为管理员" %
-                            (group.group_name, group.group_id, operator.get_group_name(),
-                             operator.user_id, user.get_group_name(), user.user_id))
+                logger.info("群 %s(%s) 内, %s(%s) 被设为管理员" %
+                            (group.group_name, group.group_id,
+                             user.get_group_name(), user.user_id))
             elif data.sub_type == "unset":
-                logger.info("群 %s(%s) 内, %s(%s) 将 %s(%s) 取消管理员" %
-                            (group.group_name, group.group_id, operator.get_group_name(),
-                             operator.user_id, user.get_group_name(), user.user_id))
+                logger.info("群 %s(%s) 内, %s(%s) 被取消管理员" %
+                            (group.group_name, group.group_id,
+                             user.get_group_name(), user.user_id))
 
         # 群成员减少
         elif data.notice_type == "group_decrease":
@@ -231,8 +252,22 @@ def post_data():
                 logger.info("收到元事件：OneBot 停用")
             elif data.sub_type == "connect":
                 logger.info("收到元事件：WebSocket 连接成功")
-        elif data.meta_event_type == "lifecycle":
+        elif data.meta_event_type == "heartbeat":
             logger.debug("收到心跳包")
+            # 检查心跳包是否正常
+            if data.status.get("online") is not True or data.status.get("good") is not True:
+                logger.warning("心跳包异常，当前状态：%s" % data.status)
+                if config.auto_restart_onebot:
+                    logger.warning("将自动重启 Onebot 实现端！")
+                    api.set_restart()
+
+            # 检查心跳包间隔是否正常
+            if last_heartbeat_time != 0 and data.time - last_heartbeat_time > data.interval / 1000 * 1.5:
+                logger.warning("心跳包间隔异常，当前间隔: %ss，设置间隔为: %ss，请检查 Onebot 实现端！"
+                               % (data.time - last_heartbeat_time, data.interval / 1000))
+
+            last_heartbeat_time = data.time
+            heartbeat_interval = data.interval / 1000
     else:
         logger.warning("收到未知的上报: %s" % data.event_json)
 
