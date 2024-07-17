@@ -136,15 +136,15 @@ def post_data():
         elif data.notice_type == "group_admin":
             group = QQDataCacher.get_group_data(data.group_id)
             user = QQDataCacher.get_group_user_data(data.group_id, data.user_id)
-            operator = QQDataCacher.get_group_user_data(data.group_id, data.operator_id)
+
             if data.sub_type == "set":
-                logger.info("群 %s(%s) 内, %s(%s) 将 %s(%s) 设为管理员" %
-                            (group.group_name, group.group_id, operator.get_group_name(),
-                             operator.user_id, user.get_group_name(), user.user_id))
+                logger.info("群 %s(%s) 内, %s(%s) 被设为管理员" %
+                            (group.group_name, group.group_id,
+                             user.get_group_name(), user.user_id))
             elif data.sub_type == "unset":
-                logger.info("群 %s(%s) 内, %s(%s) 将 %s(%s) 取消管理员" %
-                            (group.group_name, group.group_id, operator.get_group_name(),
-                             operator.user_id, user.get_group_name(), user.user_id))
+                logger.info("群 %s(%s) 内, %s(%s) 被取消管理员" %
+                            (group.group_name, group.group_id,
+                             user.get_group_name(), user.user_id))
 
         # 群成员减少
         elif data.notice_type == "group_decrease":
