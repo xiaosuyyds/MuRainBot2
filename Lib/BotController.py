@@ -94,6 +94,7 @@ class Event:
             elif self.notice_type == "group_admin":
                 self.group_id: int = int(self["group_id"])
                 self.user_id: int = int(self["user_id"])
+                self.sub_type: str = self["sub_type"]
 
             elif self.notice_type == "group_recall":
                 self.group_id: int = int(self["group_id"])
