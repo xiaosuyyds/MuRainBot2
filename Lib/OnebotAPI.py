@@ -56,6 +56,10 @@ class OnebotAPI:
         self.host = host
         self.port = port
 
+    def set_data(self, data: dict):
+        self.data = data
+        return self
+
     def get(self, node: str = "", data: dict = None):
         if node != "":
             self.node = node
@@ -76,7 +80,7 @@ class OnebotAPI:
             raise ValueError('The port cannot be empty.')
 
         # 广播call_api事件
-        threading.Thread(target=EventManager.Event, args=(("call_api", self.url), self.data)).start()
+        threading.Thread(target=EventManager.Event, args=(("call_api", self.node), self.data)).start()
 
         # 发起get请求
         try:
