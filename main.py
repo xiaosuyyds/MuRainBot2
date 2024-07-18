@@ -35,7 +35,8 @@ def finalize_and_cleanup():
 
     clean_cache()
 
-    logger.warning("MuRainBot结束运行！\n")
+    logger.warning("MuRainBot结束运行！")
+    logger.info("再见！\n")
 
 
 # 主函数
@@ -85,18 +86,19 @@ if __name__ == '__main__':
     # 检测bot名称与botUID是否为空或未设置
     if bot_uid is None or bot_name == "" or bot_uid == 123456 or bot_name is None:
         logger.warning("配置文件中未找到BotUID或昵称，将自动获取！")
-        try:
-            bot_info = api.get("/get_login_info")
+
+        bot_info = api.get("/get_login_info")
+        if bot_info is not dict:
+            logger.error(f"获取BotUID与昵称失败！可能会导致严重问题！报错信息：{repr(bot_info)}")
+        else:
             bot_uid, bot_name = bot_info["user_id"], bot_info["nickname"]
             raw_config = Configs.GlobalConfig().raw_config
             raw_config["account"]["user_id"] = bot_uid
             raw_config["account"]["nick_name"] = bot_name
             Configs.GlobalConfig().write_cache(raw_config)
             logger.debug("已成功获取BotUID与昵称！")
-        except Exception as e:
-            logger.error("获取BotUID与昵称失败！可能会导致严重问题！报错信息：{}".format(repr(e)))
 
-    logger.info("欢迎使用 {}({})".format(Configs.GlobalConfig().nick_name, Configs.GlobalConfig().user_id))
+    logger.info(f"欢迎使用 {Configs.GlobalConfig().nick_name}({Configs.GlobalConfig().user_id})")
 
     # 禁用werkzeug的日志记录
     log = logging.getLogger('werkzeug')
