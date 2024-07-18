@@ -88,7 +88,7 @@ if __name__ == '__main__':
         logger.warning("配置文件中未找到BotUID或昵称，将自动获取！")
 
         bot_info = api.get("/get_login_info")
-        if isinstance(bot_info, dict):
+        if not isinstance(bot_info, dict):
             logger.error(f"获取BotUID与昵称失败！可能会导致严重问题！报错信息：{repr(bot_info)}")
         elif "user_id" in bot_info and "nickname" in bot_info:
             bot_uid, bot_name = bot_info["user_id"], bot_info["nickname"]
