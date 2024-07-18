@@ -28,8 +28,12 @@
 
 | [简体中文](README.md) | English |
 
+### This project's English documentation was translated by AI (I'm doubting the significance of generating an English version with AI; maybe it's just to make up the numbers).
+
+
 ### This is a QQBot (framework?) based on python adapted to the onebot11 protocol.
 ### First of all, thank you for choosing/using MRB2 as your QQ Bot
+##### ~~This was written by the author for personal use, so please forgive any poorly written parts (though I doubt anyone will actually use my project).~~
 ~~*This project can also be called MuCloudBot(MCB)*~~
 
 <details>
