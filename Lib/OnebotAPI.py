@@ -10,7 +10,9 @@ OnebotAPI
 可以方便的调用Onebot的API
 """
 import Lib.Configs as Configs
+import Lib.EventManager as EventManager
 import requests
+import threading
 import urllib.parse
 
 cconfig = Configs.GlobalConfig()
@@ -54,6 +56,10 @@ class OnebotAPI:
         self.host = host
         self.port = port
 
+    def set_data(self, data: dict):
+        self.data = data
+        return self
+
     def get(self, node: str = "", data: dict = None):
         if node != "":
             self.node = node
@@ -72,6 +78,9 @@ class OnebotAPI:
 
         if self.port == -1:
             raise ValueError('The port cannot be empty.')
+
+        # 广播call_api事件
+        threading.Thread(target=EventManager.Event, args=(("call_api", self.node), self.data)).start()
 
         # 发起get请求
         try:

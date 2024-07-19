@@ -10,7 +10,6 @@ import traceback
 from typing import Callable
 
 import Lib.QQRichText as QQRichText
-import Lib.BotController as BotController
 
 register_event_list = []  # event_type, func, arg, args, kwargs, by_file
 register_keyword_list = []  # keyword, func, arg, args, kwargs, by_file
