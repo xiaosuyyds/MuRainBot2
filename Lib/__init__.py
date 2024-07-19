@@ -21,6 +21,7 @@ import Lib.ThreadPool as ThreadPool
 import Lib.ListeningServer as ListeningServer
 import Lib.PluginManager as PluginManager
 import Lib.QQDataCacher as QQDataCacher
+import Lib.Command as Command
 
 VERSION = "2.0.0-dev"
 VERSION_WEEK = "24W18A"
