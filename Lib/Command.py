@@ -22,7 +22,7 @@ def start_listening_command():
             try:
                 group_id = int(command[1])
             except ValueError:
-                logger.error("group_id must be a number")
+                logger.error("group_id 必须是一个数字")
                 continue
 
             BotController.send_message(command[2], group_id=group_id)
@@ -32,7 +32,7 @@ def start_listening_command():
             try:
                 user_id = int(command[1])
             except ValueError:
-                logger.error("user_id must be a number")
+                logger.error("user_id 必须是一个数字")
                 continue
 
             BotController.send_message(command[2], user_id=user_id)
@@ -43,3 +43,6 @@ exit: 退出程序
 send_msg <user_id> <message>: 发送消息到好友
 send_group_msg <group_id> <message>: 发送消息到群
 help: 查看帮助""")
+        else:
+
+            logger.error("未知的命令, 请发送help查看支持的命令")
