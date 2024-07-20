@@ -1,6 +1,8 @@
 import Lib.BotController as BotController
 import Lib.QQRichText as QQRichText
-import sys
+import Lib.OnebotAPI as OnebotAPI
+import Lib.MuRainLib as MuRainLib
+import os
 import Lib.Logger as Logger
 
 logger = Logger.logger
@@ -75,7 +77,30 @@ class ExitCommand(Command):
         return input_command == "exit"
 
     def run(self, input_command: str):
-        sys.exit()
+        logger.info("MuRainBot即将关闭，正在删除缓存")
+        MuRainLib.clean_cache()
+        logger.warning("MuRainBot结束运行！")
+        logger.info("再见！\n")
+        os._exit(0)
+
+
+
+class RunAPICommand(Command):
+    def __init__(self):
+        super().__init__()
+        self.command_help = "run_api <api_name:api节点> <api_params: api参数dict格式(可选)>: 运行API"
+
+    def check(self, input_command: str):
+        return input_command.startswith("run_api")
+
+    def run(self, input_command: str):
+        command = input_command.split(" ")
+        api_name = command[1]
+        if len(command) > 2:
+            api_params = eval(" ".join(command[2:]))
+        else:
+            api_params = {}
+        print(OnebotAPI.OnebotAPI().get(api_name, api_params))
 
 
 class HelpCommand(Command):
@@ -99,15 +124,25 @@ def check_command(input_command: str):
 def start_listening_command():
     while True:
         input_command = input()
+        if len(input_command) == 0:
+            continue
+
         if input_command[0] == "/":
             input_command = input_command[1:]
 
         logger.debug(f"Command: {input_command}")
 
-        command = check_command(input_command)
+        try:
+            command = check_command(input_command)
+        except Exception as e:
+            logger.error(f"检查命令时发生错误: {e}")
+            return
 
         if command is not None:
-            command.run(input_command)
+            try:
+                command.run(input_command)
+            except Exception as e:
+                logger.error(f"执行命令时发生错误: {e}")
         else:
             logger.error("未知的命令, 请发送help查看支持的命令")
 
