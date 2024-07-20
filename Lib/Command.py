@@ -1,9 +1,99 @@
-import Lib.OnebotAPI as OnebotAPI
 import Lib.BotController as BotController
 import Lib.QQRichText as QQRichText
+import sys
 import Lib.Logger as Logger
 
 logger = Logger.logger
+
+commands = []
+
+
+class Meta(type):
+    def __init__(cls, name, bases, dct):
+        super().__init__(name, bases, dct)
+        if 'Command' in globals() and issubclass(cls, Command):
+            commands.append(cls())  # 将子类添加到全局列表中
+
+
+class Command(metaclass=Meta):
+    def __init__(self):
+        self.command_help = ""  # 命令帮助
+
+    def check(self, input_command: str):
+        # 判断输入的命令是否是这个命令
+        pass
+
+    def run(self, input_command: str):
+        # 执行命令
+        pass
+
+
+class SendGroupMsgCommand(Command):
+    def __init__(self):
+        super().__init__()
+        self.command_help = "send_group_msg <group_id> <message>: 发送消息到群"
+
+    def check(self, input_command: str):
+        return input_command.startswith("send_group_msg")
+
+    def run(self, input_command: str):
+        command = input_command.split(" ")
+        try:
+            group_id = int(command[1])
+        except ValueError:
+            logger.error("group_id 必须是一个数字")
+            return
+
+        BotController.send_message(QQRichText.QQRichText(" ".join(command[2:])), group_id=group_id)
+
+
+class SendMsgCommand(Command):
+    def __init__(self):
+        super().__init__()
+        self.command_help = "send_msg <user_id> <message>: 发送消息到好友"
+
+    def check(self, input_command: str):
+        return input_command.startswith("send_msg")
+
+    def run(self, input_command: str):
+        command = input_command.split(" ")
+        try:
+            user_id = int(command[1])
+        except ValueError:
+            logger.error("user_id 必须是一个数字")
+            return
+
+        BotController.send_message(QQRichText.QQRichText(" ".join(command[2:])), user_id=user_id)
+
+
+class ExitCommand(Command):
+    def __init__(self):
+        super().__init__()
+        self.command_help = "exit: 退出程序"
+
+    def check(self, input_command: str):
+        return input_command == "exit"
+
+    def run(self, input_command: str):
+        sys.exit()
+
+
+class HelpCommand(Command):
+    def __init__(self):
+        super().__init__()
+        self.command_help = "help: 查看帮助"
+
+    def check(self, input_command: str):
+        return input_command == "help"
+
+    def run(self, input_command: str):
+        help_text = "MuRainBot2命令帮助：\n" + "\n".join([command.command_help for command in commands])
+        print(help_text)
+
+
+def check_command(input_command: str):
+    filtered_commands = list(filter(lambda command: command.check(input_command), commands))
+    return filtered_commands[0] if len(filtered_commands) > 0 else None
 
 
 def start_listening_command():
@@ -14,35 +104,13 @@ def start_listening_command():
 
         logger.debug(f"Command: {input_command}")
 
-        if input_command == "exit":
-            exit()
+        command = check_command(input_command)
 
-        elif input_command.startswith("send_group_msg"):
-            command = input_command.split(" ")
-            try:
-                group_id = int(command[1])
-            except ValueError:
-                logger.error("group_id 必须是一个数字")
-                continue
-
-            BotController.send_message(command[2], group_id=group_id)
-
-        elif input_command.startswith("send_msg"):
-            command = input_command.split(" ")
-            try:
-                user_id = int(command[1])
-            except ValueError:
-                logger.error("user_id 必须是一个数字")
-                continue
-
-            BotController.send_message(command[2], user_id=user_id)
-
-        elif input_command == "help":
-            print("""MuRainBot2命令帮助：
-exit: 退出程序
-send_msg <user_id> <message>: 发送消息到好友
-send_group_msg <group_id> <message>: 发送消息到群
-help: 查看帮助""")
+        if command is not None:
+            command.run(input_command)
         else:
-
             logger.error("未知的命令, 请发送help查看支持的命令")
+
+
+if __name__ == "__main__":
+    start_listening_command()

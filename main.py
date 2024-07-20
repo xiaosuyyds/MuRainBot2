@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
     logger.info(f"欢迎使用 {Configs.GlobalConfig().nick_name}({Configs.GlobalConfig().user_id})")
 
-    threading.Thread(target=Command.start_listening_command,daemon=True).start()
+    threading.Thread(target=Command.start_listening_command, daemon=True).start()
     logger.info("开启命令输入")
 
     # 禁用werkzeug的日志记录
