@@ -82,8 +82,9 @@ class GroupMemberData:
             self.refresh_cache()
 
         if group_id not in group_member_cache and config.qq_data_cache:
-            if user_id not in group_member_cache[group_id]:
-                group_member_cache[group_id][user_id] = self
+            group_member_cache[group_id] = {}
+        if user_id not in group_member_cache[group_id] and config.qq_data_cache:
+            group_member_cache[group_id][user_id] = self
 
     def refresh_cache(self):
         data = api.get_group_member_info(self.group_id, self.user_id, no_cache=True)
