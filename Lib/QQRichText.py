@@ -96,7 +96,17 @@ def array_2_cq(cq_array: list | dict) -> str:
     return text
 
 
-class Segment:
+segments = []
+
+
+class Meta(type):
+    def __init__(cls, name, bases, dct):
+        super().__init__(name, bases, dct)
+        if 'Segment' in globals() and issubclass(cls, Segment):
+            segments.append(cls)  # 将子类添加到全局列表中
+
+
+class Segment(metaclass=Meta):
     def __init__(self, cq):
         self.cq = cq
         if isinstance(cq, str):
@@ -429,9 +439,6 @@ class JSON(Segment):
     def set_json(self, data):
         self.data = data
         self.array["data"]["json"] = str(self.data)
-
-
-segments = [Text, Face, Image, Record, At, Share, Music, CustomizeMusic, Reply, Forward, XML, JSON]
 
 
 class QQRichText:
