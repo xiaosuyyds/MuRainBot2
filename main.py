@@ -6,8 +6,6 @@
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
 
 import atexit
-import threading
-
 from Lib import *
 
 logger = Logger.logger
@@ -103,9 +101,6 @@ if __name__ == '__main__':
             logger.error(f"获取BotUID与昵称失败，字段缺失！可能会导致严重问题！{bot_info}")
 
     logger.info(f"欢迎使用 {Configs.GlobalConfig().nick_name}({Configs.GlobalConfig().user_id})")
-
-    threading.Thread(target=Command.start_listening_command, daemon=True).start()
-    logger.info("开启命令输入")
 
     # 禁用werkzeug的日志记录
     log = logging.getLogger('werkzeug')
