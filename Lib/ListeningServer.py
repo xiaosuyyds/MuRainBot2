@@ -21,7 +21,6 @@ request_list = []
 work_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 data_path = os.path.join(work_path, "data")
 
-
 last_heartbeat_time = 0  # 上一次心跳包的时间
 heartbeat_interval = -1  # 心跳包间隔
 
@@ -203,8 +202,15 @@ def post_data():
         elif data.notice_type == "group_recall":
             group = QQDataCacher.get_group_data(data.group_id)
             user = QQDataCacher.get_group_user_data(data.group_id, data.user_id)
-            logger.info("群 %s(%s) 内 %s(%s) 撤回了一条消息: %s" %
-                        (group.group_name, group.group_id, user.get_group_name(), user.user_id, data.message_id))
+            operator = QQDataCacher.get_group_user_data(data.group_id, data.operator_id)
+            # 撤回自己
+            if data.operator_id == user.user_id:
+                logger.info("群 %s(%s) 内 %s(%s) 撤回了一条消息: %s" %
+                            (group.group_name, group.group_id, user.get_group_name(), user.user_id, data.message_id))
+            else:
+                logger.info("群 %s(%s) 内 %s(%s) 被 %s(%s) 撤回了一条消息: %s" %
+                            (group.group_name, group.group_id, user.get_group_name(), user.user_id,
+                             operator.get_group_name(), operator.user_id, data.message_id))
 
         # 好友消息撤回
         elif data.notice_type == "friend_recall":

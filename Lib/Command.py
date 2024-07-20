@@ -84,7 +84,6 @@ class ExitCommand(Command):
         os._exit(0)
 
 
-
 class RunAPICommand(Command):
     def __init__(self):
         super().__init__()
