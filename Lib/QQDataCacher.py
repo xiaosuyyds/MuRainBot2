@@ -179,14 +179,14 @@ class GroupData:
 
 
 def get_user_data(user_id):
-    if user_id in list(user_cache.keys()):
+    if user_id in user_cache:
         return user_cache[user_id]
 
     return UserData(user_id)
 
 
 def get_group_data(group_id):
-    if group_id in list(group_cache.keys()):
+    if group_id in group_cache:
         return group_cache[group_id]
 
     return GroupData(group_id)
