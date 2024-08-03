@@ -106,6 +106,9 @@ def post_data():
             if not os.path.exists(group_path):
                 os.makedirs(group_path)
 
+        else:
+            logger.warning("收到未知的上报: %s" % data.event_json)
+
     elif data.post_type == "request":
         # 加好友邀请
         if data.request_type == "friend":
@@ -122,6 +125,8 @@ def post_data():
             elif data.sub_type == "add":
                 logger.info("群 %s(%s) 收到来自用户 %s(%s) 的加群请求" %
                             (group.group_name, group.group_id, user.get_group_name(), user.user_id))
+        else:
+            logger.warning("收到未知的上报: %s" % data.event_json)
 
     elif data.post_type == "notice":
         # 群文件上传
@@ -249,6 +254,9 @@ def post_data():
                 elif data.honor_type == "emotion":
                     logger.info("群 %s(%s) 内 %s(%s) 获得了快乐源泉" %
                                 (group.group_name, group.group_id, user.get_group_name(), user.user_id))
+
+            else:
+                logger.warning("收到未知的上报: %s" % data.event_json)
     # 元事件
     elif data.post_type == "meta_event":
         if data.meta_event_type == "lifecycle":
@@ -274,6 +282,9 @@ def post_data():
 
             last_heartbeat_time = data.time
             heartbeat_interval = data.interval / 1000
+
+        else:
+            logger.warning("收到未知的上报: %s" % data.event_json)
     else:
         logger.warning("收到未知的上报: %s" % data.event_json)
 
