@@ -43,3 +43,14 @@ def load_plugins():
         except Exception as e:
             logger.error("导入插件 {} 失败！ 原因:{}".format(i, repr(e)))
     return plugins
+
+
+class PluginInfo:
+    def __init__(self):
+        self.NAME = ""  # 插件名称
+        self.AUTHOR = ""  # 插件作者
+        self.VERSION = ""  # 插件版本
+        self.DESCRIPTION = ""  # 插件描述
+        self.HELP_MSG = ""  # 插件帮助
+        # TODO: self.ENABLED = True  # 插件是否启用
+        self.IS_HIDDEN = False  # 插件是否隐藏（在/help命令中）
