@@ -2,6 +2,7 @@ import os
 import importlib
 import time
 import Lib.Logger as Logger
+import threading
 
 logger = Logger.logger
 
@@ -54,3 +55,25 @@ class PluginInfo:
         self.HELP_MSG = ""  # 插件帮助
         # TODO: self.ENABLED = True  # 插件是否启用
         self.IS_HIDDEN = False  # 插件是否隐藏（在/help命令中）
+
+
+def run_plugin_main(data):
+    for plugin in plugins:
+        try:
+            if not callable(plugin["plugin"].main):
+                continue
+        except AttributeError:
+            continue
+
+        logger.debug("执行插件%s" % plugin["name"])
+        try:
+            plugin_thread = threading.Thread(
+                target=plugin["plugin"].main,
+                args=(
+                    data.event_json,
+                    work_path)
+            )
+            plugin_thread.start()
+        except Exception as e:
+            logger.error("执行插件%s时发生错误：%s" % (plugin["name"], repr(e)))
+            continue

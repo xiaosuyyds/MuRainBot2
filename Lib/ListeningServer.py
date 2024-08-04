@@ -289,25 +289,7 @@ def post_data():
         logger.warning("收到未知的上报: %s" % data.event_json)
 
     # 若插件包含main函数则运行
-    for plugin in PluginManager.plugins:
-        try:
-            if not callable(plugin["plugin"].main):
-                continue
-        except AttributeError:
-            continue
-
-        logger.debug("执行插件%s" % plugin["name"])
-        try:
-            plugin_thread = threading.Thread(
-                target=plugin["plugin"].main,
-                args=(
-                    data.event_json,
-                    work_path)
-            )
-            plugin_thread.start()
-        except Exception as e:
-            logger.error("执行插件%s时发生错误：%s" % (plugin["name"], repr(e)))
-            continue
+    PluginManager.run_plugin_main(data)
 
     return "ok", 204
 
