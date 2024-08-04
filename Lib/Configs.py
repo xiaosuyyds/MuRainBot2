@@ -6,6 +6,8 @@ import Lib.FileCacher as FileCacher
 work_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 data_path = os.path.join(work_path, "data")
 config_path = os.path.join(work_path, "plugin_configs")
+if not os.path.exists(config_path):
+    os.makedirs(config_path)
 
 
 class Config:
@@ -15,9 +17,14 @@ class Config:
         self.encoding = "utf-8"
 
     def reload(self):
-        self.raw_config = FileCacher.read_file(self.path, self.encoding)
-        if isinstance(self.raw_config, str):
-            self.raw_config = yaml.load(self.raw_config, yaml.FullLoader)
+        if os.path.exists(self.path):
+            self.raw_config = FileCacher.read_file(self.path, self.encoding)
+            if isinstance(self.raw_config, str):
+                self.raw_config = yaml.load(self.raw_config, yaml.FullLoader)
+        else:
+            self.raw_config = {}
+            with open(self.path, "w", encoding=self.encoding) as f:
+                yaml.dump(self.raw_config, f)
         return self
 
     def save_default(self, default_config: str):
