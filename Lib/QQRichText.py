@@ -466,7 +466,7 @@ class QQRichText:
                 if isinstance(item, dict):
                     array.append(item)
                 elif isinstance(item, str):
-                    array.append(cq_2_array(item)[0])
+                    array += cq_2_array(item)
                 else:
                     for segment in segments:
                         if isinstance(item, segment):
