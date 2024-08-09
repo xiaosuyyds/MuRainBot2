@@ -10,6 +10,74 @@ logger = Logger.logger
 commands = []
 
 
+class CommandParsing:
+    def __init__(self, input_command: str):
+        self.input_command = input_command
+        self.command = None
+        self.command_args = None
+        self.command_list = self.parse()
+        self.command = self.command_list[0]
+        self.command_args = [_ for _ in self.command_list[1:] if isinstance(_, str)] \
+            if len([_ for _ in self.command_list if isinstance(_, str)]) > 1 else []
+        self.command_kwargs = {
+            k: v for d in [_ for _ in self.command_list if isinstance(_, dict)] for k, v in d.items()
+        }
+
+    def parse(self):
+        flag = True
+        is_in_quote = False
+        now_quote_type = None
+        is_escape = False
+        counter = 0
+        command_list = []
+        now_command = ""
+        for s in self.input_command:
+            if s == "\\" and not is_escape:
+                is_escape = True
+            elif s == "\\" and is_escape:
+                now_command += s
+                is_escape = False
+            elif s == '"' and now_quote_type != "'" and not is_escape:
+                is_in_quote = not is_in_quote
+                now_quote_type = '"' if is_in_quote else None
+            elif s == '"' and now_quote_type != "'" and is_escape:
+                now_command += s
+                is_escape = False
+            elif s == "'" and now_quote_type != '"' and not is_escape:
+                is_in_quote = not is_in_quote
+                now_quote_type = "'" if is_in_quote else None
+            elif s == "'" and now_quote_type != '"' and is_escape:
+                now_command += s
+                is_escape = False
+            elif s == ' ' and not is_in_quote:
+                if flag:
+                    if "=" in now_command:
+                        now_command = now_command.split("=")
+                        if len(now_command) == 2:
+                            command_list.append({now_command[0]: now_command[1]})
+                        else:
+                            raise Exception("命令格式错误")
+                    else:
+                        command_list.append(now_command)
+                    now_command = ""
+                else:
+                    flag = True
+                counter += 1
+            else:
+                now_command += s
+
+        if flag:
+            if "=" in now_command:
+                now_command = now_command.split("=")
+                if len(now_command) == 2:
+                    command_list.append({now_command[0]: now_command[1]})
+                else:
+                    raise Exception("命令格式错误")
+            else:
+                command_list.append(now_command)
+        return command_list
+
+
 class Meta(type):
     def __init__(cls, name, bases, dct):
         super().__init__(name, bases, dct)
@@ -20,12 +88,19 @@ class Meta(type):
 class Command(metaclass=Meta):
     def __init__(self):
         self.command_help = ""  # 命令帮助
+        self.need_args = None  # 需要的参数(None即不需要)
+        self.command_name = ""  # 命令名
+        """
+        need_args = {
+            "arg1": {  # 参数名
+                "type": int,  # 类型
+                "help": "参数1的帮助信息",  # 参数帮助信息
+                "default": 0  # 默认值
+                "must": True  # 是否必要   
+            }
+        """
 
-    def check(self, input_command: str):
-        # 判断输入的命令是否是这个命令
-        pass
-
-    def run(self, input_command: str):
+    def run(self, input_command: CommandParsing, kwargs):
         # 执行命令
         pass
 
@@ -34,49 +109,57 @@ class SendGroupMsgCommand(Command):
     def __init__(self):
         super().__init__()
         self.command_help = "send_group_msg <group_id> <message>: 发送消息到群"
+        self.command_name = "send_group_msg"
+        self.need_args = {
+            "group_id": {
+                "type": int,
+                "help": "要发送给的QQ群ID",
+                "default": 0,
+                "must": True
+            },
+            "message": {
+                "type": str,
+                "help": "发送的消息内容",
+                "default": "",
+                "must": True
+            }
+        }
 
-    def check(self, input_command: str):
-        return input_command.startswith("send_group_msg")
-
-    def run(self, input_command: str):
-        command = input_command.split(" ")
-        try:
-            group_id = int(command[1])
-        except ValueError:
-            logger.error("group_id 必须是一个数字")
-            return
-
-        BotController.send_message(QQRichText.QQRichText(" ".join(command[2:])), group_id=group_id)
+    def run(self, input_command: CommandParsing, kwargs):
+        BotController.send_message(QQRichText.QQRichText(kwargs.get("message")), group_id=kwargs.get("group_id"))
 
 
 class SendMsgCommand(Command):
     def __init__(self):
         super().__init__()
         self.command_help = "send_msg <user_id> <message>: 发送消息到好友"
+        self.command_name = "send_msg"
+        self.need_args = {
+            "user_id": {
+                "type": int,
+                "help": "要发送给的QQ用户ID",
+                "default": 0,
+                "must": True
+            },
+            "message": {
+                "type": str,
+                "help": "发送的消息内容",
+                "default": "",
+                "must": True
+            }
+        }
 
-    def check(self, input_command: str):
-        return input_command.startswith("send_msg")
-
-    def run(self, input_command: str):
-        command = input_command.split(" ")
-        try:
-            user_id = int(command[1])
-        except ValueError:
-            logger.error("user_id 必须是一个数字")
-            return
-
-        BotController.send_message(QQRichText.QQRichText(" ".join(command[2:])), user_id=user_id)
+    def run(self, input_command: CommandParsing, kwargs):
+        BotController.send_message(QQRichText.QQRichText(kwargs.get("message")), user_id=kwargs.get("user_id"))
 
 
 class ExitCommand(Command):
     def __init__(self):
         super().__init__()
         self.command_help = "exit: 退出程序"
+        self.command_name = "exit"
 
-    def check(self, input_command: str):
-        return input_command == "exit"
-
-    def run(self, input_command: str):
+    def run(self, input_command: CommandParsing, **kwargs):
         logger.info("MuRainBot即将关闭，正在删除缓存")
         MuRainLib.clean_cache()
         logger.warning("MuRainBot结束运行！")
@@ -88,17 +171,26 @@ class RunAPICommand(Command):
     def __init__(self):
         super().__init__()
         self.command_help = "run_api <api_name:api节点> <api_params: api参数dict格式(可选)>: 运行API"
+        self.command_name = "run_api"
+        self.need_args = {
+            "api_name": {
+                "type": str,
+                "help": "要运行的API节点",
+                "default": "",
+                "must": True
+            },
+            "api_params": {
+                "type": dict,
+                "help": "API参数",
+                "default": {},
+                "must": False
+            }
+        }
 
-    def check(self, input_command: str):
-        return input_command.startswith("run_api")
-
-    def run(self, input_command: str):
-        command = input_command.split(" ")
-        api_name = command[1]
-        if len(command) > 2:
-            api_params = eval(" ".join(command[2:]))
-        else:
-            api_params = {}
+    def run(self, input_command: CommandParsing, kwargs):
+        api_name = kwargs.get("api_name")
+        api_params = kwargs.get("api_params")
+        logger.debug(f"API: {api_name}, 参数: {api_params}")
         print(OnebotAPI.OnebotAPI().get(api_name, api_params))
 
 
@@ -106,40 +198,62 @@ class HelpCommand(Command):
     def __init__(self):
         super().__init__()
         self.command_help = "help: 查看帮助"
+        self.command_name = "help"
 
-    def check(self, input_command: str):
-        return input_command == "help"
-
-    def run(self, input_command: str):
+    def run(self, input_command: CommandParsing, kwargs):
         help_text = "MuRainBot2命令帮助：\n" + "\n".join([command.command_help for command in commands])
         print(help_text)
-
-
-def check_command(input_command: str):
-    filtered_commands = list(filter(lambda command: command.check(input_command), commands))
-    return filtered_commands[0] if len(filtered_commands) > 0 else None
 
 
 def start_listening_command():
     while True:
         input_command = input()
+
         if len(input_command) == 0:
             continue
 
         if input_command[0] == "/":
             input_command = input_command[1:]
+        input_command = CommandParsing(input_command)
 
-        logger.debug(f"Command: {input_command}")
+        logger.debug(f"Command: {input_command.command_list}")
 
         try:
-            command = check_command(input_command)
+            run_command = None
+            for command in commands:
+                if input_command.command == command.command_name:
+                    run_command: Command = command
+                    break
         except Exception as e:
             logger.error(f"检查命令时发生错误: {e}")
             return
 
-        if command is not None:
+        if run_command is not None:
             try:
-                command.run(input_command)
+                kwargs = {}
+                if run_command.need_args is not None and len(run_command.need_args) > 0:
+                    n = len(input_command.command_args)
+                    counter = len([arg_name for arg_name, arg_info in run_command.need_args.items() if arg_info["must"]])
+                    for arg_name, arg_info in run_command.need_args.items():
+                        if n == 0:
+                            break
+                        if arg_info["must"]:
+                            kwargs[arg_name] = input_command.command_args.pop(0)
+                            n -= 1
+                            counter -= 1
+                        else:
+                            kwargs[arg_name] = arg_info["default"]
+
+                    for arg_name, arg_info in input_command.command_kwargs.items():
+                        if arg_name in [_arg_name for _arg_name, _arg_info in run_command.need_args.items()]:
+                            if arg_name not in kwargs:
+                                counter -= 1
+                            kwargs[arg_name] = arg_info
+
+                    if counter > 0:
+                        raise Exception("缺少参数")
+
+                run_command.run(input_command, kwargs)
             except Exception as e:
                 logger.error(f"执行命令时发生错误: {e}")
         else:
@@ -148,3 +262,12 @@ def start_listening_command():
 
 if __name__ == "__main__":
     start_listening_command()
+    # command = "send_msg group_id=1919810 \"1234 567890\" hello user_id=114514"
+    # command = "send_msg \\\"abc 123\\\" 'hel\" lo'"
+    # print(command)
+    # command_parsed = CommandParsing(command)
+    # print(command_parsed.command_list)
+    #
+    # print(command_parsed.command)
+    # print(command_parsed.command_args)
+    # print(command_parsed.command_kwargs)
