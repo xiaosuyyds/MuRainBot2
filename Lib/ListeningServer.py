@@ -57,7 +57,7 @@ def post_data():
         request_list.pop(0)
 
     if data.post_type + "_type" in data:
-        logger.debug("广播事件：%s" % data.post_type + "_type")
+        logger.debug("广播事件：%s" % data[data.post_type + "_type"])
         threading.Thread(
             target=lambda: EventManager.Event((data.post_type, data[data.post_type + "_type"]), data)).start()
     else:
