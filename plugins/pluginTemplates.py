@@ -59,3 +59,37 @@ def on_message(event_class, event_data: BotController.Event):
         else:
             BotController.send_message(QQRichText.QQRichText(QQRichText.At(event_data.user_id), "Hello World!"),
                                        group_id=event_data.group_id)
+
+
+# 自定义控制台命令
+class SayHelloCommand(Command.Command):
+    def __init__(self):
+        super().__init__()
+        self.command_help = "say_hello <group_id: 要发送的群号> <user_id: 要私聊发送的用户uid>"
+        self.command_name = "run_api"
+        self.need_args = {
+            "group_id": {
+                "type": int,
+                "help": "要发送的群号",
+                "default": 0,
+                "must": False
+            },
+            "user_id": {
+                "type": int,
+                "help": "要私聊发送的用户uid",
+                "default": 0,
+                "must": False
+            }
+        }
+
+    def run(self, input_command: Command.CommandParsing, kwargs):
+        group_id = kwargs.get("group_id")
+        user_id = kwargs.get("user_id")
+        if group_id == 0 and user_id == 0:
+            raise "必须要指定发送的群或者人"
+        elif group_id == 0:
+            BotController.send_message("hello", user_id=user_id)
+        elif user_id == 0:
+            BotController.send_message("hello", group_id=group_id)
+        else:
+            raise "不一起都设置群号和uid"
