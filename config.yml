@@ -16,7 +16,10 @@ thread_pool: # 线程池最大线程数
   max_workers: 5
 
 qq_data_cache: # QQ数据缓存设置
+  enable: true # 是否启用缓存
   expire_time: 300  # 缓存过期时间（秒）
+  max_cache_size: 500  # 最大缓存数量（设置过大可能会导致报错）
+
 
 debug: # 调试模式
   enable: false # 是否启用调试模式

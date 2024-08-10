@@ -33,6 +33,8 @@
 ##### ~~作者自己写着用的，有一些写的不好的地方还请见谅（不过估计也没人会用我这个项目吧）~~
 ~~*此项目也可称作MuCloud Bot(MCB)*~~
 
+~~*什么？你问我为什么要叫MRB2，因为这个框架是给我的一个叫做沐雨的qqbot写的，然后之前还有[一个写的很垃圾](https://github.com/xiaosuyyds/PyQQbot)的版本，所以就叫做MRB2*~~
+
 
 
 <details>
@@ -88,7 +90,7 @@
   * 运行[`installer.py`](installer.py)随后静待安装成功
   * 配置好之后运行先运行`Lagrange.OneBot`然后运行`main.py`即可
 * ~~**releases**~~
-  * 首先配置Lagrange.OneBot的`config.yml`内的账号密码，如有需要可以修改正反向HTTP端口
+  * 首先配置Lagrange.OneBot的`appsettings.json`，如有需要可以修改正反向HTTP端口
   * 随后配置一下MRB2的[`config.yml`](config.yml)账号和QQ号
   * 配置好之后运行先运行`Lagrange.OneBot`然后运行`main.py`即可
 * ~~**源码包**~~
@@ -98,6 +100,8 @@
 
 ## 📕关于版本
 * 目前MRB2版本为2.0.0-dev
+
+~~*你问我为什么第一个版本就是2.0.0?因为这是MRB2嘛自然就是2.0.0开始的咯*~~
 * 关于版本号与版本周的说明：
    * 版本号格式为`<主版本>.<次版本>.<修订版本>-<特殊提醒/版本(如果有)>` 例如`2.0.0`
    * 测试版版本号后统一添加`-dev`后缀 例如`2.0.0-dev`

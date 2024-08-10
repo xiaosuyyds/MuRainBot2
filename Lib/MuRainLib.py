@@ -17,11 +17,26 @@ import requests
 import shutil
 import time
 import random
+from collections import OrderedDict
 
 work_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 data_path = os.path.join(work_path, "data")
 logs_path = os.path.join(work_path, "logs")
 cache_path = os.path.join(data_path, "cache")
+
+
+class LimitedSizeDict(OrderedDict):
+    def __init__(self, max_size):
+        self._max_size = max_size
+        super().__init__()
+
+    def __setitem__(self, key, value):
+        if key in self:
+            del self[key]
+        elif len(self) >= self._max_size:
+            oldest_key = next(iter(self))
+            del self[oldest_key]
+        super().__setitem__(key, value)
 
 
 def reboot() -> None:

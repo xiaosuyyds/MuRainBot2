@@ -21,7 +21,6 @@ request_list = []
 work_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 data_path = os.path.join(work_path, "data")
 
-
 last_heartbeat_time = 0  # 上一次心跳包的时间
 heartbeat_interval = -1  # 心跳包间隔
 
@@ -107,6 +106,9 @@ def post_data():
             if not os.path.exists(group_path):
                 os.makedirs(group_path)
 
+        else:
+            logger.warning("收到未知的上报: %s" % data.event_json)
+
     elif data.post_type == "request":
         # 加好友邀请
         if data.request_type == "friend":
@@ -123,6 +125,8 @@ def post_data():
             elif data.sub_type == "add":
                 logger.info("群 %s(%s) 收到来自用户 %s(%s) 的加群请求" %
                             (group.group_name, group.group_id, user.get_group_name(), user.user_id))
+        else:
+            logger.warning("收到未知的上报: %s" % data.event_json)
 
     elif data.post_type == "notice":
         # 群文件上传
@@ -203,8 +207,15 @@ def post_data():
         elif data.notice_type == "group_recall":
             group = QQDataCacher.get_group_data(data.group_id)
             user = QQDataCacher.get_group_user_data(data.group_id, data.user_id)
-            logger.info("群 %s(%s) 内 %s(%s) 撤回了一条消息: %s" %
-                        (group.group_name, group.group_id, user.get_group_name(), user.user_id, data.message_id))
+            operator = QQDataCacher.get_group_user_data(data.group_id, data.operator_id)
+            # 撤回自己
+            if data.operator_id == user.user_id:
+                logger.info("群 %s(%s) 内 %s(%s) 撤回了一条消息: %s" %
+                            (group.group_name, group.group_id, user.get_group_name(), user.user_id, data.message_id))
+            else:
+                logger.info("群 %s(%s) 内 %s(%s) 被 %s(%s) 撤回了一条消息: %s" %
+                            (group.group_name, group.group_id, user.get_group_name(), user.user_id,
+                             operator.get_group_name(), operator.user_id, data.message_id))
 
         # 好友消息撤回
         elif data.notice_type == "friend_recall":
@@ -243,6 +254,9 @@ def post_data():
                 elif data.honor_type == "emotion":
                     logger.info("群 %s(%s) 内 %s(%s) 获得了快乐源泉" %
                                 (group.group_name, group.group_id, user.get_group_name(), user.user_id))
+
+            else:
+                logger.warning("收到未知的上报: %s" % data.event_json)
     # 元事件
     elif data.post_type == "meta_event":
         if data.meta_event_type == "lifecycle":
@@ -268,29 +282,14 @@ def post_data():
 
             last_heartbeat_time = data.time
             heartbeat_interval = data.interval / 1000
+
+        else:
+            logger.warning("收到未知的上报: %s" % data.event_json)
     else:
         logger.warning("收到未知的上报: %s" % data.event_json)
 
     # 若插件包含main函数则运行
-    for plugin in PluginManager.plugins:
-        try:
-            if not callable(plugin["plugin"].main):
-                continue
-        except AttributeError:
-            continue
-
-        logger.debug("执行插件%s" % plugin["name"])
-        try:
-            plugin_thread = threading.Thread(
-                target=plugin["plugin"].main,
-                args=(
-                    data.event_json,
-                    work_path)
-            )
-            plugin_thread.start()
-        except Exception as e:
-            logger.error("执行插件%s时发生错误：%s" % (plugin["name"], repr(e)))
-            continue
+    PluginManager.run_plugin_main(data)
 
     return "ok", 204
 

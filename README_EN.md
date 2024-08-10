@@ -36,6 +36,8 @@
 ##### ~~This was written by the author for personal use, so please forgive any poorly written parts (though I doubt anyone will actually use my project).~~
 ~~*This project can also be called MuCloudBot(MCB)*~~
 
+~~*What? You ask me why it's called MRB2, because this framework was written for a qqbot called Mu Yu, and then there was a version of [a very garbage written] (https://github.com/xiaosuyyds/PyQQbot) before, so it was called MRB2*~~
+
 <details>
 <summary>Check the basic directory structure</summary>
 
@@ -88,7 +90,7 @@
   * Run [`installer.py`](installer.py) and wait for the installation to complete
   * After configuring, run `Lagrange.OneBot` first and then run `main.py`
 *  ~~**Releases**~~
-    * First, configure the account and password in Lagrange.OneBot's `config.yml`, if necessary, you can modify the HTTP ports
+    * First, configure Lagrange.OneBot's `appsettings.json`, if necessary, you can modify the HTTP ports
     * Then configure MRB2's [`config.yml`](config.yml) account and QQ number
     * After configuring, run `Lagrange.OneBot` first, then run `main.py`
 * ~~**Source code package**~~
@@ -98,6 +100,8 @@
 
 ## 📕About The Version
 * The current version of MRB2 is 2.0.0-dev
+
+~~You ask me why the first version is 2.0.0?because this is MRB2, so naturally it started from 2.0.0~~
 * Explanation of version number and version week:
     * The version number format is `<major version>.<minor version>.<patch version>-<special reminder/version (if any)>` e.g., `2.0.0`
     * Test versions uniformly add the `-dev` suffix to the version number, e.g., `2.0.0-dev`

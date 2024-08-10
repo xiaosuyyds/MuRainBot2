@@ -100,16 +100,12 @@ class Event:
                 self.group_id: int = int(self["group_id"])
                 self.user_id: int = int(self["user_id"])
                 self.message_id: int = self["message_id"]
+                self.operator_id: int = self["operator_id"]
 
             elif self.notice_type == "friend_add":
                 self.user_id: int = int(self["user_id"])
 
             elif self.notice_type == "friend_recall":
-                self.message_id: int = self["message_id"]
-
-            elif self.notice_type == "group_recall":
-                self.group_id: int = int(self["group_id"])
-                self.user_id: int = int(self["user_id"])
                 self.message_id: int = self["message_id"]
 
             elif self.notice_type == "notify":

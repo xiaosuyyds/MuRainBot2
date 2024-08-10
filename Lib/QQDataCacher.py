@@ -1,14 +1,17 @@
 import Lib.OnebotAPI as OnebotAPI
 import Lib.Configs as Configs
 import Lib.Logger as Logger
+import Lib.MuRainLib as MuRainLib
 import threading
 import time
 
 api = OnebotAPI.OnebotAPI()
 config = Configs.GlobalConfig()
 logger = Logger.logger
-user_cache = {}
-group_cache = {}
+
+user_cache = MuRainLib.LimitedSizeDict(max_size=config.max_cache_size)
+group_cache = MuRainLib.LimitedSizeDict(max_size=config.max_cache_size)
+group_member_cache = MuRainLib.LimitedSizeDict(max_size=config.max_cache_size)
 
 
 class UserData:
@@ -24,10 +27,10 @@ class UserData:
         self.sex = sex
         self.age = age
 
-        if self.nickname  or self.sex  or self.age is None:
+        if self.nickname or self.sex or self.age is None:
             self.refresh_cache()
 
-        if user_id not in user_cache:
+        if user_id not in user_cache and config.qq_data_cache:
             user_cache[user_id] = self
 
     def refresh_cache(self):
@@ -38,7 +41,7 @@ class UserData:
             self.age = data.get("age")
 
 
-class GroupUserData:
+class GroupMemberData:
     def __init__(
             self,
             user_id: int,
@@ -78,8 +81,10 @@ class GroupUserData:
                 or self.title_expire_time is None or self.card_changeable is None):
             self.refresh_cache()
 
-        if user_id not in user_cache:
-            user_cache[user_id] = self
+        if group_id not in group_member_cache and config.qq_data_cache:
+            group_member_cache[group_id] = {}
+        if user_id not in group_member_cache[group_id] and config.qq_data_cache:
+            group_member_cache[group_id][user_id] = self
 
     def refresh_cache(self):
         data = api.get_group_member_info(self.group_id, self.user_id, no_cache=True)
@@ -124,18 +129,7 @@ class GroupData:
         self.member_count = member_count
         self.max_member_count = max_member_count
 
-        if self.group_name is None or self.member_count is None or self.max_member_count is None:
-            data = api.get_group_info(self.group_id, no_cache=True)
-            if data is not None:
-                self.refresh_cache()
-
-        data = api.get_group_member_list(self.group_id, no_cache=True)
-        if data is not None and isinstance(data, dict):
-            self.group_member_list = []
-            for member in data:
-                self.group_member_list.append(GroupUserData(member.get("user_id"), group_id))
-        else:
-            self.group_member_list = None
+        self.refresh_cache()
 
         if group_id not in group_cache:
             group_cache[group_id] = self
@@ -152,7 +146,7 @@ class GroupData:
             self.group_member_list = []
             for member in data:
                 self.group_member_list.append(
-                    GroupUserData(
+                    GroupMemberData(
                         member.get("user_id"),
                         self.group_id,
                         name=member.get("nickname"),
@@ -174,26 +168,29 @@ class GroupData:
 
 
 def get_user_data(user_id):
-    if user_id in list(user_cache.keys()):
+    if user_id in user_cache:
         return user_cache[user_id]
 
     return UserData(user_id)
 
 
 def get_group_data(group_id):
-    if group_id in list(group_cache.keys()):
+    if group_id in group_cache:
         return group_cache[group_id]
 
     return GroupData(group_id)
 
 
 def get_group_user_data(group_id, user_id):
+    if group_id in group_member_cache and user_id in group_member_cache[group_id]:
+        return group_member_cache[group_id][user_id]
+
     if group_id in list(group_cache.keys()) and group_cache[group_id].group_member_list is not None:
         for member in group_cache[group_id].group_member_list:
             if member.user_id == user_id:
                 return member
 
-    return GroupUserData(user_id, group_id)
+    return GroupMemberData(user_id, group_id)
 
 
 def refresh_all_cache():

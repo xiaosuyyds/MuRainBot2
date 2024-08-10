@@ -11,10 +11,13 @@ OnebotAPI
 """
 import Lib.Configs as Configs
 import Lib.EventManager as EventManager
+import Lib.Logger as Logger
 import requests
 import threading
+import traceback
 import urllib.parse
 
+logger = Logger.logger
 cconfig = Configs.GlobalConfig()
 
 
@@ -81,7 +84,7 @@ class OnebotAPI:
 
         # 广播call_api事件
         threading.Thread(target=EventManager.Event, args=(("call_api", self.node), self.data)).start()
-
+        logger.debug(f"调用 API: {self.node} data: {self.data} by: {traceback.extract_stack()[-2].filename}")
         # 发起get请求
         try:
             response = requests.get(str(self), params=self.data)

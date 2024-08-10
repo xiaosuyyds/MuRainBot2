@@ -113,6 +113,7 @@ class Event:
     def __init__(self, event_type: tuple[str, str] | str | tuple[tuple[str, str] | str], event_data):
         self.event_class = event_type
         self.event_data = event_data
+        flag = False
 
         if self.event_class == "all" or self.event_class == "*":
             raise ValueError("不能将all或是*设为事件，因为会发生冲突。")
@@ -127,11 +128,12 @@ class Event:
             if event_class == self.event_class or event_class == "all" or event_class == "*":
                 return_ = func(self.event_class, self.event_data, *args, **kwargs)
                 if isinstance(return_, bool) and return_:
+                    flag = True
                     break
 
         # 关键词检测
         if isinstance(self.event_class, (tuple, list)):
-            if self.event_class[0] == "message":
+            if self.event_class[0] == "message" and flag is False:
                 message = str(QQRichText.QQRichText(event_data["message"]))
                 for register_keyword in register_keyword_list:
                     keyword = register_keyword["keyword"]
