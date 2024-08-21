@@ -83,20 +83,36 @@
 </details>
 
 ## 💻How To Deploy?
-**The author has written and tested in python3.10 without any problems, other versions have not been tested yet**
-* Download the releases or source code package of this project
-* Please download the python environment and use pip to install the libraries in [`requirements.txt`](requirements.txt)
-* [**installer.py**](installer.py)
-  * Run [`installer.py`](installer.py) and wait for the installation to complete
-  * After configuring, run `Lagrange.OneBot` first and then run `main.py`
-*  ~~**Releases**~~
-    * First, configure Lagrange.OneBot's `appsettings.json`, if necessary, you can modify the HTTP ports
-    * Then configure MRB2's [`config.yml`](config.yml) account and QQ number
-    * After configuring, run `Lagrange.OneBot` first, then run `main.py`
-* ~~**Source code package**~~
-    * Configure the framework yourself, and modify the HTTP ports to match the framework
-    * Then configure MRB2's [`config.yml`](config.yml) account and QQ number
-    * After configuring, run the framework first, then run `main.py`
+
+### You can view the [`Documentation`](docs/readme.md) of this project.
+
+[//]: # (**The author has written and tested in python3.10 without any problems, other versions have not been tested yet**)
+
+[//]: # (* Download the releases or source code package of this project)
+
+[//]: # (* Please download the python environment and use pip to install the libraries in [`requirements.txt`]&#40;requirements.txt&#41;)
+
+[//]: # (* [**installer.py**]&#40;installer.py&#41;)
+
+[//]: # (  * Run [`installer.py`]&#40;installer.py&#41; and wait for the installation to complete)
+
+[//]: # (  * After configuring, run `Lagrange.OneBot` first and then run `main.py`)
+
+[//]: # (*  ~~**Releases**~~)
+
+[//]: # (    * First, configure Lagrange.OneBot's `appsettings.json`, if necessary, you can modify the HTTP ports)
+
+[//]: # (    * Then configure MRB2's [`config.yml`]&#40;config.yml&#41; account and QQ number)
+
+[//]: # (    * After configuring, run `Lagrange.OneBot` first, then run `main.py`)
+
+[//]: # (* ~~**Source code package**~~)
+
+[//]: # (    * Configure the framework yourself, and modify the HTTP ports to match the framework)
+
+[//]: # (    * Then configure MRB2's [`config.yml`]&#40;config.yml&#41; account and QQ number)
+
+[//]: # (    * After configuring, run the framework first, then run `main.py`)
 
 ## 📕About The Version
 * The current version of MRB2 is 2.0.0-dev
