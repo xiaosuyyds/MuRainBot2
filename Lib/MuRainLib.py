@@ -39,7 +39,7 @@ class LimitedSizeDict(OrderedDict):
         super().__setitem__(key, value)
 
 
-def reboot() -> None:
+def restart() -> None:
     # 获取当前解释器路径
     p = sys.executable
     try:

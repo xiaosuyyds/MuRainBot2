@@ -66,7 +66,7 @@ class SayHelloCommand(Command.Command):
     def __init__(self):
         super().__init__()
         self.command_help = "say_hello <group_id: 要发送的群号> <user_id: 要私聊发送的用户uid>"
-        self.command_name = "run_api"
+        self.command_name = "say_hello"
         self.need_args = {
             "group_id": {
                 "type": int,

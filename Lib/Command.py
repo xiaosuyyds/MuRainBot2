@@ -186,12 +186,13 @@ class RunAPICommand(Command):
                 "must": False
             }
         }
+        self.api = OnebotAPI.OnebotAPI(original=True)
 
     def run(self, input_command: CommandParsing, kwargs):
         api_name = kwargs.get("api_name")
         api_params = kwargs.get("api_params")
         logger.debug(f"API: {api_name}, 参数: {api_params}")
-        print(OnebotAPI.OnebotAPI().get(api_name, api_params))
+        print(self.api.get(api_name, api_params)[1].json())
 
 
 class HelpCommand(Command):
@@ -233,12 +234,21 @@ def start_listening_command():
                 kwargs = {}
                 if run_command.need_args is not None and len(run_command.need_args) > 0:
                     n = len(input_command.command_args)
-                    counter = len([arg_name for arg_name, arg_info in run_command.need_args.items() if arg_info["must"]])
+                    counter = len(
+                        [arg_name for arg_name, arg_info in run_command.need_args.items() if arg_info["must"]])
                     for arg_name, arg_info in run_command.need_args.items():
                         if n == 0:
                             break
                         if arg_info["must"]:
                             kwargs[arg_name] = input_command.command_args.pop(0)
+                            if arg_info["type"] == int:
+                                kwargs[arg_name] = int(kwargs[arg_name])
+                            elif arg_info["type"] == float:
+                                kwargs[arg_name] = float(kwargs[arg_name])
+                            elif arg_info["type"] == bool:
+                                kwargs[arg_name] = bool(kwargs[arg_name])
+                            elif arg_info["type"] == dict or arg_info["type"] == list or arg_info["type"] == tuple:
+                                kwargs[arg_name] = eval(kwargs[arg_name])
                             n -= 1
                             counter -= 1
                         else:
@@ -249,6 +259,15 @@ def start_listening_command():
                             if arg_name not in kwargs:
                                 counter -= 1
                             kwargs[arg_name] = arg_info
+                            arg_type = run_command.need_args[arg_name]["type"]
+                            if arg_type == int:
+                                kwargs[arg_name] = int(kwargs[arg_name])
+                            elif arg_type == float:
+                                kwargs[arg_name] = float(kwargs[arg_name])
+                            elif arg_type == bool:
+                                kwargs[arg_name] = bool(kwargs[arg_name])
+                            elif arg_type == dict or arg_info["type"] == list or arg_info["type"] == tuple:
+                                kwargs[arg_name] = eval(kwargs[arg_name])
 
                     if counter > 0:
                         raise Exception("缺少参数")

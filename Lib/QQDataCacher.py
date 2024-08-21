@@ -108,6 +108,14 @@ class GroupMemberData:
                 self.sex = data.get("sex")
                 self.age = data.get("age")
 
+    def __getattr__(self, item):
+        try:
+            value = eval(f"self.{item}")
+        except Exception:
+            raise Exception
+        if value is None:
+            pass
+
     def get_group_name(self):
         if self.card != "" and self.card is not None:
             return self.card
@@ -123,6 +131,7 @@ class GroupData:
             member_count: int | None = None,
             max_member_count: int | None = None,
     ):
+        self.group_member_list = None
         self.group_id = group_id
 
         self.group_name = name
@@ -146,7 +155,7 @@ class GroupData:
             self.group_member_list = []
             for member in data:
                 self.group_member_list.append(
-                    GroupMemberData(
+                    get_group_user_data(
                         member.get("user_id"),
                         self.group_id,
                         name=member.get("nickname"),
@@ -167,21 +176,21 @@ class GroupData:
             self.group_member_list = None
 
 
-def get_user_data(user_id):
+def get_user_data(user_id, *args, **kwargs):
     if user_id in user_cache:
         return user_cache[user_id]
 
-    return UserData(user_id)
+    return UserData(user_id, *args, **kwargs)
 
 
-def get_group_data(group_id):
+def get_group_data(group_id, *args, **kwargs):
     if group_id in group_cache:
         return group_cache[group_id]
 
-    return GroupData(group_id)
+    return GroupData(group_id, *args, **kwargs)
 
 
-def get_group_user_data(group_id, user_id):
+def get_group_user_data(group_id, user_id, *args, **kwargs):
     if group_id in group_member_cache and user_id in group_member_cache[group_id]:
         return group_member_cache[group_id][user_id]
 
@@ -190,19 +199,24 @@ def get_group_user_data(group_id, user_id):
             if member.user_id == user_id:
                 return member
 
-    return GroupMemberData(user_id, group_id)
+    return GroupMemberData(user_id, group_id, *args, **kwargs)
 
 
 def refresh_all_cache():
     for group_id in list(group_cache.keys()):
-        group_cache[group_id].refresh_cache()
+        # group_cache[group_id].refresh_cache()
+        del group_cache[group_id]
 
-        if group_cache[group_id].group_member_list is not None:
-            for member in group_cache[group_id].group_member_list:
-                member.refresh_cache()
+        # if group_cache[group_id].group_member_list is not None:
+        #     for member in group_cache[group_id].group_member_list:
+        #         member.refresh_cache()
+
+    for member_id in list(group_member_cache.keys()):
+        del group_cache[member_id]
 
     for user_id in user_cache:
-        user_cache[user_id].refresh_cache()
+        # user_cache[user_id].refresh_cache()
+        del user_cache[user_id]
 
 
 def _refresh_cache_on_regular_basis():

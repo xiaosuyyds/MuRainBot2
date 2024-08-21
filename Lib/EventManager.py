@@ -120,16 +120,24 @@ class Event:
 
         # 事件扫描
         for register_event in register_event_list:
-            event_class = register_event["event_type"]
+            reg_event_class = register_event["event_type"]
             func = register_event["func"]
             args = register_event["args"]
             kwargs = register_event["kwargs"]
-            # 优先级检测
-            if event_class == self.event_class or event_class == "all" or event_class == "*":
-                return_ = func(self.event_class, self.event_data, *args, **kwargs)
-                if isinstance(return_, bool) and return_:
-                    flag = True
-                    break
+            if isinstance(self.event_class, (tuple, list)) and reg_event_class != "all" and reg_event_class != "*":
+                for event_class in self.event_class:
+                    # 优先级检测
+                    if reg_event_class == event_class or reg_event_class == "all" or reg_event_class == "*":
+                        return_ = func(event_class, event_data, *args, **kwargs)
+                        if isinstance(return_, bool) and return_:
+                            flag = True
+                            break
+            else:
+                if reg_event_class == self.event_class or reg_event_class == "all" or reg_event_class == "*":
+                    return_ = func(self.event_class, self.event_data, *args, **kwargs)
+                    if isinstance(return_, bool) and return_:
+                        flag = True
+                        break
 
         # 关键词检测
         if isinstance(self.event_class, (tuple, list)):

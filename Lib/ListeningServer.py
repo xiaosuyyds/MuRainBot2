@@ -57,7 +57,7 @@ def post_data():
         request_list.pop(0)
 
     if data.post_type + "_type" in data:
-        logger.debug("广播事件：%s" % data.post_type + "_type")
+        logger.debug("广播事件：%s" % data[data.post_type + "_type"])
         threading.Thread(
             target=lambda: EventManager.Event((data.post_type, data[data.post_type + "_type"]), data)).start()
     else:
@@ -123,8 +123,15 @@ def post_data():
                 logger.info("收到来自群 %s(%s) 内用户 %s(%s) 的加群邀请" %
                             (group.group_name, group.group_id, user.get_group_name(), user.user_id))
             elif data.sub_type == "add":
-                logger.info("群 %s(%s) 收到来自用户 %s(%s) 的加群请求" %
-                            (group.group_name, group.group_id, user.get_group_name(), user.user_id))
+                if data.comment == "":
+                    logger.info("群 %s(%s) 收到来自用户 %s(%s) 的加群请求\n flag: %s" %
+                                (group.group_name, group.group_id, user.get_group_name(), user.user_id, data.flag)
+                                )
+                else:
+                    logger.info("群 %s(%s) 收到来自用户 %s(%s) 的加群请求: %s\n flag: %s" %
+                                (group.group_name, group.group_id, user.get_group_name(),
+                                 user.user_id, data.comment, data.flag)
+                                )
         else:
             logger.warning("收到未知的上报: %s" % data.event_json)
 
