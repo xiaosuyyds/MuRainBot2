@@ -60,6 +60,7 @@ class PluginInfo:
 
 @ThreadPool.async_task
 def run_plugin_main(data):
+    global plugins
     for plugin in plugins:
         try:
             if not callable(plugin["plugin"].main):
