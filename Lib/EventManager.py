@@ -103,7 +103,6 @@ def unregister_keyword(keyword: str):
             del register_keyword_list[i]
 
 
-@ThreadPool.async_task
 class Event:
     """
     Event——广播事件
@@ -112,6 +111,7 @@ class Event:
     event_data: 事件数据
     """
 
+    @ThreadPool.async_task
     def __init__(self, event_type: tuple[str, str] | str | tuple[tuple[str, str] | str], event_data):
         self.event_class = event_type
         self.event_data = event_data
