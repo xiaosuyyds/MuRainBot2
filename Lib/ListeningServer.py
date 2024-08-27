@@ -1,7 +1,8 @@
 from concurrent.futures import ThreadPoolExecutor
+from wsgiref.simple_server import WSGIServer
 
 from flask import Flask, request
-from werkzeug.serving import make_server
+from werkzeug.serving import make_server, WSGIRequestHandler
 import threading
 import Lib.OnebotAPI as OnebotAPI
 import Lib.Configs as Configs
@@ -302,29 +303,33 @@ def post_data():
     return "ok", 204
 
 
-# 自定义的请求处理器
-class ThreadPoolWSGIServer:
-    def __init__(self, app, host, port, max_workers=10):
-        self.app = app
-        self.host = host
-        self.port = port
-        self.server = make_server(host, port, app, threaded=False)
-        # 创建一个线程池，限制最大线程数量
+# 自定义的 WSGI 服务器，使用线程池
+class ThreadPoolWSGIServer(WSGIServer):
+    def __init__(self, server_address, app=None, max_workers=10, passthrough_errors=False, handler_class=WSGIRequestHandler, **kwargs):
+        super().__init__(server_address, handler_class, **kwargs)
+        # 创建线程池
         self.executor = ThreadPoolExecutor(max_workers=max_workers)
-        self.lock = threading.Lock()
+        # 设置 WSGI 必需的属性
+        self.app = app  # 传入 WSGI 应用
+        self.ssl_context = None
+        self.multithread = True  # 标识服务器为多线程
+        self.multiprocess = False  # 通常情况下，线程池实现不使用多进程
+        self.threaded = True  # 明确标识为线程处理
+        self.passthrough_errors = passthrough_errors  # 控制是否传递错误
 
-    def serve_forever(self):
-        print(f"Serving on {self.host}:{self.port} with thread pool.")
-        while True:
-            # 接受请求并将其提交到线程池执行
-            with self.lock:
-                client_socket, client_address = self.server.socket.accept()
-            self.executor.submit(self.handle_request, client_socket, client_address)
-
-    def handle_request(self, client_socket, client_address):
-        # 处理客户端的请求
-        print(f"Handling request from {client_address}")
-        self.server.handle_request()
+    # 重写服务处理函数，将其交给线程池处理
+    def handle_request(self):
+        request, client_address = self.get_request()
+        if self.verify_request(request, client_address):
+            self.executor.submit(self.process_request, request, client_address)
 
 
-server = ThreadPoolWSGIServer(app, config.server_host, config.server_port, max_workers=config.max_workers)
+# 自定义请求处理器，继承 WSGIRequestHandler
+class ThreadPoolWSGIRequestHandler(WSGIRequestHandler):
+    def handle(self):
+        # 处理请求的逻辑在这里进行
+        super().handle()
+
+
+server = ThreadPoolWSGIServer((config.server_host, config.server_port), app=app, max_workers=config.max_workers)
+server.RequestHandlerClass = ThreadPoolWSGIRequestHandler
