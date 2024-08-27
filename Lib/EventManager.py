@@ -10,6 +10,7 @@ import traceback
 from typing import Callable
 
 import Lib.QQRichText as QQRichText
+import Lib.ThreadPool as ThreadPool
 
 register_event_list = []  # event_type, func, arg, args, kwargs, by_file
 register_keyword_list = []  # keyword, func, arg, args, kwargs, by_file
@@ -102,6 +103,7 @@ def unregister_keyword(keyword: str):
             del register_keyword_list[i]
 
 
+@ThreadPool.async_task
 class Event:
     """
     Event——广播事件

@@ -58,11 +58,10 @@ def post_data():
 
     if data.post_type + "_type" in data:
         logger.debug("广播事件：%s" % data[data.post_type + "_type"])
-        threading.Thread(
-            target=lambda: EventManager.Event((data.post_type, data[data.post_type + "_type"]), data)).start()
+        EventManager.Event((data.post_type, data[data.post_type + "_type"]), data)
     else:
         logger.debug("广播事件：%s" % data.post_type)
-        threading.Thread(target=lambda: EventManager.Event(data.post_type, data)).start()
+        EventManager.Event(data.post_type, data)
 
     if data.post_type == "message" or data.post_type == "message_sent":
         # 私聊消息
@@ -301,4 +300,4 @@ def post_data():
     return "ok", 204
 
 
-server = make_server(config.server_host, config.server_port, app, threaded=True)
+server = make_server(config.server_host, config.server_port, app)
