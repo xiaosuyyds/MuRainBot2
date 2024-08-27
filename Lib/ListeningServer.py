@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor
+
 from flask import Flask, request
 from werkzeug.serving import make_server
 import threading
@@ -55,13 +57,6 @@ def post_data():
         request_list.append(data)
     if len(request_list) > 100:
         request_list.pop(0)
-
-    if data.post_type + "_type" in data:
-        logger.debug("广播事件：%s" % data[data.post_type + "_type"])
-        EventManager.Event((data.post_type, data[data.post_type + "_type"]), data)
-    else:
-        logger.debug("广播事件：%s" % data.post_type)
-        EventManager.Event(data.post_type, data)
 
     if data.post_type == "message" or data.post_type == "message_sent":
         # 私聊消息
@@ -294,10 +289,42 @@ def post_data():
     else:
         logger.warning("收到未知的上报: %s" % data.event_json)
 
+    if data.post_type + "_type" in data:
+        logger.debug("广播事件：%s" % data[data.post_type + "_type"])
+        EventManager.Event((data.post_type, data[data.post_type + "_type"]), data)
+    else:
+        logger.debug("广播事件：%s" % data.post_type)
+        EventManager.Event(data.post_type, data)
+
     # 若插件包含main函数则运行
     PluginManager.run_plugin_main(data)
 
     return "ok", 204
 
 
-server = make_server(config.server_host, config.server_port, app)
+# 自定义的请求处理器
+class ThreadPoolWSGIServer:
+    def __init__(self, app, host, port, max_workers=10):
+        self.app = app
+        self.host = host
+        self.port = port
+        self.server = make_server(host, port, app, threaded=False)
+        # 创建一个线程池，限制最大线程数量
+        self.executor = ThreadPoolExecutor(max_workers=max_workers)
+        self.lock = threading.Lock()
+
+    def serve_forever(self):
+        print(f"Serving on {self.host}:{self.port} with thread pool.")
+        while True:
+            # 接受请求并将其提交到线程池执行
+            with self.lock:
+                client_socket, client_address = self.server.socket.accept()
+            self.executor.submit(self.handle_request, client_socket, client_address)
+
+    def handle_request(self, client_socket, client_address):
+        # 处理客户端的请求
+        print(f"Handling request from {client_address}")
+        self.server.handle_request()
+
+
+server = ThreadPoolWSGIServer(app, config.server_host, config.server_port, max_workers=config.max_workers)

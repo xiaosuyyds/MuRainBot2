@@ -111,7 +111,6 @@ class Event:
     event_data: 事件数据
     """
 
-    @ThreadPool.async_task
     def __init__(self, event_type: tuple[str, str] | str | tuple[tuple[str, str] | str], event_data):
         self.event_class = event_type
         self.event_data = event_data
