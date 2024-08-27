@@ -30,6 +30,3 @@ def shutdown():
     if isinstance(thread_pool, ThreadPoolExecutor):
         logging.info("Closing Thread Pool")
         thread_pool.shutdown()
-
-
-init()
