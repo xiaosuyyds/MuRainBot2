@@ -212,11 +212,17 @@ def refresh_all_cache():
         #         member.refresh_cache()
 
     for member_id in list(group_member_cache.keys()):
-        del group_cache[member_id]
+        try:
+            del group_cache[member_id]
+        except KeyError:
+            pass
 
     for user_id in user_cache:
         # user_cache[user_id].refresh_cache()
-        del user_cache[user_id]
+        try:
+            del user_cache[user_id]
+        except KeyError:
+            pass
 
 
 def _refresh_cache_on_regular_basis():
