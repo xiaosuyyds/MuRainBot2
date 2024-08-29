@@ -26,17 +26,19 @@ data_path = os.path.join(work_path, "data")
 
 last_heartbeat_time = 0  # 上一次心跳包的时间
 heartbeat_interval = -1  # 心跳包间隔
+last_restart_time = 0  # 上一次重启的时间
 
 
 def heartbeat_check():
-    global last_heartbeat_time, heartbeat_interval
+    global last_heartbeat_time, heartbeat_interval, last_restart_time
     while True:
         if heartbeat_interval > 0:
             if time.time() - last_heartbeat_time > heartbeat_interval * 2:
                 logger.warning("心跳包超时！请检查 Onebot 实现端是否正常运行！")
-                if config.auto_restart_onebot:
+                if config.auto_restart_onebot and time.time() - last_restart_time > 30:
                     logger.warning("将自动重启 Onebot 实现端！")
                     api.set_restart()
+                    last_restart_time = time.time()
         time.sleep(1)
 
 
