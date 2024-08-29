@@ -8,6 +8,7 @@
 import atexit
 import threading
 
+import Lib.ThreadPool
 from Lib import *
 
 logger = Logger.logger
@@ -15,7 +16,7 @@ VERSION = "2.0.0-dev"  # 版本
 VERSION_WEEK = "24W18A"  # 版本周
 
 api = OnebotAPI.OnebotAPI()
-
+Lib.ThreadPool.init()
 request_list = []
 
 work_path = os.path.abspath(os.path.dirname(__file__))

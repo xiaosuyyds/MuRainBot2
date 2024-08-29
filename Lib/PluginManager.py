@@ -3,6 +3,7 @@ import importlib
 import time
 import Lib.Logger as Logger
 import threading
+import Lib.ThreadPool as ThreadPool
 
 logger = Logger.logger
 
@@ -57,7 +58,9 @@ class PluginInfo:
         self.IS_HIDDEN = False  # 插件是否隐藏（在/help命令中）
 
 
+@ThreadPool.async_task
 def run_plugin_main(data):
+    global plugins
     for plugin in plugins:
         try:
             if not callable(plugin["plugin"].main):
@@ -67,13 +70,14 @@ def run_plugin_main(data):
 
         logger.debug("执行插件%s" % plugin["name"])
         try:
-            plugin_thread = threading.Thread(
-                target=plugin["plugin"].main,
-                args=(
-                    data.event_json,
-                    work_path)
-            )
-            plugin_thread.start()
+            # plugin_thread = threading.Thread(
+            #     target=plugin["plugin"].main,
+            #     args=(
+            #         data.event_json,
+            #         work_path)
+            # )
+            # plugin_thread.start()
+            plugin["plugin"].main(data.event_json, work_path)
         except Exception as e:
             logger.error("执行插件%s时发生错误：%s" % (plugin["name"], repr(e)))
             continue

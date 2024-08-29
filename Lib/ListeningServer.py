@@ -1,5 +1,8 @@
+from concurrent.futures import ThreadPoolExecutor
+from wsgiref.simple_server import WSGIServer
+
 from flask import Flask, request
-from werkzeug.serving import make_server
+from werkzeug.serving import make_server, WSGIRequestHandler
 import threading
 import Lib.OnebotAPI as OnebotAPI
 import Lib.Configs as Configs
@@ -23,17 +26,19 @@ data_path = os.path.join(work_path, "data")
 
 last_heartbeat_time = 0  # 上一次心跳包的时间
 heartbeat_interval = -1  # 心跳包间隔
+last_restart_time = 0  # 上一次重启的时间
 
 
 def heartbeat_check():
-    global last_heartbeat_time, heartbeat_interval
+    global last_heartbeat_time, heartbeat_interval, last_restart_time
     while True:
         if heartbeat_interval > 0:
             if time.time() - last_heartbeat_time > heartbeat_interval * 2:
                 logger.warning("心跳包超时！请检查 Onebot 实现端是否正常运行！")
-                if config.auto_restart_onebot:
+                if config.auto_restart_onebot and time.time() - last_restart_time > 30:
                     logger.warning("将自动重启 Onebot 实现端！")
                     api.set_restart()
+                    last_restart_time = time.time()
         time.sleep(1)
 
 
@@ -55,14 +60,6 @@ def post_data():
         request_list.append(data)
     if len(request_list) > 100:
         request_list.pop(0)
-
-    if data.post_type + "_type" in data:
-        logger.debug("广播事件：%s" % data[data.post_type + "_type"])
-        threading.Thread(
-            target=lambda: EventManager.Event((data.post_type, data[data.post_type + "_type"]), data)).start()
-    else:
-        logger.debug("广播事件：%s" % data.post_type)
-        threading.Thread(target=lambda: EventManager.Event(data.post_type, data)).start()
 
     if data.post_type == "message" or data.post_type == "message_sent":
         # 私聊消息
@@ -295,10 +292,46 @@ def post_data():
     else:
         logger.warning("收到未知的上报: %s" % data.event_json)
 
+    if data.post_type + "_type" in data:
+        logger.debug("广播事件：%s" % data[data.post_type + "_type"])
+        EventManager.Event((data.post_type, data[data.post_type + "_type"]), data)
+    else:
+        logger.debug("广播事件：%s" % data.post_type)
+        EventManager.Event(data.post_type, data)
+
     # 若插件包含main函数则运行
     PluginManager.run_plugin_main(data)
 
     return "ok", 204
 
 
-server = make_server(config.server_host, config.server_port, app, threaded=True)
+# 自定义的 WSGI 服务器，使用线程池
+class ThreadPoolWSGIServer(WSGIServer):
+    def __init__(self, server_address, app=None, max_workers=10, passthrough_errors=False, handler_class=WSGIRequestHandler, **kwargs):
+        super().__init__(server_address, handler_class, **kwargs)
+        # 创建线程池
+        self.executor = ThreadPoolExecutor(max_workers=max_workers)
+        # 设置 WSGI 必需的属性
+        self.app = app  # 传入 WSGI 应用
+        self.ssl_context = None
+        self.multithread = True  # 标识服务器为多线程
+        self.multiprocess = False  # 通常情况下，线程池实现不使用多进程
+        self.threaded = True  # 明确标识为线程处理
+        self.passthrough_errors = passthrough_errors  # 控制是否传递错误
+
+    # 重写服务处理函数，将其交给线程池处理
+    def handle_request(self):
+        request, client_address = self.get_request()
+        if self.verify_request(request, client_address):
+            self.executor.submit(self.process_request, request, client_address)
+
+
+# 自定义请求处理器，继承 WSGIRequestHandler
+class ThreadPoolWSGIRequestHandler(WSGIRequestHandler):
+    def handle(self):
+        # 处理请求的逻辑在这里进行
+        super().handle()
+
+
+server = ThreadPoolWSGIServer((config.server_host, config.server_port), app=app, max_workers=config.max_workers)
+server.RequestHandlerClass = ThreadPoolWSGIRequestHandler

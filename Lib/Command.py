@@ -1,4 +1,5 @@
 import Lib.BotController as BotController
+import Lib.EventManager
 import Lib.QQRichText as QQRichText
 import Lib.OnebotAPI as OnebotAPI
 import Lib.MuRainLib as MuRainLib
@@ -206,6 +207,66 @@ class HelpCommand(Command):
         print(help_text)
 
 
+def run_command(input_command):
+    try:
+        run_command = None
+        for command in commands:
+            if input_command.command == command.command_name:
+                run_command: Command = command
+                break
+    except Exception as e:
+        logger.error(f"检查命令时发生错误: {e}")
+        return
+    if run_command is not None:
+        try:
+            kwargs = {}
+            if run_command.need_args is not None and len(run_command.need_args) > 0:
+                n = len(input_command.command_args)
+                counter = len(
+                    [arg_name for arg_name, arg_info in run_command.need_args.items() if arg_info["must"]])
+                for arg_name, arg_info in run_command.need_args.items():
+                    if n == 0:
+                        break
+                    if arg_info["must"]:
+                        kwargs[arg_name] = input_command.command_args.pop(0)
+                        if arg_info["type"] == int:
+                            kwargs[arg_name] = int(kwargs[arg_name])
+                        elif arg_info["type"] == float:
+                            kwargs[arg_name] = float(kwargs[arg_name])
+                        elif arg_info["type"] == bool:
+                            kwargs[arg_name] = bool(kwargs[arg_name])
+                        elif arg_info["type"] == dict or arg_info["type"] == list or arg_info["type"] == tuple:
+                            kwargs[arg_name] = eval(kwargs[arg_name])
+                        n -= 1
+                        counter -= 1
+                    else:
+                        kwargs[arg_name] = arg_info["default"]
+
+                for arg_name, arg_info in input_command.command_kwargs.items():
+                    if arg_name in [_arg_name for _arg_name, _arg_info in run_command.need_args.items()]:
+                        if arg_name not in kwargs:
+                            counter -= 1
+                        kwargs[arg_name] = arg_info
+                        arg_type = run_command.need_args[arg_name]["type"]
+                        if arg_type == int:
+                            kwargs[arg_name] = int(kwargs[arg_name])
+                        elif arg_type == float:
+                            kwargs[arg_name] = float(kwargs[arg_name])
+                        elif arg_type == bool:
+                            kwargs[arg_name] = bool(kwargs[arg_name])
+                        elif arg_type == dict or arg_info["type"] == list or arg_info["type"] == tuple:
+                            kwargs[arg_name] = eval(kwargs[arg_name])
+
+                if counter > 0:
+                    raise Exception("缺少参数")
+
+            run_command.run(input_command, kwargs)
+        except Exception as e:
+            logger.error(f"执行命令时发生错误: {e}")
+    else:
+        logger.error("未知的命令, 请发送help查看支持的命令")
+
+
 def start_listening_command():
     while True:
         input_command = input()
@@ -216,77 +277,9 @@ def start_listening_command():
         if input_command[0] == "/":
             input_command = input_command[1:]
         input_command = CommandParsing(input_command)
-
+        run_command(input_command)
         logger.debug(f"Command: {input_command.command_list}")
-
-        try:
-            run_command = None
-            for command in commands:
-                if input_command.command == command.command_name:
-                    run_command: Command = command
-                    break
-        except Exception as e:
-            logger.error(f"检查命令时发生错误: {e}")
-            return
-
-        if run_command is not None:
-            try:
-                kwargs = {}
-                if run_command.need_args is not None and len(run_command.need_args) > 0:
-                    n = len(input_command.command_args)
-                    counter = len(
-                        [arg_name for arg_name, arg_info in run_command.need_args.items() if arg_info["must"]])
-                    for arg_name, arg_info in run_command.need_args.items():
-                        if n == 0:
-                            break
-                        if arg_info["must"]:
-                            kwargs[arg_name] = input_command.command_args.pop(0)
-                            if arg_info["type"] == int:
-                                kwargs[arg_name] = int(kwargs[arg_name])
-                            elif arg_info["type"] == float:
-                                kwargs[arg_name] = float(kwargs[arg_name])
-                            elif arg_info["type"] == bool:
-                                kwargs[arg_name] = bool(kwargs[arg_name])
-                            elif arg_info["type"] == dict or arg_info["type"] == list or arg_info["type"] == tuple:
-                                kwargs[arg_name] = eval(kwargs[arg_name])
-                            n -= 1
-                            counter -= 1
-                        else:
-                            kwargs[arg_name] = arg_info["default"]
-
-                    for arg_name, arg_info in input_command.command_kwargs.items():
-                        if arg_name in [_arg_name for _arg_name, _arg_info in run_command.need_args.items()]:
-                            if arg_name not in kwargs:
-                                counter -= 1
-                            kwargs[arg_name] = arg_info
-                            arg_type = run_command.need_args[arg_name]["type"]
-                            if arg_type == int:
-                                kwargs[arg_name] = int(kwargs[arg_name])
-                            elif arg_type == float:
-                                kwargs[arg_name] = float(kwargs[arg_name])
-                            elif arg_type == bool:
-                                kwargs[arg_name] = bool(kwargs[arg_name])
-                            elif arg_type == dict or arg_info["type"] == list or arg_info["type"] == tuple:
-                                kwargs[arg_name] = eval(kwargs[arg_name])
-
-                    if counter > 0:
-                        raise Exception("缺少参数")
-
-                run_command.run(input_command, kwargs)
-            except Exception as e:
-                logger.error(f"执行命令时发生错误: {e}")
-        else:
-            logger.error("未知的命令, 请发送help查看支持的命令")
 
 
 if __name__ == "__main__":
     start_listening_command()
-    # command = "send_msg group_id=1919810 \"1234 567890\" hello user_id=114514"
-    # command = "send_msg \\\"abc 123\\\" 'hel\" lo'"
-    # print(command)
-    # command_parsed = CommandParsing(command)
-    # print(command_parsed.command_list)
-    #
-    # print(command_parsed.command)
-    # print(command_parsed.command_args)
-    # print(command_parsed.command_kwargs)
