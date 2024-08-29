@@ -305,31 +305,28 @@ def post_data():
     return "ok", 204
 
 
-# 自定义的 WSGI 服务器，使用线程池
 class ThreadPoolWSGIServer(WSGIServer):
     def __init__(self, server_address, app=None, max_workers=10, passthrough_errors=False, handler_class=WSGIRequestHandler, **kwargs):
         super().__init__(server_address, handler_class, **kwargs)
-        # 创建线程池
         self.executor = ThreadPoolExecutor(max_workers=max_workers)
-        # 设置 WSGI 必需的属性
-        self.app = app  # 传入 WSGI 应用
+        self.app = app
         self.ssl_context = None
-        self.multithread = True  # 标识服务器为多线程
-        self.multiprocess = False  # 通常情况下，线程池实现不使用多进程
-        self.threaded = True  # 明确标识为线程处理
-        self.passthrough_errors = passthrough_errors  # 控制是否传递错误
+        self.multithread = True
+        self.multiprocess = False
+        self.threaded = True
+        self.passthrough_errors = passthrough_errors
 
-    # 重写服务处理函数，将其交给线程池处理
     def handle_request(self):
         request, client_address = self.get_request()
         if self.verify_request(request, client_address):
             self.executor.submit(self.process_request, request, client_address)
 
+    def serve_forever(self):
+        while True:
+            self.handle_request()
 
-# 自定义请求处理器，继承 WSGIRequestHandler
 class ThreadPoolWSGIRequestHandler(WSGIRequestHandler):
     def handle(self):
-        # 处理请求的逻辑在这里进行
         super().handle()
 
 
