@@ -137,3 +137,18 @@ def clean_cache() -> None:
             shutil.rmtree(cache_path, ignore_errors=True)
         except Exception as e:
             logging.warning("删除缓存时报错，报错信息: %s" % repr(e))
+
+
+# 函数缓存
+def func_cache(max_size: int, expiration_time: int = -1) -> callable:
+    cache = LimitedSizeDict(max_size)
+
+    def wrapper(func, *args, **kwargs):
+        key = str(func.__name__) + str(args) + str(kwargs)
+        if key in cache and (expiration_time == -1 or time.time() - cache[key][1] < expiration_time):
+            return cache[key][0]
+        result = func(*args, **kwargs)
+        cache[key] = (result, time.time())
+        return result
+
+    return wrapper
