@@ -39,6 +39,12 @@ def heartbeat_check():
                     logger.warning("将自动重启 Onebot 实现端！")
                     api.set_restart()
                     last_restart_time = time.time()
+                for i in range(10):
+                    if time.time() - last_heartbeat_time > heartbeat_interval * 2:
+                        time.sleep(1)
+                    else:
+                        logger.info("心跳包已恢复正常")
+                        break
         time.sleep(1)
 
 

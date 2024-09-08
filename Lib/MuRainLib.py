@@ -140,15 +140,33 @@ def clean_cache() -> None:
 
 
 # 函数缓存
-def func_cache(max_size: int, expiration_time: int = -1) -> callable:
+def function_cache(max_size: int, expiration_time: int = -1):
     cache = LimitedSizeDict(max_size)
 
-    def wrapper(func, *args, **kwargs):
-        key = str(func.__name__) + str(args) + str(kwargs)
-        if key in cache and (expiration_time == -1 or time.time() - cache[key][1] < expiration_time):
-            return cache[key][0]
-        result = func(*args, **kwargs)
-        cache[key] = (result, time.time())
-        return result
+    def cache_decorator(func):
+        def wrapper(*args, **kwargs):
+            key = str(func.__name__) + str(args) + str(kwargs)
+            if key in cache and (expiration_time == -1 or time.time() - cache[key][1] < expiration_time):
+                return cache[key][0]
+            result = func(*args, **kwargs)
+            cache[key] = (result, time.time())
+            return result
 
-    return wrapper
+        def clear_cache():
+            """清理缓存"""
+            cache.clear()
+
+        def get_cache():
+            """获取缓存"""
+            return dict(cache)
+
+        def original_func(*args, **kwargs):
+            """调用原函数"""
+            return func(*args, **kwargs)
+
+        wrapper.clear_cache = clear_cache
+        wrapper.get_cache = get_cache
+        wrapper.original_func = original_func
+        return wrapper
+
+    return cache_decorator
