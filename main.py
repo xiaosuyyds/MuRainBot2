@@ -5,11 +5,17 @@
 #  | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
 
-import atexit
 import threading
-
 import Lib.ThreadPool
 from Lib import *
+
+BANNER = r""" __  __       ____       _         ____        _   _____
+|  \/  |_   _|  _ \ __ _(_)_ __   | __ )  ___ | |_|___  \
+| |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __| __) |
+| |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/
+|_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
+https://github.com/xiaosuyyds/MuRainBot2
+"""
 
 logger = Logger.logger
 VERSION = "2.0.0-dev"  # 版本
@@ -31,21 +37,10 @@ if not os.path.exists(cache_path):
     os.makedirs(cache_path)
 
 
-# 结束运行
-@atexit.register
-def finalize_and_cleanup():
-    logger.info("MuRainBot即将关闭，正在删除缓存")
-
-    clean_cache()
-
-    logger.warning("MuRainBot结束运行！")
-    logger.info("再见！\n")
-
-
 # 主函数
 if __name__ == '__main__':
+    print(BANNER)
     logger.info(f"MuRain Bot开始运行，当前版本：{VERSION}({VERSION_WEEK})")
-    logger.info("Github: https://github.com/xiaosuyyds/MuRainBot2/")
 
     LibInfo.main_version, LibInfo.main_version_week = VERSION, VERSION_WEEK
 
