@@ -50,6 +50,155 @@ def heartbeat_check():
 
 threading.Thread(target=heartbeat_check, daemon=True).start()
 
+# TODO: 实现从一大串的if嵌套转为下面这段
+"""
+log_map = [
+    {
+        "rules": [
+            {
+                "type": "post_type",
+                "value": "message"
+            }
+        ],
+        "value": [
+            {
+                "rules": [
+                    {
+                        "type": "message_type",
+                        "value": "private"
+                    }
+                ],
+                "code": \"\"\"
+    message = QQRichText.QQRichText(data["message"])
+    user = QQDataCacher.get_user_data(data.user_id,
+                                      data.user_id,
+                                      data.sender.get("nickname"),
+                                      data.sender.get("sex"),
+                                      data.sender.get("age")
+                                      )
+    \"\"\",
+                "value": [
+                    {
+                        "rules": [
+                            {
+                                "type": "sub_type",
+                                "value": "friend"
+                            }
+                        ],
+                        "value": '"收到好友 %s(%s) 的消息: %s (%s)" % (user.nickname, user.user_id, str(message), data.message_id)'
+                    },
+                    {
+                        "rules": [
+                            {
+                                "type": "sub_type",
+                                "value": "group"
+                            }
+                        ],
+                        "code": "group = QQDataCacher.get_group_data(data.group_id)",
+                        "value": '"收到来自群 %s(%s) 内 %s(%s) 的消息: %s (%s)" % (group.group_name, data.group_id, user.nickname, user.user_id, str(message), data.message_id)'
+                    },
+                    {
+                        "rules": [
+                            {
+                                "type": "sub_type",
+                                "value": "other"
+                            }
+                        ],
+                        "value": '"收到来自 %s(%s) 的消息: %s (%s)" % (user.nickname, user.user_id, str(message), data.message_id)'
+                    }
+                ]
+            },
+            {
+                "rules": [
+                    {
+                        "type": "message_type",
+                        "value": "group"
+                    }
+                ],
+                "code": \"\"\"
+group = QQDataCacher.get_group_data(data.group_id)
+user = QQDataCacher.get_group_user_data(data.group_id, data.user_id)
+message = QQRichText.QQRichText(data.message)
+# 获取群文件夹路径
+group_path = os.path.join(data_path, "groups", str(data.group_id))
+# 如果获取群文件夹路径不存在, 则创建
+if not os.path.exists(group_path):
+    os.makedirs(group_path)
+\"\"\",
+                "value": \"\"\""收到群 %s(%s) 内 %s(%s) 的消息: %s (%s)" % (
+group.group_name, group.group_id, user.get_group_name(), user.user_id, str(message),
+data.message_id)\"\"\"
+            }
+        ]
+    },
+    {
+        "rules": [
+            {
+                "type": "post_type",
+                "value": "request"
+            }
+        ],
+        "value": [
+            {
+                "rules": [
+                    {
+                        "type": "request_type",
+                        "value": "friend"
+                    }
+                ],
+                "code": "user = QQDataCacher.get_user_data(data.user_id)",
+                "value": '"收到来自 %s(%s) 的加好友请求: %s" % (user.nickname, user.user_id, data.comment)'
+            },
+            {
+                "rules": [
+                    {
+                        "type": "request_type",
+                        "value": "group"
+                    }
+                ],
+                "code": \"\"\"group = QQDataCacher.get_group_data(data.group_id)
+user = QQDataCacher.get_group_user_data(data.group_id, data.user_id)
+\"\"\",
+                "value": [
+                    {
+                        "rules": [
+                            {
+                                "type": "sub_type",
+                                "value": "invite"
+                            }
+                        ],
+                        "value": '"收到来自群 %s(%s) 内用户 %s(%s) 的加群邀请" % (group.group_name, group.group_id, user.get_group_name(), user.user_id)'
+                    },
+                    {
+                        "rules": [
+                            {
+                                "type": "sub_type",
+                                "value": "add"
+                            }
+                        ],
+                        "value": [
+                            {
+                                "rules": [
+                                    {
+                                        "type": "comment",
+                                        "value": ""
+                                    }
+                                ],
+                                "value": '"群 %s(%s) 收到来自用户 %s(%s) 的加群请求\n flag: %s" % (group.group_name, group.group_id, user.get_group_name(), user.user_id, data.flag)'
+                            },
+                            {
+                                "rules": [],
+                                "value": '"群 %s(%s) 收到来自用户 %s(%s) 的加群请求: %s\n flag: %s" %(group.group_name, group.group_id, user.get_group_name(), user.user_id, data.comment, data.flag)'
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]
+"""
+
 
 # 上报
 @app.route("/", methods=["POST"])
@@ -67,15 +216,19 @@ def post_data():
     if len(request_list) > 100:
         request_list.pop(0)
 
-    if data.post_type == "message" or data.post_type == "message_sent":
+    if data.post_type == "message_sent":
+        data.post_type = "message"
+
+    if data.post_type == "message":
         # 私聊消息
         if data.message_type == "private":
             message = QQRichText.QQRichText(data["message"])
-            QQDataCacher.UserData(data.user_id,
-                                  data.sender.get("nickname"),
-                                  data.sender.get("sex"),
-                                  data.sender.get("age"))
-            user = QQDataCacher.get_user_data(data.user_id)
+            user = QQDataCacher.get_user_data(data.user_id,
+                                              data.user_id,
+                                              data.sender.get("nickname"),
+                                              data.sender.get("sex"),
+                                              data.sender.get("age")
+                                              )
             if data.sub_type == "friend":
                 logger.info("收到好友 %s(%s) 的消息: %s (%s)" % (
                     user.nickname, user.user_id, str(message), data.message_id)
@@ -312,7 +465,8 @@ def post_data():
 
 
 class ThreadPoolWSGIServer(WSGIServer):
-    def __init__(self, server_address, app=None, max_workers=10, passthrough_errors=False, handler_class=WSGIRequestHandler, **kwargs):
+    def __init__(self, server_address, app=None, max_workers=10, passthrough_errors=False,
+                 handler_class=WSGIRequestHandler, **kwargs):
         super().__init__(server_address, handler_class, **kwargs)
         self.executor = ThreadPoolExecutor(max_workers=max_workers)
         self.app = app
@@ -330,6 +484,7 @@ class ThreadPoolWSGIServer(WSGIServer):
     def serve_forever(self):
         while True:
             self.handle_request()
+
 
 class ThreadPoolWSGIRequestHandler(WSGIRequestHandler):
     def handle(self):

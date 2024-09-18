@@ -9,6 +9,7 @@
 MuRainLib
 用于MuRain Bot框架
 """
+import atexit
 import hashlib
 import logging
 import os
@@ -18,11 +19,13 @@ import shutil
 import time
 import random
 from collections import OrderedDict
+import Lib.Logger as Logger
 
 work_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 data_path = os.path.join(work_path, "data")
 logs_path = os.path.join(work_path, "logs")
 cache_path = os.path.join(data_path, "cache")
+logger = Logger.logger
 
 
 class LimitedSizeDict(OrderedDict):
@@ -170,3 +173,15 @@ def function_cache(max_size: int, expiration_time: int = -1):
         return wrapper
 
     return cache_decorator
+
+
+# 结束运行
+@atexit.register
+def finalize_and_cleanup():
+    logger.info("MuRainBot即将关闭，正在删除缓存")
+
+    clean_cache()
+
+    logger.warning("MuRainBot结束运行！")
+    logger.info("再见！\n")
+    os._exit(0)
