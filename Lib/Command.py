@@ -269,7 +269,11 @@ def run_command(input_command):
 
 def start_listening_command():
     while True:
-        input_command = input()
+        try:
+            input_command = input()
+        except (KeyboardInterrupt, UnicodeDecodeError):
+            MuRainLib.finalize_and_cleanup()
+            return
 
         if len(input_command) == 0:
             continue

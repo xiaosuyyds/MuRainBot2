@@ -39,10 +39,165 @@ def heartbeat_check():
                     logger.warning("将自动重启 Onebot 实现端！")
                     api.set_restart()
                     last_restart_time = time.time()
+                for i in range(10):
+                    if time.time() - last_heartbeat_time > heartbeat_interval * 2:
+                        time.sleep(1)
+                    else:
+                        logger.info("心跳包已恢复正常")
+                        break
         time.sleep(1)
 
 
 threading.Thread(target=heartbeat_check, daemon=True).start()
+
+# TODO: 实现从一大串的if嵌套转为下面这段
+"""
+log_map = [
+    {
+        "rules": [
+            {
+                "type": "post_type",
+                "value": "message"
+            }
+        ],
+        "value": [
+            {
+                "rules": [
+                    {
+                        "type": "message_type",
+                        "value": "private"
+                    }
+                ],
+                "code": \"\"\"
+    message = QQRichText.QQRichText(data["message"])
+    user = QQDataCacher.get_user_data(data.user_id,
+                                      data.user_id,
+                                      data.sender.get("nickname"),
+                                      data.sender.get("sex"),
+                                      data.sender.get("age")
+                                      )
+    \"\"\",
+                "value": [
+                    {
+                        "rules": [
+                            {
+                                "type": "sub_type",
+                                "value": "friend"
+                            }
+                        ],
+                        "value": '"收到好友 %s(%s) 的消息: %s (%s)" % (user.nickname, user.user_id, str(message), data.message_id)'
+                    },
+                    {
+                        "rules": [
+                            {
+                                "type": "sub_type",
+                                "value": "group"
+                            }
+                        ],
+                        "code": "group = QQDataCacher.get_group_data(data.group_id)",
+                        "value": '"收到来自群 %s(%s) 内 %s(%s) 的消息: %s (%s)" % (group.group_name, data.group_id, user.nickname, user.user_id, str(message), data.message_id)'
+                    },
+                    {
+                        "rules": [
+                            {
+                                "type": "sub_type",
+                                "value": "other"
+                            }
+                        ],
+                        "value": '"收到来自 %s(%s) 的消息: %s (%s)" % (user.nickname, user.user_id, str(message), data.message_id)'
+                    }
+                ]
+            },
+            {
+                "rules": [
+                    {
+                        "type": "message_type",
+                        "value": "group"
+                    }
+                ],
+                "code": \"\"\"
+group = QQDataCacher.get_group_data(data.group_id)
+user = QQDataCacher.get_group_user_data(data.group_id, data.user_id)
+message = QQRichText.QQRichText(data.message)
+# 获取群文件夹路径
+group_path = os.path.join(data_path, "groups", str(data.group_id))
+# 如果获取群文件夹路径不存在, 则创建
+if not os.path.exists(group_path):
+    os.makedirs(group_path)
+\"\"\",
+                "value": \"\"\""收到群 %s(%s) 内 %s(%s) 的消息: %s (%s)" % (
+group.group_name, group.group_id, user.get_group_name(), user.user_id, str(message),
+data.message_id)\"\"\"
+            }
+        ]
+    },
+    {
+        "rules": [
+            {
+                "type": "post_type",
+                "value": "request"
+            }
+        ],
+        "value": [
+            {
+                "rules": [
+                    {
+                        "type": "request_type",
+                        "value": "friend"
+                    }
+                ],
+                "code": "user = QQDataCacher.get_user_data(data.user_id)",
+                "value": '"收到来自 %s(%s) 的加好友请求: %s" % (user.nickname, user.user_id, data.comment)'
+            },
+            {
+                "rules": [
+                    {
+                        "type": "request_type",
+                        "value": "group"
+                    }
+                ],
+                "code": \"\"\"group = QQDataCacher.get_group_data(data.group_id)
+user = QQDataCacher.get_group_user_data(data.group_id, data.user_id)
+\"\"\",
+                "value": [
+                    {
+                        "rules": [
+                            {
+                                "type": "sub_type",
+                                "value": "invite"
+                            }
+                        ],
+                        "value": '"收到来自群 %s(%s) 内用户 %s(%s) 的加群邀请" % (group.group_name, group.group_id, user.get_group_name(), user.user_id)'
+                    },
+                    {
+                        "rules": [
+                            {
+                                "type": "sub_type",
+                                "value": "add"
+                            }
+                        ],
+                        "value": [
+                            {
+                                "rules": [
+                                    {
+                                        "type": "comment",
+                                        "value": ""
+                                    }
+                                ],
+                                "value": '"群 %s(%s) 收到来自用户 %s(%s) 的加群请求\n flag: %s" % (group.group_name, group.group_id, user.get_group_name(), user.user_id, data.flag)'
+                            },
+                            {
+                                "rules": [],
+                                "value": '"群 %s(%s) 收到来自用户 %s(%s) 的加群请求: %s\n flag: %s" %(group.group_name, group.group_id, user.get_group_name(), user.user_id, data.comment, data.flag)'
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]
+"""
 
 
 # 上报
@@ -61,15 +216,19 @@ def post_data():
     if len(request_list) > 100:
         request_list.pop(0)
 
-    if data.post_type == "message" or data.post_type == "message_sent":
+    if data.post_type == "message_sent":
+        data.post_type = "message"
+
+    if data.post_type == "message":
         # 私聊消息
         if data.message_type == "private":
             message = QQRichText.QQRichText(data["message"])
-            QQDataCacher.UserData(data.user_id,
-                                  data.sender.get("nickname"),
-                                  data.sender.get("sex"),
-                                  data.sender.get("age"))
-            user = QQDataCacher.get_user_data(data.user_id)
+            user = QQDataCacher.get_user_data(data.user_id,
+                                              data.user_id,
+                                              data.sender.get("nickname"),
+                                              data.sender.get("sex"),
+                                              data.sender.get("age")
+                                              )
             if data.sub_type == "friend":
                 logger.info("收到好友 %s(%s) 的消息: %s (%s)" % (
                     user.nickname, user.user_id, str(message), data.message_id)
@@ -305,31 +464,30 @@ def post_data():
     return "ok", 204
 
 
-# 自定义的 WSGI 服务器，使用线程池
 class ThreadPoolWSGIServer(WSGIServer):
-    def __init__(self, server_address, app=None, max_workers=10, passthrough_errors=False, handler_class=WSGIRequestHandler, **kwargs):
+    def __init__(self, server_address, app=None, max_workers=10, passthrough_errors=False,
+                 handler_class=WSGIRequestHandler, **kwargs):
         super().__init__(server_address, handler_class, **kwargs)
-        # 创建线程池
         self.executor = ThreadPoolExecutor(max_workers=max_workers)
-        # 设置 WSGI 必需的属性
-        self.app = app  # 传入 WSGI 应用
+        self.app = app
         self.ssl_context = None
-        self.multithread = True  # 标识服务器为多线程
-        self.multiprocess = False  # 通常情况下，线程池实现不使用多进程
-        self.threaded = True  # 明确标识为线程处理
-        self.passthrough_errors = passthrough_errors  # 控制是否传递错误
+        self.multithread = True
+        self.multiprocess = False
+        self.threaded = True
+        self.passthrough_errors = passthrough_errors
 
-    # 重写服务处理函数，将其交给线程池处理
     def handle_request(self):
         request, client_address = self.get_request()
         if self.verify_request(request, client_address):
             self.executor.submit(self.process_request, request, client_address)
 
+    def serve_forever(self):
+        while True:
+            self.handle_request()
 
-# 自定义请求处理器，继承 WSGIRequestHandler
+
 class ThreadPoolWSGIRequestHandler(WSGIRequestHandler):
     def handle(self):
-        # 处理请求的逻辑在这里进行
         super().handle()
 
 

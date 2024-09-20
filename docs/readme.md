@@ -1,4 +1,5 @@
 # 欢迎来到MuRainBot2的文档！
+> 本文档可能并非适用于最新的代码，如遇到错误可以发送issue给我，我会尽快回复的！
 ### 在这里，你将会学会：
  - 如何部署这个项目
  - 如何使用这个项目
@@ -23,20 +24,19 @@
 > 很棒，你肯定已经成功运行了，那么此时你应该在终端内发现了几条log和一个ERROR提示，不要担心，这是正常情况，接下来我们来解决它~
 **附：正常启动的log**
 ```text
-[2024-08-21 22:20:08] [main.py] [INFO]: MuRain Bot开始运行，当前版本：2.0.0-dev(24W18A)
-[2024-08-21 22:20:08] [main.py] [INFO]: Github: https://github.com/xiaosuyyds/MuRainBot2/
-[2024-08-21 22:20:08] [main.py] [INFO]: MuRainLib版本校验成功！
-[2024-08-21 22:20:08] [main.py] [INFO]: MuRainLib当前版本：2.0.0-dev(24W18A)
-[2024-08-21 22:20:08] [main.py] [INFO]: 插件导入完成，共成功导入 2 个插件:
-[2024-08-21 22:20:08] [main.py] [INFO]:  - Helper: Helper 作者:校溯
-[2024-08-21 22:20:08] [main.py] [INFO]:  - pluginTemplates: HelloWorld 作者:You
-[2024-08-21 22:20:08] [main.py] [INFO]: 读取到监听服务器ip，将以此ip启动监听服务器: 127.0.0.1:5701
-[2024-08-21 22:20:08] [main.py] [INFO]: 读取到监听api，将以此url调用API: http://127.0.0.1:5700
-[2024-08-21 22:20:08] [main.py] [WARNING]: 配置文件中未找到BotUID或昵称，将自动获取！
-[2024-08-21 22:20:10] [main.py] [ERROR]: 获取BotUID与昵称失败！可能会导致严重问题！报错信息：ConnectionError(MaxRetryError("HTTPConnectionPool(host='127.0.0.1', port=5700): Max retries exceeded with url: /get_login_info (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001E6DA49E7D0>: Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。'))"))
-[2024-08-21 22:20:10] [main.py] [INFO]: 欢迎使用 (123456)
-[2024-08-21 22:20:10] [main.py] [INFO]: 开启命令输入
-[2024-08-21 22:20:10] [main.py] [INFO]: 启动监听服务器
+[2024-09-18 11:32:12] [main.py] [INFO]: MuRain Bot开始运行，当前版本：2.0.0-dev(24W18A)
+[2024-09-18 11:32:12] [main.py] [INFO]: MuRainLib版本校验成功！
+[2024-09-18 11:32:12] [main.py] [INFO]: MuRainLib当前版本：2.0.0-dev(24W18A)
+[2024-09-18 11:32:12] [main.py] [INFO]: 插件导入完成，共成功导入 2 个插件:
+[2024-09-18 11:32:12] [main.py] [INFO]:  - Helper: Helper 作者:校溯
+[2024-09-18 11:32:12] [main.py] [INFO]:  - pluginTemplates: HelloWorld 作者:You
+[2024-09-18 11:32:12] [main.py] [INFO]: 读取到监听服务器ip，将以此ip启动监听服务器: 127.0.0.1:5701
+[2024-09-18 11:32:12] [main.py] [INFO]: 读取到监听api，将以此url调用API: http://127.0.0.1:5700
+[2024-09-18 11:32:12] [main.py] [WARNING]: 配置文件中未找到BotUID或昵称，将自动获取！
+[2024-09-18 11:32:14] [main.py] [ERROR]: 获取BotUID与昵称失败！可能会导致严重问题！报错信息：ConnectionError(MaxRetryError("HTTPConnectionPool(host='127.0.0.1', port=5700): Max retries exceeded with url: /get_login_info (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000023299760490>: Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。'))"))
+[2024-09-18 11:32:14] [main.py] [INFO]: 欢迎使用 (123456)
+[2024-09-18 11:32:14] [main.py] [INFO]: 开启命令输入
+[2024-09-18 11:32:14] [main.py] [INFO]: 启动监听服务器
 ```
 ---
 ### 安装Onebot实现端

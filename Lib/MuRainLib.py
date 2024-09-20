@@ -9,6 +9,7 @@
 MuRainLib
 用于MuRain Bot框架
 """
+import atexit
 import hashlib
 import logging
 import os
@@ -18,11 +19,13 @@ import shutil
 import time
 import random
 from collections import OrderedDict
+import Lib.Logger as Logger
 
 work_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 data_path = os.path.join(work_path, "data")
 logs_path = os.path.join(work_path, "logs")
 cache_path = os.path.join(data_path, "cache")
+logger = Logger.logger
 
 
 class LimitedSizeDict(OrderedDict):
@@ -137,3 +140,48 @@ def clean_cache() -> None:
             shutil.rmtree(cache_path, ignore_errors=True)
         except Exception as e:
             logging.warning("删除缓存时报错，报错信息: %s" % repr(e))
+
+
+# 函数缓存
+def function_cache(max_size: int, expiration_time: int = -1):
+    cache = LimitedSizeDict(max_size)
+
+    def cache_decorator(func):
+        def wrapper(*args, **kwargs):
+            key = str(func.__name__) + str(args) + str(kwargs)
+            if key in cache and (expiration_time == -1 or time.time() - cache[key][1] < expiration_time):
+                return cache[key][0]
+            result = func(*args, **kwargs)
+            cache[key] = (result, time.time())
+            return result
+
+        def clear_cache():
+            """清理缓存"""
+            cache.clear()
+
+        def get_cache():
+            """获取缓存"""
+            return dict(cache)
+
+        def original_func(*args, **kwargs):
+            """调用原函数"""
+            return func(*args, **kwargs)
+
+        wrapper.clear_cache = clear_cache
+        wrapper.get_cache = get_cache
+        wrapper.original_func = original_func
+        return wrapper
+
+    return cache_decorator
+
+
+# 结束运行
+@atexit.register
+def finalize_and_cleanup():
+    logger.info("MuRainBot即将关闭，正在删除缓存")
+
+    clean_cache()
+
+    logger.warning("MuRainBot结束运行！")
+    logger.info("再见！\n")
+    os._exit(0)
