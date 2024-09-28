@@ -107,6 +107,8 @@ class Meta(type):
 
 
 class Segment(metaclass=Meta):
+    segment_type = None
+
     def __init__(self, cq):
         self.cq = cq
         if isinstance(cq, str):
@@ -124,6 +126,7 @@ class Segment(metaclass=Meta):
                     self.type, self.data = list(self.array.values())
                     break
             else:
+                print(cq, str(cq), type(cq))
                 raise TypeError("Segment: 输入类型错误")
 
     def __str__(self):
@@ -137,10 +140,13 @@ class Segment(metaclass=Meta):
         self.array[key] = value
 
     def __getitem__(self, key):
-        return self.array["data"].get(key)
+        return self.array.get(key)
+
+    def get(self, *args, **kwargs):
+        return self.array.get(*args, **kwargs)
 
     def __delitem__(self, key):
-        del self.array["data"][key]
+        del self.array[key]
 
     def __eq__(self, other):
         other = Segment(other)
@@ -156,7 +162,12 @@ class Segment(metaclass=Meta):
                 return False
 
 
+segments.append(Segment)
+
+
 class Text(Segment):
+    segment_type = "text"
+
     def __init__(self, text):
         super().__init__(text)
         self.text = self["text"] = text
@@ -184,6 +195,8 @@ class Text(Segment):
 
 
 class Face(Segment):
+    segment_type = "face"
+
     def __init__(self, face_id):
         self.face_id = face_id
         super().__init__({"type": "face", "data": {"id": str(face_id)}})
@@ -194,6 +207,8 @@ class Face(Segment):
 
 
 class At(Segment):
+    segment_type = "at"
+
     def __init__(self, qq):
         self.qq = qq
         super().__init__({"type": "at", "data": {"qq": str(qq)}})
@@ -204,6 +219,8 @@ class At(Segment):
 
 
 class Image(Segment):
+    segment_type = "image"
+
     def __init__(self, file):
         self.file = file
         super().__init__({"type": "image", "data": {"file": str(file)}})
@@ -214,6 +231,8 @@ class Image(Segment):
 
 
 class Record(Segment):
+    segment_type = "record"
+
     def __init__(self, file):
         self.file = file
         super().__init__({"type": "record", "data": {"file": str(file)}})
@@ -224,6 +243,8 @@ class Record(Segment):
 
 
 class Video(Segment):
+    segment_type = "video"
+
     def __init__(self, file):
         self.file = file
         super().__init__({"type": "video", "data": {"file": str(file)}})
@@ -234,22 +255,30 @@ class Video(Segment):
 
 
 class Rps(Segment):
+    segment_type = "rps"
+
     def __init__(self):
         super().__init__({"type": "rps"})
 
 
 class Dice(Segment):
+    segment_type = "dice"
+
     def __init__(self):
         super().__init__({"type": "dice"})
 
 
 class Shake(Segment):
+    segment_type = "shake"
+
     def __init__(self):
         super().__init__({"type": "shake"})
 
 
 # 戳一戳（未完全实现）
 class Poke(Segment):
+    segment_type = "poke"
+
     def __init__(self, type_):
         self.type = type_
         super().__init__({"type": "poke", "data": {"type": str(self.type)}})
@@ -260,6 +289,8 @@ class Poke(Segment):
 
 
 class Anonymous(Segment):
+    segment_type = "anonymous"
+
     def __init__(self, ignore=False):
         self.ignore = 0 if ignore else 1
         super().__init__({"type": "anonymous", "data": {"ignore": str(self.ignore)}})
@@ -270,6 +301,8 @@ class Anonymous(Segment):
 
 
 class Share(Segment):
+    segment_type = "share"
+
     def __init__(self, url, title, content="", image=""):
         self.url = url
         self.title = title
@@ -301,6 +334,8 @@ class Share(Segment):
 
 
 class Contact(Segment):
+    segment_type = "contact"
+
     def __init__(self, type_, id_):
         self.type = type_
         self.id = id_
@@ -316,6 +351,8 @@ class Contact(Segment):
 
 
 class Location(Segment):
+    segment_type = "location"
+
     def __init__(self, lat, lon, title="", content=""):
         self.lat = lat
         self.lon = lon
@@ -339,6 +376,8 @@ class Location(Segment):
 
 
 class Music(Segment):
+    segment_type = "music"
+
     def __init__(self, type_, id_):
         self.type = type_
         self.id = id_
@@ -354,6 +393,8 @@ class Music(Segment):
 
 
 class CustomizeMusic(Segment):
+    segment_type = "music"
+
     def __init__(self, url, audio, image, title, content):
         self.url = url
         self.audio = audio
@@ -386,6 +427,8 @@ class CustomizeMusic(Segment):
 
 
 class Reply(Segment):
+    segment_type = "reply"
+
     def __init__(self, message_id):
         self.message_id = message_id
         super().__init__({"type": "reply", "data": {"id": str(self.message_id)}})
@@ -396,6 +439,8 @@ class Reply(Segment):
 
 
 class Forward(Segment):
+    segment_type = "forward"
+
     def __init__(self, forward_id):
         self.forward_id = forward_id
         super().__init__({"type": "forward", "data": {"id": str(self.forward_id)}})
@@ -422,6 +467,8 @@ class Forward(Segment):
 
 
 class XML(Segment):
+    segment_type = "xml"
+
     def __init__(self, xml):
         self.xml = xml
         super().__init__({"type": "xml", "data": {"xml": str(self.xml)}})
@@ -432,6 +479,8 @@ class XML(Segment):
 
 
 class JSON(Segment):
+    segment_type = "json"
+
     def __init__(self, data):
         self.data = data
         super().__init__({"type": "json", "data": {"json": str(self.data)}})
@@ -443,26 +492,26 @@ class JSON(Segment):
 
 class QQRichText:
 
-    def __init__(self, *rich):
-        self.rich_array = rich
+    def __init__(self, *rich: str | dict | list | tuple | Segment):
 
         # 特判
-        if len(self.rich_array) == 1:
-            self.rich_array = self.rich_array[0]
+        self.rich_array: list[Segment] = []
+        if len(rich) == 1:
+            rich = rich[0]
 
         # 识别输入的是CQCode or json形式的富文本
         # 如果输入的是CQCode，则转换为json形式的富文本
 
         # 处理CQCode
-        if isinstance(self.rich_array, str):
-            self.rich_string = self.rich_array
-            self.rich_array = cq_2_array(self.rich_string)
+        if isinstance(rich, str):
+            rich_string = rich
+            rich = cq_2_array(rich_string)
 
-        elif isinstance(self.rich_array, dict):
-            self.rich_array = [self.rich_array]
-        elif isinstance(self.rich_array, (list, tuple)):
+        elif isinstance(rich, dict):
+            rich = [rich]
+        elif isinstance(rich, (list, tuple)):
             array = []
-            for item in self.rich_array:
+            for item in rich:
                 if isinstance(item, dict):
                     array.append(item)
                 elif isinstance(item, str):
@@ -473,21 +522,27 @@ class QQRichText:
                             array.append(item.array)
                             break
                     else:
-                        if isinstance(self.rich_array, QQRichText):
-                            array += self.rich_array.rich_array
+                        if isinstance(rich, QQRichText):
+                            array += rich.rich_array
                         else:
                             raise TypeError("QQRichText: 输入类型错误")
-            self.rich_array = array
+            rich = array
         else:
             for segment in segments:
-                if isinstance(self.rich_array, segment):
-                    self.rich_array = [self.rich_array.array]
+                if isinstance(rich, segment):
+                    rich = [rich.array]
                     break
             else:
-                if isinstance(self.rich_array, QQRichText):
-                    self.rich_array = self.rich_array.rich_array
+                if isinstance(rich, QQRichText):
+                    rich = rich.rich_array
                 else:
                     raise TypeError("QQRichText: 输入类型错误")
+
+        # 将rich转换为的Segment
+        for _ in range(len(rich)):
+            rich[_] = Segment(rich[_])
+
+        self.rich_array: list[Segment] = rich
 
     def __str__(self):
         self.rich_string = array_2_cq(self.rich_array)
@@ -537,4 +592,4 @@ if __name__ == "__main__":
 
     print(QQRichText(At(114514)))
     print(Segment(At(1919810)))
-    print(QQRichText({"type": "at", "data": {"qq": "1919810"}}))
+    print(QQRichText([{"type": "text", "data": {"text": "1919810"}}]))
