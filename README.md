@@ -6,7 +6,7 @@
     <a href="https://github.com/xiaosuyyds/MuRainBot2/stargazers" style="text-decoration:none" >
         <img src="https://img.shields.io/github/stars/xiaosuyyds/MuRainBot2.svg?style=for-the-badge" alt="GitHub stars"/>
     </a>
-    <a href="https://github.com/xiaosuyyds/MuRainBot2/network" style="text-decoration:none" >
+    <a href="https://github.com/xiaosuyyds/MuRainBot2/forks" style="text-decoration:none" >
         <img src="https://img.shields.io/github/forks/xiaosuyyds/MuRainBot2.svg?style=for-the-badge" alt="GitHub forks"/>
     </a>
     <!--
