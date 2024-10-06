@@ -7,7 +7,7 @@ import Lib.ThreadPool as ThreadPool
 
 logger = Logger.logger
 
-plugins = None
+plugins: list[dict] = None
 work_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 plugins_path = os.path.join(work_path, "plugins")
 
