@@ -9,9 +9,6 @@ import re
 import traceback
 from typing import Callable
 
-import Lib.QQRichText as QQRichText
-import Lib.ThreadPool as ThreadPool
-
 register_event_list = []  # event_type, func, arg, args, kwargs, by_file
 register_keyword_list = []  # keyword, func, arg, args, kwargs, by_file
 
@@ -143,6 +140,7 @@ class Event:
         # 关键词检测
         if isinstance(self.event_class, (tuple, list)):
             if self.event_class[0] == "message" and flag is False:
+                import Lib.QQRichText as QQRichText  # tm的我恨你循环导入
                 message = str(QQRichText.QQRichText(event_data["message"]))
                 for register_keyword in register_keyword_list:
                     keyword = register_keyword["keyword"]
