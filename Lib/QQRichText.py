@@ -592,7 +592,7 @@ class QQRichText:
                             segment.set_data(k, v)
                     rich[_] = segment
                 except Exception as e:
-                    Logger.logger.warning(f"转换失败: {repr(e)}")
+                    Logger.logger.warning(f"转换{rich[_]}时失败，报错信息: {repr(e)}")
                     rich[_] = Segment(rich[_])
             else:
                 rich[_] = Segment(rich[_])
