@@ -578,13 +578,15 @@ class QQRichText:
                         if param in rich[_]["data"]:
                             kwargs[param] = rich[_]["data"][param]
                         else:
-                            if rich[_]["type"] == "reply":
+                            if rich[_]["type"] == "reply" and param == "message_id":
+                                kwargs[param] = rich[_]["data"].get("id")
+                            elif rich[_]["type"] == "face" and param == "face_id":
                                 kwargs[param] = rich[_]["data"].get("id")
                             else:
                                 if params[param].default != params[param].empty:
                                     kwargs[param] = params[param].default
                     segment = segments_map[rich[_]["type"]](**kwargs)
-                    # 检查原cq中是否含有不在rich[_].data中的参数
+                    # 检查原cq中是否含有不在segment的data中的参数
                     for k, v in rich[_]["data"].items():
                         if k not in segment["data"]:
                             segment.set_data(k, v)
