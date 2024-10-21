@@ -217,7 +217,7 @@ def refresh_all_cache():
         except KeyError:
             pass
 
-    for user_id in user_cache:
+    for user_id in list(user_cache.keys()):
         # user_cache[user_id].refresh_cache()
         try:
             del user_cache[user_id]
