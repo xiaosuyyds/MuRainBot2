@@ -167,7 +167,7 @@ class Segment(metaclass=Meta):
             except (TypeError, AttributeError):
                 return False
 
-    def render(self):
+    def render(self, group_id: int | None = None):
         return "[%s: %s]" % (self.array.get("type", "unknown"), self.cq)
 
     def set_data(self, k, v):
@@ -205,7 +205,7 @@ class Text(Segment):
         self.text = text
         self["data"]["text"] = text
 
-    def render(self):
+    def render(self, group_id: int | None = None):
         return self.text
 
 
@@ -220,7 +220,7 @@ class Face(Segment):
         self.face_id = face_id
         self.array["data"]["id"] = str(face_id)
 
-    def render(self):
+    def render(self, group_id: int | None = None):
         return "[表情: %s]" % self.face_id
 
 
@@ -235,8 +235,11 @@ class At(Segment):
         self.qq = qq_id
         self.array["data"]["qq"] = str(qq_id)
 
-    def render(self):
-        return "@%s: %s" % (QQDataCacher.get_user_data(self.qq).nickname, self.qq)
+    def render(self, group_id: int | None = None):
+        if group_id:
+            return "@%s: %s" % (QQDataCacher.get_group_user_data(group_id, self.qq).nickname, self.qq)
+        else:
+            return "@%s: %s" % (QQDataCacher.get_user_data(self.qq).nickname, self.qq)
 
 
 class Image(Segment):
@@ -250,7 +253,7 @@ class Image(Segment):
         self.file = file
         self.array["data"]["file"] = str(file)
 
-    def render(self):
+    def render(self, group_id: int | None = None):
         return "[图片: %s]" % self.file
 
 
@@ -265,7 +268,7 @@ class Record(Segment):
         self.file = file
         self.array["data"]["file"] = str(file)
 
-    def render(self):
+    def render(self, group_id: int | None = None):
         return "[语音: %s]" % self.file
 
 
@@ -279,6 +282,9 @@ class Video(Segment):
     def set_file(self, file):
         self.file = file
         self.array["data"]["file"] = str(file)
+
+    def render(self, group_id: int | None = None):
+        return "[视频: %s]" % self.file
 
 
 class Rps(Segment):
@@ -464,7 +470,7 @@ class Reply(Segment):
         self.message_id = message_id
         self.array["data"]["id"] = str(self.message_id)
 
-    def render(self):
+    def render(self, group_id: int | None = None):
         return "[回复: %s]" % self.message_id
 
 
@@ -478,6 +484,9 @@ class Forward(Segment):
     def set_forward_id(self, forward_id):
         self.forward_id = forward_id
         self.array["data"]["id"] = str(self.forward_id)
+
+    def render(self, group_id: int | None = None):
+        return "[合并转发: %s]" % self.forward_id
 
 
 # 并不是很想写这个东西.png
@@ -582,6 +591,8 @@ class QQRichText:
                                 kwargs[param] = rich[_]["data"].get("id")
                             elif rich[_]["type"] == "face" and param == "face_id":
                                 kwargs[param] = rich[_]["data"].get("id")
+                            elif rich[_]["type"] == "forward" and param == "forward_id":
+                                kwargs[param] = rich[_]["data"].get("id")
                             else:
                                 if params[param].default != params[param].empty:
                                     kwargs[param] = params[param].default
@@ -599,11 +610,11 @@ class QQRichText:
 
         self.rich_array: list[Segment] = rich
 
-    def render(self, group_id: int = -1):
+    def render(self, group_id: int | None = None):
         # 渲染成类似: abc123[图片:<URL>]@xxxx[uid]
         text = ""
         for rich in self.rich_array:
-            text += rich.render()
+            text += rich.render(group_id=group_id)
         return text
 
     def __str__(self):
