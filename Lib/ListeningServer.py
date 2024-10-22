@@ -250,7 +250,7 @@ def post_data():
         elif data.message_type == "group":
             group = QQDataCacher.get_group_data(data.group_id)
             user = QQDataCacher.get_group_user_data(data.group_id, data.user_id)
-            message = data.message.render()
+            message = data.message.render(group_id=data.group_id)
 
             logger.info("收到群 %s(%s) 内 %s(%s) 的消息: %s (%s)" % (
                 group.group_name, group.group_id, user.get_group_name(), user.user_id, message,
