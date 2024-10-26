@@ -7,10 +7,8 @@
 
 import re
 import traceback
+import Lib.Logger as Logger
 from typing import Callable
-
-import Lib.QQRichText as QQRichText
-import Lib.ThreadPool as ThreadPool
 
 register_event_list = []  # event_type, func, arg, args, kwargs, by_file
 register_keyword_list = []  # keyword, func, arg, args, kwargs, by_file
@@ -115,73 +113,83 @@ class Event:
         self.event_class = event_type
         self.event_data = event_data
         flag = False
+        logger = Logger.logger
 
         if self.event_class == "all" or self.event_class == "*":
             raise ValueError("不能将all或是*设为事件，因为会发生冲突。")
 
         # 事件扫描
         for register_event in register_event_list:
-            reg_event_class = register_event["event_type"]
-            func = register_event["func"]
-            args = register_event["args"]
-            kwargs = register_event["kwargs"]
-            if isinstance(self.event_class, (tuple, list)) and reg_event_class != "all" and reg_event_class != "*":
-                for event_class in self.event_class:
-                    # 优先级检测
-                    if reg_event_class == event_class or reg_event_class == "all" or reg_event_class == "*":
-                        return_ = func(event_class, event_data, *args, **kwargs)
-                        if isinstance(return_, bool) and return_:
+            try:
+                reg_event_class = register_event["event_type"]
+                func = register_event["func"]
+                args = register_event["args"]
+                kwargs = register_event["kwargs"]
+                if isinstance(self.event_class, (tuple, list)) and reg_event_class != "all" and reg_event_class != "*":
+                    for event_class in self.event_class:
+                        # 优先级检测
+                        if reg_event_class == event_class or reg_event_class == "all" or reg_event_class == "*":
+                            return_ = func(event_class, event_data, *args, **kwargs)
+                            if return_ is True:
+                                flag = True
+                                break
+                else:
+                    if reg_event_class == self.event_class or reg_event_class == "all" or reg_event_class == "*":
+                        return_ = func(self.event_class, self.event_data, *args, **kwargs)
+                        if return_ is True:
                             flag = True
                             break
-            else:
-                if reg_event_class == self.event_class or reg_event_class == "all" or reg_event_class == "*":
-                    return_ = func(self.event_class, self.event_data, *args, **kwargs)
-                    if isinstance(return_, bool) and return_:
-                        flag = True
-                        break
+            except Exception as e:
+                logger.warning(f"在尝试处理事件上报{self.event_class} {self.event_data}给"
+                               f"{register_event['by_file']}的函数{register_event['func'].__name__}时出错：{repr(e)}")
 
         # 关键词检测
         if isinstance(self.event_class, (tuple, list)):
             if self.event_class[0] == "message" and flag is False:
-                message = str(QQRichText.QQRichText(event_data["message"]))
+                message = str(event_data.message)
                 for register_keyword in register_keyword_list:
-                    keyword = register_keyword["keyword"]
-                    func = register_keyword["func"]
-                    model = register_keyword["model"]
-                    args = register_keyword["args"]
+                    try:
+                        keyword = register_keyword["keyword"]
+                        func = register_keyword["func"]
+                        model = register_keyword["model"]
+                        args = register_keyword["args"]
 
-                    if model == "BEGIN":
-                        if message.startswith(keyword):
-                            return_ = func(self.event_class, self.event_data, *args)
-                            if isinstance(return_, bool) and return_:
-                                break
-                    elif model == "END":
-                        if message.endswith(keyword):
-                            return_ = func(self.event_class, self.event_data, *args)
-                            if isinstance(return_, bool) and return_:
-                                break
-                    elif model == "INCLUDE":
-                        if keyword in message:
-                            return_ = func(self.event_class, self.event_data, *args)
-                            if isinstance(return_, bool) and return_:
-                                break
-                    elif model == "EXCLUDE":
-                        if keyword not in message:
-                            return_ = func(self.event_class, self.event_data, *args)
-                            if isinstance(return_, bool) and return_:
-                                break
-                    elif model == "EQUAL":
-                        if message == keyword:
-                            return_ = func(self.event_class, self.event_data, *args)
-                            if isinstance(return_, bool) and return_:
-                                break
-                    elif model == "REGEX":
-                        if re.search(keyword, message):
-                            return_ = func(self.event_class, self.event_data, *args)
-                            if isinstance(return_, bool) and return_:
-                                break
-                    else:
-                        raise ValueError("Unsupported model: {}".format(model))
+                        if model == "BEGIN":
+                            if message.startswith(keyword):
+                                return_ = func(self.event_class, self.event_data, *args)
+                                if isinstance(return_, bool) and return_:
+                                    break
+                        elif model == "END":
+                            if message.endswith(keyword):
+                                return_ = func(self.event_class, self.event_data, *args)
+                                if isinstance(return_, bool) and return_:
+                                    break
+                        elif model == "INCLUDE":
+                            if keyword in message:
+                                return_ = func(self.event_class, self.event_data, *args)
+                                if isinstance(return_, bool) and return_:
+                                    break
+                        elif model == "EXCLUDE":
+                            if keyword not in message:
+                                return_ = func(self.event_class, self.event_data, *args)
+                                if isinstance(return_, bool) and return_:
+                                    break
+                        elif model == "EQUAL":
+                            if message == keyword:
+                                return_ = func(self.event_class, self.event_data, *args)
+                                if isinstance(return_, bool) and return_:
+                                    break
+                        elif model == "REGEX":
+                            if re.search(keyword, message):
+                                return_ = func(self.event_class, self.event_data, *args)
+                                if isinstance(return_, bool) and return_:
+                                    break
+                        else:
+                            raise ValueError("Unsupported model: {}".format(model))
+                    except Exception as e:
+                        logger.warning(f"在尝试处理事件上报关键词检测{self.event_class} {self.event_data}给"
+                                       f"{register_keyword['by_file']}的函数{register_keyword['func'].__name__}"
+                                       f"时出错：{repr(e)}")
 
 
 # 单元测试

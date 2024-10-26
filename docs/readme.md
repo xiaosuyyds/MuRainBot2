@@ -1,5 +1,7 @@
 # 欢迎来到MuRainBot2的文档！
 > 本文档可能并非适用于最新的代码，如遇到错误可以发送issue给我，我会尽快回复的！
+> 
+> 本文档以[`CC-BY-NC-SA`](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans)协议分发，请遵守协议相关规定
 ### 在这里，你将会学会：
  - 如何部署这个项目
  - 如何使用这个项目

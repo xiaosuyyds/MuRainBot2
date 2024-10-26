@@ -10,8 +10,11 @@ QQRichText
 QQ富文本处理
 """
 
+import inspect
 import re
 import Lib.OnebotAPI as OnebotAPI
+import Lib.QQDataCacher as QQDataCacher
+import Lib.Logger as Logger
 
 
 # CQ解码
@@ -97,6 +100,7 @@ def array_2_cq(cq_array: list | dict) -> str:
 
 
 segments = []
+segments_map = {}
 
 
 class Meta(type):
@@ -104,6 +108,7 @@ class Meta(type):
         super().__init__(name, bases, dct)
         if 'Segment' in globals() and issubclass(cls, Segment):
             segments.append(cls)  # 将子类添加到全局列表中
+            segments_map[cls.segment_type] = cls
 
 
 class Segment(metaclass=Meta):
@@ -123,10 +128,11 @@ class Segment(metaclass=Meta):
                 if isinstance(cq, segment):
                     self.array = cq.array
                     self.cq = str(self.cq)
+                    # print(self.array.values(), list(self.array.values()))
                     self.type, self.data = list(self.array.values())
                     break
             else:
-                print(cq, str(cq), type(cq))
+                # print(cq, str(cq), type(cq))
                 raise TypeError("Segment: 输入类型错误")
 
     def __str__(self):
@@ -161,6 +167,12 @@ class Segment(metaclass=Meta):
             except (TypeError, AttributeError):
                 return False
 
+    def render(self, group_id: int | None = None):
+        return "[%s: %s]" % (self.array.get("type", "unknown"), self.cq)
+
+    def set_data(self, k, v):
+        self.array["data"][k] = v
+
 
 segments.append(Segment)
 
@@ -170,7 +182,7 @@ class Text(Segment):
 
     def __init__(self, text):
         super().__init__(text)
-        self.text = self["text"] = text
+        self.text = self["data"]["text"] = text
 
     def __add__(self, other):
         other = Text(other)
@@ -191,7 +203,10 @@ class Text(Segment):
 
     def set_text(self, text):
         self.text = text
-        self["text"] = text
+        self["data"]["text"] = text
+
+    def render(self, group_id: int | None = None):
+        return self.text
 
 
 class Face(Segment):
@@ -205,6 +220,9 @@ class Face(Segment):
         self.face_id = face_id
         self.array["data"]["id"] = str(face_id)
 
+    def render(self, group_id: int | None = None):
+        return "[表情: %s]" % self.face_id
+
 
 class At(Segment):
     segment_type = "at"
@@ -216,6 +234,12 @@ class At(Segment):
     def set_id(self, qq_id):
         self.qq = qq_id
         self.array["data"]["qq"] = str(qq_id)
+
+    def render(self, group_id: int | None = None):
+        if group_id:
+            return "@%s: %s" % (QQDataCacher.get_group_user_data(group_id, self.qq).nickname, self.qq)
+        else:
+            return "@%s: %s" % (QQDataCacher.get_user_data(self.qq).nickname, self.qq)
 
 
 class Image(Segment):
@@ -229,6 +253,9 @@ class Image(Segment):
         self.file = file
         self.array["data"]["file"] = str(file)
 
+    def render(self, group_id: int | None = None):
+        return "[图片: %s]" % self.file
+
 
 class Record(Segment):
     segment_type = "record"
@@ -241,6 +268,9 @@ class Record(Segment):
         self.file = file
         self.array["data"]["file"] = str(file)
 
+    def render(self, group_id: int | None = None):
+        return "[语音: %s]" % self.file
+
 
 class Video(Segment):
     segment_type = "video"
@@ -252,6 +282,9 @@ class Video(Segment):
     def set_file(self, file):
         self.file = file
         self.array["data"]["file"] = str(file)
+
+    def render(self, group_id: int | None = None):
+        return "[视频: %s]" % self.file
 
 
 class Rps(Segment):
@@ -437,6 +470,9 @@ class Reply(Segment):
         self.message_id = message_id
         self.array["data"]["id"] = str(self.message_id)
 
+    def render(self, group_id: int | None = None):
+        return "[回复: %s]" % self.message_id
+
 
 class Forward(Segment):
     segment_type = "forward"
@@ -448,6 +484,9 @@ class Forward(Segment):
     def set_forward_id(self, forward_id):
         self.forward_id = forward_id
         self.array["data"]["id"] = str(self.forward_id)
+
+    def render(self, group_id: int | None = None):
+        return "[合并转发: %s]" % self.forward_id
 
 
 # 并不是很想写这个东西.png
@@ -540,9 +579,43 @@ class QQRichText:
 
         # 将rich转换为的Segment
         for _ in range(len(rich)):
-            rich[_] = Segment(rich[_])
+            if rich[_]["type"] in segments_map:
+                try:
+                    params = inspect.signature(segments_map[rich[_]["type"]]).parameters
+                    kwargs = {}
+                    for param in params:
+                        if param in rich[_]["data"]:
+                            kwargs[param] = rich[_]["data"][param]
+                        else:
+                            if rich[_]["type"] == "reply" and param == "message_id":
+                                kwargs[param] = rich[_]["data"].get("id")
+                            elif rich[_]["type"] == "face" and param == "face_id":
+                                kwargs[param] = rich[_]["data"].get("id")
+                            elif rich[_]["type"] == "forward" and param == "forward_id":
+                                kwargs[param] = rich[_]["data"].get("id")
+                            else:
+                                if params[param].default != params[param].empty:
+                                    kwargs[param] = params[param].default
+                    segment = segments_map[rich[_]["type"]](**kwargs)
+                    # 检查原cq中是否含有不在segment的data中的参数
+                    for k, v in rich[_]["data"].items():
+                        if k not in segment["data"]:
+                            segment.set_data(k, v)
+                    rich[_] = segment
+                except Exception as e:
+                    Logger.logger.warning(f"转换{rich[_]}时失败，报错信息: {repr(e)}")
+                    rich[_] = Segment(rich[_])
+            else:
+                rich[_] = Segment(rich[_])
 
         self.rich_array: list[Segment] = rich
+
+    def render(self, group_id: int | None = None):
+        # 渲染成类似: abc123[图片:<URL>]@xxxx[uid]
+        text = ""
+        for rich in self.rich_array:
+            text += rich.render(group_id=group_id)
+        return text
 
     def __str__(self):
         self.rich_string = array_2_cq(self.rich_array)
@@ -586,9 +659,11 @@ if __name__ == "__main__":
 
     # 测试QQRichText
     rich = QQRichText(
-        "[CQ:share,title=标题,url=https://baidu.com] [CQ:at,qq=1919810] -  &#91;x&#93; 使用 `&amp;data` 获取地址")
+        "[CQ:reply,id=123][CQ:share,title=标题,url=https://baidu.com] [CQ:at,qq=1919810,abc=123] -  &#91;x&#93; 使用 "
+        " `&amp;data` 获取地址")
     print(rich.rich_array)
     print(rich)
+    print(rich.render())
 
     print(QQRichText(At(114514)))
     print(Segment(At(1919810)))
