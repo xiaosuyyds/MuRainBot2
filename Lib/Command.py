@@ -262,7 +262,7 @@ def run_command(input_command):
 
             run_command.run(input_command, kwargs)
         except Exception as e:
-            logger.error(f"执行命令时发生错误: {e}")
+            logger.error(f"执行命令时发生错误: {repr(e)}")
     else:
         logger.error("未知的命令, 请发送help查看支持的命令")
 

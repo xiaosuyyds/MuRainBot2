@@ -23,6 +23,9 @@ import Lib.PluginManager as PluginManager
 import Lib.QQDataCacher as QQDataCacher
 import Lib.Command as Command
 
+# 扩展模块
+import Lib.Extra as Extra
+
 VERSION = "2.0.0-dev"
 VERSION_WEEK = "24W18A"
 

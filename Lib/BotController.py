@@ -17,10 +17,10 @@ def send_message(message: QQRichText.QQRichText | str, group_id: int = 0, user_i
     elif group_id != 0 and user_id != 0:
         raise ValueError("group_id and user_id cannot be both not 0")
     elif group_id != 0:
-        api.send_group_msg(group_id, message)
+        api.send_group_msg(group_id, QQRichText.QQRichText(message).get_array())
         logger.info("发送消息 %s 到群 %s(%s) " % (message, QQDataCacher.get_group_data(group_id).group_name, group_id))
     elif user_id != 0:
-        api.send_private_msg(user_id, message)
+        api.send_private_msg(user_id, QQRichText.QQRichText(message).get_array())
         logger.info("发送消息 %s 到 %s(%s) " % (message, QQDataCacher.get_user_data(user_id).nickname, user_id))
 
 

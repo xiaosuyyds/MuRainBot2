@@ -408,6 +408,37 @@ class Location(Segment):
         self.array["data"]["lon"] = str(lon)
 
 
+class Node(Segment):
+    segment_type = "node"
+
+    def __init__(self, name: str, uid: int, message, message_id: int = None):
+        if message_id is None:
+            self.name = name
+            self.user_id = uid
+            self.message = QQRichText(message).get_array()
+            super().__init__({"type": "node", "data": {"nickname": str(self.name), "user_id": str(self.user_id), "content": self.message}})
+        else:
+            self.message_id = message_id
+            super().__init__({"type": "node", "data": {"id": str(message_id)}})
+
+    def set_message(self, message):
+        self.message = message
+
+    def set_name(self, name):
+        self.name = name
+        self.array["data"]["name"] = str(name)
+
+    def set_uid(self, uid):
+        self.uid = uid
+        self.array["data"]["uin"] = str(uid)
+
+    def render(self, group_id: int | None = None):
+        if self.message_id is not None:
+            return "[合并转发节点: %s(%s): %s]" % (self.name, self.uid, self.message)
+        else:
+            return "[合并转发节点: %s]" % (self.message_id)
+
+
 class Music(Segment):
     segment_type = "music"
 
@@ -647,6 +678,9 @@ class QQRichText:
 
     def send(self, user_id=-1, group_id=-1):
         OnebotAPI.OnebotAPI().send_msg(user_id=user_id, group_id=group_id, message=str(self))
+
+    def get_array(self):
+        return [array.array for array in self.rich_array]
 
 
 # 单元测试
