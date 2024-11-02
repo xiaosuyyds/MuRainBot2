@@ -224,7 +224,6 @@ def post_data():
         if data.message_type == "private":
             message = data.message.render()
             user = QQDataCacher.get_user_data(data.user_id,
-                                              data.user_id,
                                               data.sender.get("nickname"),
                                               data.sender.get("sex"),
                                               data.sender.get("age")
