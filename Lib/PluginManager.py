@@ -7,7 +7,7 @@ import Lib.ThreadPool as ThreadPool
 
 logger = Logger.logger
 
-plugins: list[dict] = None
+plugins: list[dict] = []
 work_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 plugins_path = os.path.join(work_path, "plugins")
 
@@ -39,11 +39,11 @@ def load_plugins():
         try:
             # 导入插件
             t = time.time()
-            logger.debug("正在加载插件: {}:".format(i))
+            logger.debug(f"正在加载插件: {i}:")
             plugins.append({"name": i, "plugin": importlib.import_module('.' + i, package='plugins')})
-            logger.debug("插件 {} 加载成功！ 耗时 {}s".format(i, round(time.time() - t, 2)))
+            logger.debug(f"插件 {i} 加载成功！ 耗时 {round(time.time() - t, 2)}s")
         except Exception as e:
-            logger.error("导入插件 {} 失败！ 原因:{}".format(i, repr(e)))
+            logger.error(f"导入插件 {i} 失败！ 原因:{repr(e)}")
 
     plugins.sort(key=lambda x: x["name"])
 
@@ -71,7 +71,7 @@ def run_plugin_main(data):
         except AttributeError:
             continue
 
-        logger.debug("执行插件%s" % plugin["name"])
+        logger.debug(f"执行插件: {plugin['name']}")
         try:
             # plugin_thread = threading.Thread(
             #     target=plugin["plugin"].main,
@@ -82,5 +82,5 @@ def run_plugin_main(data):
             # plugin_thread.start()
             plugin["plugin"].main(data.event_json, work_path)
         except Exception as e:
-            logger.error("执行插件%s时发生错误：%s" % (plugin["name"], repr(e)))
+            logger.error(f"执行插件{plugin['name']}时发生错误: {repr(e)}")
             continue

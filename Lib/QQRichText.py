@@ -1,4 +1,3 @@
-# coding:utf-8
 #   __  __       ____       _         ____        _   _____
 #  |  \/  |_   _|  _ \ __ _(_)_ __   | __ )  ___ | |_|___  \
 #  | |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __| __) |
@@ -168,7 +167,7 @@ class Segment(metaclass=Meta):
                 return False
 
     def render(self, group_id: int | None = None):
-        return "[%s: %s]" % (self.array.get("type", "unknown"), self.cq)
+        return f"[{self.array.get('type', 'unknown')}: {self.cq}]"
 
     def set_data(self, k, v):
         self.array["data"][k] = v
@@ -237,9 +236,9 @@ class At(Segment):
 
     def render(self, group_id: int | None = None):
         if group_id:
-            return "@%s: %s" % (QQDataCacher.get_group_user_data(group_id, self.qq).nickname, self.qq)
+            return f"@{QQDataCacher.get_group_user_data(group_id, self.qq).nickname}: {self.qq}"
         else:
-            return "@%s: %s" % (QQDataCacher.get_user_data(self.qq).nickname, self.qq)
+            return f"@{QQDataCacher.get_user_data(self.qq).nickname}: {self.qq}"
 
 
 class Image(Segment):
@@ -284,7 +283,7 @@ class Video(Segment):
         self.array["data"]["file"] = str(file)
 
     def render(self, group_id: int | None = None):
-        return "[视频: %s]" % self.file
+        return f"[视频: {self.file}]"
 
 
 class Rps(Segment):
@@ -434,9 +433,9 @@ class Node(Segment):
 
     def render(self, group_id: int | None = None):
         if self.message_id is not None:
-            return "[合并转发节点: %s(%s): %s]" % (self.name, self.uid, self.message)
+            return f"[合并转发节点: {self.name}({self.uid}): {self.message}]"
         else:
-            return "[合并转发节点: %s]" % (self.message_id)
+            return f"[合并转发节点: {self.message_id}]"
 
 
 class Music(Segment):
@@ -502,7 +501,7 @@ class Reply(Segment):
         self.array["data"]["id"] = str(self.message_id)
 
     def render(self, group_id: int | None = None):
-        return "[回复: %s]" % self.message_id
+        return f"[回复: {self.message_id}]"
 
 
 class Forward(Segment):
@@ -517,7 +516,7 @@ class Forward(Segment):
         self.array["data"]["id"] = str(self.forward_id)
 
     def render(self, group_id: int | None = None):
-        return "[合并转发: %s]" % self.forward_id
+        return f"[合并转发: {self.forward_id}]"
 
 
 # 并不是很想写这个东西.png

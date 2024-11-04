@@ -19,7 +19,7 @@ class Forward:
         self.messages.append(QQRichText.Node(nickname, user_id, message))
 
     def build(self):
-        # 警告：此处调用的API并非属于Onebot11标准api，需要onebot实现段支持此api
+        # 警告：此处调用的API并非属于Onebot11标准api，需要onebot实现端支持此api
         data = {"messages": [{
             "type": "node",
             "data": {

@@ -1,4 +1,3 @@
-# coding:utf-8
 #   __  __       ____       _         ____        _   _____
 #  |  \/  |_   _|  _ \ __ _(_)_ __   | __ )  ___ | |_|___  \
 #  | |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __| __) |
@@ -55,7 +54,7 @@ if __name__ == '__main__':
             sys.exit()
         logger.warning("MuRainLib版本检测未通过，可能会发生异常，将继续运行！")
 
-    logger.info("MuRainLib当前版本：{}({})".format(LibInfo().version, LibInfo().version_week))
+    logger.info(f"MuRainLib当前版本：{LibInfo().version}({LibInfo().version_week})")
 
     bot_uid = Configs.GlobalConfig().user_id
     bot_name = Configs.GlobalConfig().nick_name
@@ -63,11 +62,11 @@ if __name__ == '__main__':
 
     PluginManager.load_plugins()
     if len(PluginManager.plugins) > 0:
-        logger.info("插件导入完成，共成功导入 {} 个插件:".format(len(PluginManager.plugins)))
+        logger.info(f"插件导入完成，共成功导入 {len(PluginManager.plugins)} 个插件:")
         for plugin in PluginManager.plugins:
             try:
                 plugin_info = plugin["plugin"].PluginInfo()
-                logger.info(" - %s: %s 作者:%s" % (plugin["name"], plugin_info.NAME, plugin_info.AUTHOR))
+                logger.info(" - {}: {} 作者:{}".format(plugin["name"], plugin_info.NAME, plugin_info.AUTHOR))
             except ArithmeticError:
                 logger.warning("插件{} 没有信息".format(plugin["name"]))
             except Exception as e:
@@ -112,6 +111,6 @@ if __name__ == '__main__':
         logger.info("启动监听服务器")
         ListeningServer.server.serve_forever()
     except Exception as e:
-        logger.error("监听服务器启动失败！报错信息：{}".format(repr(e)))
+        logger.error(f"监听服务器启动失败！报错信息：{repr(e)}")
     finally:
         logger.info("监听服务器结束运行！")

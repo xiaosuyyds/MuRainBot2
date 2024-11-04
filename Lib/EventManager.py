@@ -1,4 +1,3 @@
-# coding:utf-8
 #   __  __       ____       _         ____        _   _____
 #  |  \/  |_   _|  _ \ __ _(_)_ __   | __ )  ___ | |_|___  \
 #  | |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __| __) |
@@ -8,7 +7,7 @@
 import re
 import traceback
 import Lib.Logger as Logger
-from typing import Callable
+from collections.abc import Callable
 
 register_event_list = []  # event_type, func, arg, args, kwargs, by_file
 register_keyword_list = []  # keyword, func, arg, args, kwargs, by_file
@@ -185,7 +184,7 @@ class Event:
                                 if isinstance(return_, bool) and return_:
                                     break
                         else:
-                            raise ValueError("Unsupported model: {}".format(model))
+                            raise ValueError(f"Unsupported model: {model}")
                     except Exception as e:
                         logger.warning(f"在尝试处理事件上报关键词检测{self.event_class} {self.event_data}给"
                                        f"{register_keyword['by_file']}的函数{register_keyword['func'].__name__}"

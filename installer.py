@@ -1,4 +1,3 @@
-# coding:utf-8
 #   __  __       ____       _         ____        _   _____
 #  |  \/  |_   _|  _ \ __ _(_)_ __   | __ )  ___ | |_|___  \
 #  | |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __| __) |
@@ -95,7 +94,7 @@ print("如果出现错误，请检查网络连接。")
 # 获取当前解释器
 current_interpreter = sys.executable
 # pip安装依赖
-os.system("%s -m pip install -r %s" % (current_interpreter, os.path.join(mrb2_path, "requirements.txt")))
+os.system("{} -m pip install -r {}".format(current_interpreter, os.path.join(mrb2_path, "requirements.txt")))
 
 print("依赖安装完成。")
 print("MuRainBot2安装完毕...\n\n")
@@ -499,7 +498,7 @@ def arrangement(lagrange_path: str, silent_installation: bool = False, uid: int 
                     if user_info is not None:
                         user_name = user_info["nickname"]
                         uid = user_info["user_id"]
-                        print("登录账号的用户名: %s(%s)" % (user_name, uid))
+                        print(f"登录账号的用户名: {user_name}({uid})")
                     else:
                         print("获取登录账号的用户信息失败")
                 except Exception as e:
@@ -552,7 +551,7 @@ def arrangement(lagrange_path: str, silent_installation: bool = False, uid: int 
 start_time = time.time()
 
 print("欢迎您使用Lagrange.Onebot安装脚本\n")
-print("信息确认: \n当前工作目录 %s \n将在 %s 安装Lagrange.OneBot\n" % (work_path, onebot_path))
+print(f"信息确认: \n当前工作目录 {work_path} \n将在 {onebot_path} 安装Lagrange.OneBot\n")
 
 lagrange_path = install()
 
