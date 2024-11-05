@@ -72,3 +72,6 @@ class GlobalConfig(Config):
         self.max_cache_size = self.raw_config["qq_data_cache"]["max_cache_size"]
         self.debug = self.raw_config["debug"]["enable"]
         self.auto_restart_onebot = self.raw_config["auto_restart_onebot"]["enable"]
+
+
+global_config = GlobalConfig()

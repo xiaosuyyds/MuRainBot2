@@ -160,7 +160,7 @@ class ExitCommand(Command):
         self.command_help = "exit: 退出程序"
         self.command_name = "exit"
 
-    def run(self, input_command: CommandParsing, **kwargs):
+    def run(self, input_command: CommandParsing, kwargs):
         logger.info("MuRainBot即将关闭，正在删除缓存")
         MuRainLib.clean_cache()
         logger.warning("MuRainBot结束运行！")
@@ -267,13 +267,16 @@ def run_command(input_command):
         logger.error("未知的命令, 请发送help查看支持的命令")
 
 
-def start_listening_command():
+def listening_command():
     while True:
         try:
             input_command = input()
-        except (KeyboardInterrupt, UnicodeDecodeError):
+        except (KeyboardInterrupt, EOFError, UnicodeDecodeError):
             MuRainLib.finalize_and_cleanup()
             return
+        except Exception as e:
+            logger.error(f"输入命令时发生错误: {repr(e)}")
+            continue
 
         if len(input_command) == 0:
             continue
@@ -285,5 +288,11 @@ def start_listening_command():
         logger.debug(f"Command: {input_command.command_list}")
 
 
+def start_command_listener():
+    import threading
+
+    threading.Thread(target=listening_command, daemon=True).start()
+
+
 if __name__ == "__main__":
-    start_listening_command()
+    listening_command()
