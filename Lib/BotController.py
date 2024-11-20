@@ -155,3 +155,6 @@ class Event:
 
     def __contains__(self, other):
         return other in self.event_json
+
+    def __repr__(self):
+        return str(self.event_json)

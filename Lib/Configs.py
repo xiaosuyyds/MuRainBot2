@@ -73,5 +73,8 @@ class GlobalConfig(Config):
         self.debug = self.raw_config["debug"]["enable"]
         self.auto_restart_onebot = self.raw_config["auto_restart_onebot"]["enable"]
 
+    def write_cache(self, item):
+        super().write_cache(item)
+        self.__init__()
 
 global_config = GlobalConfig()

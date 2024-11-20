@@ -6,11 +6,45 @@
 
 import re
 import traceback
+from dataclasses import dataclass
+
 import Lib.Logger as Logger
 from collections.abc import Callable
 
-register_event_list = []  # event_type, func, arg, args, kwargs, by_file
-register_keyword_list = []  # keyword, func, arg, args, kwargs, by_file
+
+@dataclass
+class KeywordModel:
+    BEGIN = "BEGIN"
+    END = "END"
+    INCLUDE = "INCLUDE"
+    EXCLUDE = "EXCLUDE"
+    EQUAL = "EQUAL"
+    REGEX = "REGEX"
+
+
+@dataclass
+class EventData:
+    event_type: str
+    func: Callable
+    arg: int
+    args: tuple
+    kwargs: dict
+    by_file: str
+
+
+@dataclass
+class KeywordData:
+    keyword: str
+    func: Callable
+    arg: int
+    args: tuple
+    kwargs: dict
+    by_file: str
+    model: str
+
+
+register_event_list: list[EventData] = []
+register_keyword_list: list[KeywordData] = []
 
 
 def register_event(event_type: tuple[str, str] | str | tuple[tuple[str, str] | str], arg: int = 0) -> Callable:
@@ -23,18 +57,16 @@ def register_event(event_type: tuple[str, str] | str | tuple[tuple[str, str] | s
     """
 
     def wrapper(func, *args, **kwargs):
-        # print("运行run")
-        # func(*args, **kwargs)
-        # print("func运行结束")
-        register_event_list.append({
-            'event_type': event_type,
-            'func': func,
-            'arg': arg,
-            'args': args,
-            'kwargs': kwargs,
-            'by_file': traceback.extract_stack()[-2].filename
-        })
-        register_event_list.sort(key=lambda x: x["arg"], reverse=True)
+        register_event_list.append(
+            EventData(
+                event_type,
+                func,
+                arg,
+                args,
+                kwargs,
+                traceback.extract_stack()[-2].filename
+            )
+        )
 
         return func
 
@@ -50,12 +82,12 @@ def unregister_event(event_type: tuple[str, str] | str | tuple[tuple[str, str] |
     :return: None
     """
     for i in register_event_list:
-        if (i["event_type"] == event_type and
-                i["by_file"] == traceback.extract_stack()[-2].filename):
+        if (i.event_type == event_type and
+                i.by_file == traceback.extract_stack()[-2].filename):
             register_event_list.remove(i)
 
 
-def register_keyword(keyword: str, func, model: str = "INCLUDE", arg: int = 0, *args) -> None:
+def register_keyword(keyword: str, func, model: str = KeywordModel.INCLUDE, arg: int = 0, *args, **kwargs) -> None:
     """
     注册关键字
     :param keyword: 关键词
@@ -74,15 +106,17 @@ def register_keyword(keyword: str, func, model: str = "INCLUDE", arg: int = 0, *
 
     if args is None:
         args = []
-    register_keyword_list.append({
-        'keyword': keyword,
-        'func': func,
-        'model': model,
-        'arg': arg,
-        'args': args,
-        'by_file': traceback.extract_stack()[-2].filename
-    })
-    register_keyword_list.sort(key=lambda x: x["arg"], reverse=True)
+    register_keyword_list.append(
+        KeywordData(
+            keyword,
+            func,
+            arg,
+            args,
+            kwargs,
+            traceback.extract_stack()[-2].filename,
+            model
+        )
+    )
     return
 
 
@@ -95,8 +129,8 @@ def unregister_keyword(keyword: str):
     :return: None
     """
     for i in range(len(register_keyword_list)):
-        if (register_keyword_list[i]["keyword"] == keyword and
-                register_event_list[i]["by_file"] == traceback.extract_stack()[-2].filename):
+        if (register_keyword_list[i].keyword == keyword and
+                register_event_list[i].by_file == traceback.extract_stack()[-2].filename):
             del register_keyword_list[i]
 
 
@@ -118,12 +152,13 @@ class Event:
             raise ValueError("不能将all或是*设为事件，因为会发生冲突。")
 
         # 事件扫描
+        register_event_list.sort(key=lambda x: x.arg, reverse=True)
         for register_event in register_event_list:
             try:
-                reg_event_class = register_event["event_type"]
-                func = register_event["func"]
-                args = register_event["args"]
-                kwargs = register_event["kwargs"]
+                reg_event_class = register_event.event_type
+                func = register_event.func
+                args = register_event.args
+                kwargs = register_event.kwargs
                 if isinstance(self.event_class, (tuple, list)) and reg_event_class != "all" and reg_event_class != "*":
                     for event_class in self.event_class:
                         # 优先级检测
@@ -140,54 +175,56 @@ class Event:
                             break
             except Exception as e:
                 logger.warning(f"在尝试处理事件上报{self.event_class} {self.event_data}给"
-                               f"{register_event['by_file']}的函数{register_event['func'].__name__}时出错：{repr(e)}")
+                               f"{register_event.by_file}的函数{register_event.func.__name__}时出错：{repr(e)}")
 
         # 关键词检测
         if isinstance(self.event_class, (tuple, list)):
             if self.event_class[0] == "message" and flag is False:
                 message = str(event_data.message)
+                register_keyword_list.sort(key=lambda x: x.arg, reverse=True)
                 for register_keyword in register_keyword_list:
                     try:
-                        keyword = register_keyword["keyword"]
-                        func = register_keyword["func"]
-                        model = register_keyword["model"]
-                        args = register_keyword["args"]
+                        keyword = register_keyword.keyword
+                        func = register_keyword.func
+                        model = register_keyword.model
+                        args = register_keyword.args
+                        kwargs = register_keyword.kwargs
 
                         if model == "BEGIN":
                             if message.startswith(keyword):
-                                return_ = func(self.event_class, self.event_data, *args)
+                                return_ = func(self.event_class, self.event_data, *args, **kwargs)
                                 if isinstance(return_, bool) and return_:
                                     break
                         elif model == "END":
                             if message.endswith(keyword):
-                                return_ = func(self.event_class, self.event_data, *args)
+                                return_ = func(self.event_class, self.event_data, *args, **kwargs)
                                 if isinstance(return_, bool) and return_:
                                     break
                         elif model == "INCLUDE":
                             if keyword in message:
-                                return_ = func(self.event_class, self.event_data, *args)
+                                return_ = func(self.event_class, self.event_data, *args, **kwargs)
                                 if isinstance(return_, bool) and return_:
                                     break
                         elif model == "EXCLUDE":
                             if keyword not in message:
-                                return_ = func(self.event_class, self.event_data, *args)
+                                return_ = func(self.event_class, self.event_data, *args, **kwargs)
                                 if isinstance(return_, bool) and return_:
                                     break
                         elif model == "EQUAL":
                             if message == keyword:
-                                return_ = func(self.event_class, self.event_data, *args)
+                                return_ = func(self.event_class, self.event_data, *args, **kwargs)
                                 if isinstance(return_, bool) and return_:
                                     break
                         elif model == "REGEX":
                             if re.search(keyword, message):
-                                return_ = func(self.event_class, self.event_data, *args)
+                                return_ = func(self.event_class, self.event_data, *args, **kwargs)
                                 if isinstance(return_, bool) and return_:
                                     break
                         else:
                             raise ValueError(f"Unsupported model: {model}")
                     except Exception as e:
                         logger.warning(f"在尝试处理事件上报关键词检测{self.event_class} {self.event_data}给"
-                                       f"{register_keyword['by_file']}的函数{register_keyword['func'].__name__}"
+                                       f"{register_keyword.by_file}的函数{register_keyword.func.__name__}"
                                        f"时出错：{repr(e)}")
 
 
