@@ -1,5 +1,3 @@
-# coding: utf-8
-
 # Created by BigCookie233
 
 import os

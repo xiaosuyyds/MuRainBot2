@@ -1,4 +1,3 @@
-# coding:utf-8
 #   __  __       ____       _         ____        _   _____
 #  |  \/  |_   _|  _ \ __ _(_)_ __   | __ )  ___ | |_|___  \
 #  | |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __| __) |
@@ -9,6 +8,8 @@
 OnebotAPI
 可以方便的调用Onebot的API
 """
+
+import json
 import Lib.Configs as Configs
 import Lib.EventManager as EventManager
 import Lib.Logger as Logger
@@ -87,7 +88,7 @@ class OnebotAPI:
         logger.debug(f"调用 API: {self.node} data: {self.data} by: {traceback.extract_stack()[-2].filename}")
         # 发起get请求
         try:
-            response = requests.get(str(self), params=self.data)
+            response = requests.post(str(self), json=self.data if self.data is not None else {})
             # 获取返回值
             result = response.json()['data']
             # 如果original为真，则返回原值和response
@@ -96,10 +97,11 @@ class OnebotAPI:
             else:
                 return result
         except Exception as e:
+            logger.error(f"调用 API: {self.node} data: {self.data} 异常: {repr(e)}")
             # 返回异常信息
             return e
 
-    def send_private_msg(self, user_id: int, message: str):
+    def send_private_msg(self, user_id: int, message: str | list[dict]):
         """
         发送私聊消息
         :param user_id: 用户id
@@ -112,7 +114,7 @@ class OnebotAPI:
         }
         return self.get("/send_private_msg", data)
 
-    def send_group_msg(self, group_id: int, message: str):
+    def send_group_msg(self, group_id: int, message: str | list[dict]):
         """
         发送群消息
         :param group_id: 群号
@@ -125,7 +127,7 @@ class OnebotAPI:
         }
         return self.get("/send_group_msg", data)
 
-    def send_msg(self, user_id: int = -1, group_id: int = -1, message: str = ""):
+    def send_msg(self, user_id: int = -1, group_id: int = -1, message: str | list[dict] = ""):
         """
         发送消息
         :param user_id: 用户id

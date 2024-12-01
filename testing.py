@@ -1,4 +1,3 @@
-# coding:utf-8
 #   __  __       ____       _         ____        _   _____
 #  |  \/  |_   _|  _ \ __ _(_)_ __   | __ )  ___ | |_|___  \
 #  | |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __| __) |
@@ -57,12 +56,13 @@ def get_response(data):
 now_message_id = 0
 
 
-@app.route("/<node>", methods=["GET"])
+@app.route("/<node>", methods=["GET", "POST"])
 def index(node):
     global now_message_id
+    args = request.args if request.method == "GET" else request.json
     if node == "send_private_msg":
-        user_id = request.args.get('user_id', type=int, default=None)
-        message = request.args.get('message', type=str, default=None)
+        user_id = args.get('user_id')
+        message = args.get('message')
         if user_id is not None and message is not None:
             now_message_id += 1
             print(f"向用户{user_id}发送消息：{message}({now_message_id})")
@@ -70,8 +70,8 @@ def index(node):
         else:
             return "ok", 400
     elif node == "send_group_msg":
-        group_id = request.args.get('group_id', type=int, default=None)
-        message = request.args.get('message', type=str, default=None)
+        group_id = args.get('group_id')
+        message = args.get('message')
         if group_id is not None and message is not None:
             now_message_id += 1
             print(f"向群{group_id}发送消息：{message}({now_message_id})")
@@ -79,10 +79,10 @@ def index(node):
         else:
             return "ok", 400
     elif node == "send_msg":
-        message_type = request.args.get('message_type', type=str, default=None)
-        user_id = request.args.get('user_id', type=int, default=None)
-        group_id = request.args.get('group_id', type=int, default=None)
-        message = request.args.get('message', type=str, default=None)
+        message_type = args.get('message_type')
+        user_id = args.get('user_id')
+        group_id = args.get('group_id')
+        message = args.get('message')
         if message_type is None:
             if user_id is not None:
                 message_type = "private"
@@ -99,7 +99,7 @@ def index(node):
         else:
             return "ok", 400
     elif node == "get_stranger_info":
-        user_id = request.args.get('user_id', type=int, default=None)
+        user_id = args.get('user_id')
         if user_id is not None:
             return get_response({
                 "user_id": user_id,
@@ -128,7 +128,7 @@ def index(node):
             "max_member_count": test_environment_info["max_member_count"]
         }])
     elif node == "get_group_info":
-        group_id = request.args.get('group_id', type=int, default=None)
+        group_id = args.get('group_id')
         if group_id is not None:
             return get_response({
                 "group_id": group_id,
@@ -139,14 +139,14 @@ def index(node):
         else:
             return "ok", 400
     elif node == "get_group_member_info":
-        user_id = request.args.get('user_id', type=int, default=None)
-        group_id = request.args.get('group_id', type=int, default=None)
+        user_id = args.get('user_id')
+        group_id = args.get('group_id')
         if user_id is not None and group_id is not None:
             return get_response(test_environment_info["sender_info"])
         else:
             return "ok", 400
     elif node == "get_group_member_list":
-        group_id = request.args.get('group_id', type=int, default=None)
+        group_id = args.get('group_id')
         if group_id is not None:
             return get_response([test_environment_info["sender_info"]])
         else:

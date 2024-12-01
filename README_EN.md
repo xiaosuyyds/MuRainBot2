@@ -83,6 +83,7 @@
 </details>
 
 ## 💻How To Deploy?
+**The author found no problems in python 3.12 writing and testing, and other versions have not been tested yet**
 
 ### You can view the [`Documentation`](docs/readme.md) of this project.
 

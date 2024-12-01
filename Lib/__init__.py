@@ -1,4 +1,3 @@
-# coding:utf-8
 #   __  __       ____       _         ____        _   _____
 #  |  \/  |_   _|  _ \ __ _(_)_ __   | __ )  ___ | |_|___  \
 #  | |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __| __) |
@@ -22,6 +21,9 @@ import Lib.ListeningServer as ListeningServer
 import Lib.PluginManager as PluginManager
 import Lib.QQDataCacher as QQDataCacher
 import Lib.Command as Command
+
+# 扩展模块
+import Lib.Extra as Extra
 
 VERSION = "2.0.0-dev"
 VERSION_WEEK = "24W18A"

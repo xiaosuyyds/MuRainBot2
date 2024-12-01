@@ -1,4 +1,3 @@
-# coding:utf-8
 #   __  __       ____       _         ____        _   _____
 #  |  \/  |_   _|  _ \ __ _(_)_ __   | __ )  ___ | |_|___  \
 #  | |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __| __) |
@@ -168,7 +167,7 @@ class Segment(metaclass=Meta):
                 return False
 
     def render(self, group_id: int | None = None):
-        return "[%s: %s]" % (self.array.get("type", "unknown"), self.cq)
+        return f"[{self.array.get('type', 'unknown')}: {self.cq}]"
 
     def set_data(self, k, v):
         self.array["data"][k] = v
@@ -237,9 +236,9 @@ class At(Segment):
 
     def render(self, group_id: int | None = None):
         if group_id:
-            return "@%s: %s" % (QQDataCacher.get_group_user_data(group_id, self.qq).nickname, self.qq)
+            return f"@{QQDataCacher.get_group_user_data(group_id, self.qq).nickname}: {self.qq}"
         else:
-            return "@%s: %s" % (QQDataCacher.get_user_data(self.qq).nickname, self.qq)
+            return f"@{QQDataCacher.get_user_data(self.qq).nickname}: {self.qq}"
 
 
 class Image(Segment):
@@ -284,7 +283,7 @@ class Video(Segment):
         self.array["data"]["file"] = str(file)
 
     def render(self, group_id: int | None = None):
-        return "[视频: %s]" % self.file
+        return f"[视频: {self.file}]"
 
 
 class Rps(Segment):
@@ -408,6 +407,37 @@ class Location(Segment):
         self.array["data"]["lon"] = str(lon)
 
 
+class Node(Segment):
+    segment_type = "node"
+
+    def __init__(self, name: str, uid: int, message, message_id: int = None):
+        if message_id is None:
+            self.name = name
+            self.user_id = uid
+            self.message = QQRichText(message).get_array()
+            super().__init__({"type": "node", "data": {"nickname": str(self.name), "user_id": str(self.user_id), "content": self.message}})
+        else:
+            self.message_id = message_id
+            super().__init__({"type": "node", "data": {"id": str(message_id)}})
+
+    def set_message(self, message):
+        self.message = message
+
+    def set_name(self, name):
+        self.name = name
+        self.array["data"]["name"] = str(name)
+
+    def set_uid(self, uid):
+        self.uid = uid
+        self.array["data"]["uin"] = str(uid)
+
+    def render(self, group_id: int | None = None):
+        if self.message_id is not None:
+            return f"[合并转发节点: {self.name}({self.uid}): {self.message}]"
+        else:
+            return f"[合并转发节点: {self.message_id}]"
+
+
 class Music(Segment):
     segment_type = "music"
 
@@ -471,7 +501,7 @@ class Reply(Segment):
         self.array["data"]["id"] = str(self.message_id)
 
     def render(self, group_id: int | None = None):
-        return "[回复: %s]" % self.message_id
+        return f"[回复: {self.message_id}]"
 
 
 class Forward(Segment):
@@ -486,7 +516,7 @@ class Forward(Segment):
         self.array["data"]["id"] = str(self.forward_id)
 
     def render(self, group_id: int | None = None):
-        return "[合并转发: %s]" % self.forward_id
+        return f"[合并转发: {self.forward_id}]"
 
 
 # 并不是很想写这个东西.png
@@ -647,6 +677,9 @@ class QQRichText:
 
     def send(self, user_id=-1, group_id=-1):
         OnebotAPI.OnebotAPI().send_msg(user_id=user_id, group_id=group_id, message=str(self))
+
+    def get_array(self):
+        return [array.array for array in self.rich_array]
 
 
 # 单元测试
