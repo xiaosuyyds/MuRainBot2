@@ -1,7 +1,7 @@
 import os
 import traceback
 import yaml
-import Lib.FileCacher as FileCacher
+import Lib.core.FileCacher as FileCacher
 
 work_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 data_path = os.path.join(work_path, "data")

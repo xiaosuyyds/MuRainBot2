@@ -1,6 +1,6 @@
 import Lib.OnebotAPI as OnebotAPI
-import Lib.Configs as Configs
-import Lib.Logger as Logger
+import Lib.core.Configs as Configs
+import Lib.core.Logger as Logger
 import Lib.MuRainLib as MuRainLib
 import threading
 import time

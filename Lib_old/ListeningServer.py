@@ -2,14 +2,13 @@ from concurrent.futures import ThreadPoolExecutor
 from wsgiref.simple_server import WSGIServer
 
 from flask import Flask, request
-from werkzeug.serving import make_server, WSGIRequestHandler
+from werkzeug.serving import WSGIRequestHandler
 import threading
 import Lib.OnebotAPI as OnebotAPI
-import Lib.Configs as Configs
+import Lib.core.Configs as Configs
 import Lib.BotController as BotController
 import Lib.EventManager as EventManager
-import Lib.QQRichText as QQRichText
-import Lib.Logger as Logger
+import Lib.core.Logger as Logger
 import Lib.PluginManager as PluginManager
 import Lib.QQDataCacher as QQDataCacher
 import os
@@ -481,6 +480,7 @@ class ThreadPoolWSGIServer(WSGIServer):
             self.executor.submit(self.process_request, request, client_address)
 
     def serve_forever(self):
+        logger.info("监听服务器启动成功！")
         while True:
             self.handle_request()
 

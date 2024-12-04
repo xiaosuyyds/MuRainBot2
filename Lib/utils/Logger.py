@@ -1,19 +1,16 @@
-# Created by BigCookie233
-
 import logging
 import logging.handlers as handlers
 import os
 import sys
-from Lib.Configs import GlobalConfig
+from ..constants import *
 
 import coloredlogs
 
-work_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-data_path = os.path.join(work_path, "data")
-logs_path = os.path.join(work_path, "logs")
+
+logger: logging.Logger = None
 
 
-def init(logs_path: str = logs_path):
+def init(logs_path: str = LOGS_PATH, logger_level: int = logging.INFO):
     # 日志颜色
     log_colors = {
         "DEBUG": "white",
@@ -36,12 +33,8 @@ def init(logs_path: str = logs_path):
     global logger
     logger = logging.getLogger()
 
-    if GlobalConfig().debug:
-        logger.setLevel(logging.DEBUG)
-        coloredlogs.set_level(logging.DEBUG)
-    else:
-        logger.setLevel(logging.INFO)
-        coloredlogs.set_level(logging.INFO)
+    logger.setLevel(logger_level)
+    coloredlogs.set_level(logger_level)
 
     log_name = "latest.log"
     log_path = os.path.join(logs_path, log_name)
@@ -63,4 +56,13 @@ def init(logs_path: str = logs_path):
     return logger
 
 
-logger = init()
+def set_logger_level(level: int):
+    global logger
+    logger.setLevel(level)
+    coloredlogs.set_level(level)
+
+
+def get_logger():
+    if not logger:
+        raise RuntimeError("日志未初始化")
+    return logger

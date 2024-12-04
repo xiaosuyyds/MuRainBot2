@@ -1,8 +1,7 @@
 import os
 import importlib
 import time
-import Lib.Logger as Logger
-import threading
+import Lib.core.Logger as Logger
 import Lib.ThreadPool as ThreadPool
 
 logger = Logger.logger

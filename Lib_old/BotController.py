@@ -1,7 +1,7 @@
-import Lib.Configs as Configs
+import Lib.core.Configs as Configs
 import Lib.OnebotAPI as OnebotAPI
 import Lib.QQRichText as QQRichText
-import Lib.Logger as Logger
+import Lib.core.Logger as Logger
 import Lib.QQDataCacher as QQDataCacher
 
 api = OnebotAPI.OnebotAPI()

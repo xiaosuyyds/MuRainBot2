@@ -18,7 +18,7 @@ import shutil
 import time
 import random
 from collections import OrderedDict
-import Lib.Logger as Logger
+import Lib.core.Logger as Logger
 
 work_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 data_path = os.path.join(work_path, "data")
@@ -148,8 +148,11 @@ def function_cache(max_size: int, expiration_time: int = -1):
     def cache_decorator(func):
         def wrapper(*args, **kwargs):
             key = str(func.__name__) + str(args) + str(kwargs)
-            if key in cache and (expiration_time == -1 or time.time() - cache[key][1] < expiration_time):
-                return cache[key][0]
+            if key in cache:
+                if expiration_time != -1 and time.time() - cache[key][1] > expiration_time:
+                    cache.pop(key)
+                else:
+                    return cache[key][0]
             result = func(*args, **kwargs)
             cache[key] = (result, time.time())
             return result

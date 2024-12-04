@@ -9,10 +9,9 @@ OnebotAPI
 可以方便的调用Onebot的API
 """
 
-import json
-import Lib.Configs as Configs
+import Lib.core.Configs as Configs
 import Lib.EventManager as EventManager
-import Lib.Logger as Logger
+import Lib.core.Logger as Logger
 import requests
 import threading
 import traceback

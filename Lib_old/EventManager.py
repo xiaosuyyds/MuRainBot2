@@ -8,7 +8,7 @@ import re
 import traceback
 from dataclasses import dataclass
 
-import Lib.Logger as Logger
+import Lib.core.Logger as Logger
 from collections.abc import Callable
 
 

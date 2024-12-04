@@ -13,7 +13,7 @@ import inspect
 import re
 import Lib.OnebotAPI as OnebotAPI
 import Lib.QQDataCacher as QQDataCacher
-import Lib.Logger as Logger
+import Lib.core.Logger as Logger
 
 
 # CQ解码

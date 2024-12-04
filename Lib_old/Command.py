@@ -4,7 +4,7 @@ import Lib.QQRichText as QQRichText
 import Lib.OnebotAPI as OnebotAPI
 import Lib.MuRainLib as MuRainLib
 import os
-import Lib.Logger as Logger
+import Lib.core.Logger as Logger
 
 logger = Logger.logger
 
