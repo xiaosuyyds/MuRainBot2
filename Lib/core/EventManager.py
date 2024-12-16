@@ -27,15 +27,12 @@ class Event:
                     if ConfigManager.GlobalConfig().debug.enable:
                         raise e
 
+    @async_task
     def call_async(self):
         """
         无需等待的异步按优先级顺序触发所有监听器
         """
-        if self.__class__ in event_listeners:
-            @async_task
-            def _call_async():
-                self.call()
-            _call_async()
+        self.call()
 
 
 # 定义事件
