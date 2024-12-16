@@ -55,7 +55,7 @@ class OnebotAPI:
         self.data = data
         return self
 
-    def set_ip(self, host: str, port: int):
+    def set_url(self, host: str, port: int):
         self.host = host
         self.port = port
 
@@ -75,13 +75,12 @@ class OnebotAPI:
         self.data = data
 
         if self.node == "":
-            # raise ValueError('The node cannot be empty.')
-            self.node = "/"
+            raise ValueError('The node cannot be empty.')
 
-        if self.host == "":
+        if not self.host:
             raise ValueError('The host cannot be empty.')
 
-        if self.port == -1:
+        if isinstance(self.port, int) or self.port > 65535 or self.port < 0:
             raise ValueError('The port cannot be empty.')
 
         # 广播call_api事件
