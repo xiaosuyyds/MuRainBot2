@@ -4,6 +4,7 @@
 #  | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
 import logging
+import threading
 
 BANNER = r""" __  __       ____       _         ____        _   _____ 
 |  \/  |_   _|  _ \ __ _(_)_ __   | __ )  ___ | |_|___  \
@@ -54,10 +55,13 @@ if __name__ == '__main__':
 
     start_loading = time.time()
 
-    from Lib import *
+    from Lib.utils import Logger
     Logger.init()
 
     from Lib.core import *
+    ThreadPool.init()
+
+    from Lib import *
 
     Logger.set_logger_level(logging.DEBUG if ConfigManager.GlobalConfig().debug.enable else logging.INFO)
 
@@ -68,7 +72,12 @@ if __name__ == '__main__':
           )
 
     logger = Logger.get_logger()
-    logger.info("日志初始化完成！")
 
     logger.info("启动监听服务器")
-    ListenerServer.server.serve_forever()
+    threading.Thread(target=ListenerServer.server.serve_forever, daemon=True).start()
+
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        logger.info("正在关闭...")

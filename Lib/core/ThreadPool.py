@@ -1,18 +1,18 @@
 # Created by BigCookie233
 
-import importlib
-import logging
 from concurrent.futures import ThreadPoolExecutor
+from Lib.core.ConfigManager import GlobalConfig
+from Lib.utils.Logger import get_logger
 
 import atexit
 
 thread_pool = None
+logger = get_logger()
 
 
 def init():
     global thread_pool
-    config = importlib.import_module(name="Lib.Configs").GlobalConfig()
-    thread_pool = ThreadPoolExecutor(max_workers=config.max_workers)
+    thread_pool = ThreadPoolExecutor(max_workers=GlobalConfig().thread_pool.max_workers)
 
 
 def async_task(func):
@@ -26,5 +26,5 @@ def async_task(func):
 @atexit.register
 def shutdown():
     if isinstance(thread_pool, ThreadPoolExecutor):
-        logging.info("Closing Thread Pool")
+        logger.debug("Closing Thread Pool")
         thread_pool.shutdown()

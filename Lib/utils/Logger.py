@@ -11,6 +11,10 @@ logger: logging.Logger = None
 
 
 def init(logs_path: str = LOGS_PATH, logger_level: int = logging.INFO):
+    global logger
+
+    if logger is not None:
+        return logger
     # 日志颜色
     log_colors = {
         "DEBUG": "white",
@@ -30,7 +34,6 @@ def init(logs_path: str = LOGS_PATH, logger_level: int = logging.INFO):
     coloredlogs.install(isatty=True, stream=sys.stdout, field_styles=log_field_styles, fmt=fmt, colors=log_colors)
 
     # 设置文件日志
-    global logger
     logger = logging.getLogger()
 
     logger.setLevel(logger_level)
@@ -64,5 +67,5 @@ def set_logger_level(level: int):
 
 def get_logger():
     if not logger:
-        raise RuntimeError("日志未初始化")
+        init()
     return logger

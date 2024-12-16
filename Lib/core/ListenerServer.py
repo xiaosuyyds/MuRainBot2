@@ -22,7 +22,7 @@ class EscalationEvent(EventManager.Event):
 @app.route("/", methods=["POST"])
 def post_data():
     data = request.get_json()
-    logger.debug("收到上报: %s" % data.event_json)
+    logger.debug("收到上报: %s" % data)
     threading.Thread(target=EscalationEvent(data).call()).start()
 
     return "ok", 204
