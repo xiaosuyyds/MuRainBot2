@@ -138,6 +138,7 @@ root_node = Node(
                                 f"收到来自好友 "
                                 f"{qq_data.get_user_info(
                                     event_data['user_id'],
+                                    is_friend=True,
                                     **{k: v for k, v in event_data.get('sender', {}).items()
                                        if k not in ['user_id']}
                                 ).nickname}"
@@ -188,6 +189,442 @@ root_node = Node(
                             )
                         )
                     ]
+                )
+            ]
+        ),
+        # 通知事件
+        Node(
+            [
+                Rule("post_type", "notice")
+            ],
+            [
+                # 群文件上传
+                Node(
+                    [
+                        Rule("notice_type", "group_upload")
+                    ],
+                    lambda event_data:
+                    logger.info(
+                        f"群 "
+                        f"{qq_data.get_group_info(event_data['group_id']).group_name}"
+                        f"({event_data['group_id']}) "
+                        f"内成员 "
+                        f"{qq_data.get_user_info(event_data['user_id']).get_nickname()} "
+                        f"({event_data['user_id']}) "
+                        f"上传了文件: "
+                        f"{event_data['file']['name']}"
+                        f"({event_data['file']['id']})"
+                    )
+                ),
+                # 群管理员变动
+                Node(
+                    [
+                        Rule("notice_type", "group_admin")
+                    ],
+                    [
+                        # 设置管理员
+                        Node(
+                            [
+                                Rule("sub_type", "set")
+                            ],
+                            lambda event_data:
+                            logger.info(
+                                f"群 "
+                                f"{qq_data.get_group_info(event_data['group_id']).group_name}"
+                                f"({event_data['group_id']}) "
+                                f"内 成员 "
+                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"({event_data['user_id']}) "
+                                f"被设置为管理员"
+                            )
+                        ),
+                        # 取消管理员
+                        Node(
+                            [
+                                Rule("sub_type", "unset")
+                            ],
+                            lambda event_data:
+                            logger.info(
+                                f"群 "
+                                f"{qq_data.get_group_info(event_data['group_id']).group_name}"
+                                f"({event_data['group_id']}) "
+                                f"内 成员 "
+                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"({event_data['user_id']}) "
+                                f"被取消管理员"
+                            )
+                        )
+                    ]
+                ),
+                # 群成员减少
+                Node(
+                    [
+                        Rule("notice_type", "group_decrease")
+                    ],
+                    [
+                        Node(
+                            [
+                                Rule("sub_type", "leave")
+                            ],
+                            lambda event_data:
+                            logger.info(
+                                f"群 "
+                                f"{qq_data.get_group_info(event_data['group_id']).group_name}"
+                                f"({event_data['group_id']}) "
+                                f"内成员 "
+                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"({event_data['user_id']}) "
+                                f"退出了群聊"
+                            )
+                        ),
+                        Node(
+                            [
+                                Rule("sub_type", "kick")
+                            ],
+                            lambda event_data:
+                            logger.info(
+                                f"群 "
+                                f"{qq_data.get_group_info(event_data['group_id']).group_name}"
+                                f"({event_data['group_id']}) "
+                                f"内成员 "
+                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"({event_data['user_id']}) "
+                                f"被管理员 "
+                                f"{qq_data.get_user_info(event_data['operator_id']).get_nickname()}"
+                                f"({event_data['operator_id']}) "
+                                f"踢出了群聊"
+                            )
+                        ),
+                        Node(
+                            [
+                                Rule("sub_type", "kick_me")
+                            ],
+                            lambda event_data:
+                            logger.info(
+                                f"群 "
+                                f"{qq_data.get_group_info(event_data['group_id']).group_name}"
+                                f"({event_data['group_id']}) "
+                                f"内 "
+                                f"{qq_data.get_user_info(event_data['operator_id']).get_nickname()}"
+                                f"({event_data['operator_id']}) "
+                                f"将机器人踢出了群聊"
+                            )
+                        )
+                    ]
+                ),
+                # 群成员增加
+                Node(
+                    [
+                        Rule("notice_type", "group_increase")
+                    ],
+                    [
+                        Node(
+                            [
+                                Rule("sub_type", "approve")
+                            ],
+                            lambda event_data:
+                            logger.info(
+                                f"群 "
+                                f"{qq_data.get_group_info(event_data['group_id']).group_name}"
+                                f"({event_data['group_id']}) "
+                                f"内成员 "
+                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"({event_data['user_id']}) "
+                                f"被管理员 "
+                                f"{qq_data.get_user_info(event_data['operator_id']).get_nickname()}"
+                                f"({event_data['operator_id']}) "
+                                f"批准入群"
+                            ),
+                        ),
+                        Node(
+                            [
+                                Rule("sub_type", "invite")
+                            ],
+                            lambda event_data:
+                            logger.info(
+                                f"群 "
+                                f"{qq_data.get_group_info(event_data['group_id']).group_name}"
+                                f"({event_data['group_id']}) "
+                                f"内成员 "
+                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"({event_data['user_id']}) "
+                                f"被 "
+                                f"{qq_data.get_user_info(event_data['operator_id']).get_nickname()}"
+                                f"({event_data['operator_id']}) "
+                                f"邀请入群"
+                            )
+                        )
+                    ]
+                ),
+                # 群禁言
+                Node(
+                    [
+                        Rule("notice_type", "group_ban")
+                    ],
+                    [
+                        Node(
+                            [
+                                Rule("sub_type", "ban")
+                            ],
+                            lambda event_data:
+                            logger.info(
+                                f"群 "
+                                f"{qq_data.get_group_info(event_data['group_id']).group_name}"
+                                f"({event_data['group_id']}) "
+                                f"内成员 "
+                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"({event_data['user_id']}) "
+                                f"被管理员 "
+                                f"{qq_data.get_user_info(event_data['operator_id']).get_nickname()}"
+                                f"({event_data['operator_id']}) "
+                                f"禁言了: "
+                                f"{event_data['duration']}s"
+                            )
+                        ),
+                        Node(
+                            [
+                                Rule("sub_type", "lift_ban")
+                            ],
+                            lambda event_data:
+                            logger.info(
+                                f"群 "
+                                f"{qq_data.get_group_info(event_data['group_id']).group_name}"
+                                f"({event_data['group_id']}) "
+                                f"内成员 "
+                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"({event_data['user_id']}) "
+                                f"被管理员 "
+                                f"{qq_data.get_user_info(event_data['operator_id']).get_nickname()}"
+                                f"({event_data['operator_id']}) "
+                                f"解除了禁言"
+                            )
+                        )
+                    ]
+                ),
+                # 好友添加
+                Node(
+                    [
+                        Rule("notice_type", "friend_add")
+                    ],
+                    lambda event_data:
+                    logger.info(
+                        f"好友 "
+                        f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                        f"({event_data['user_id']}) "
+                        f"添加了机器人的好友"
+                    )
+                ),
+                # 群消息撤回
+                Node(
+                    [
+                        Rule("notice_type", "group_recall")
+                    ],
+                    [
+                        Node(
+                            [
+                                Rule(
+                                    lambda event_data:
+                                    event_data["user_id"] == event_data.event_data["operator_id"],
+                                    None
+                                )
+                            ],
+                            lambda event_data:
+                            logger.info(
+                                f"群 "
+                                f"{qq_data.get_group_info(event_data['group_id']).group_name}"
+                                f"({event_data['group_id']}) "
+                                f"内成员 "
+                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"({event_data['user_id']}) "
+                                f"撤回了消息: "
+                                f"{event_data['message_id']}"
+                            )
+                        ),
+                        Node(
+                            [
+                                Rule(
+                                    lambda event_data:
+                                    event_data["user_id"] != event_data.event_data["operator_id"],
+                                    None
+                                )
+                            ],
+                            lambda event_data:
+                            logger.info(
+                                f"群 "
+                                f"{qq_data.get_group_info(event_data['group_id']).group_name}"
+                                f"({event_data['group_id']}) "
+                                f"内成员 "
+                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"({event_data['user_id']}) "
+                                f"被管理员 "
+                                f"{qq_data.get_user_info(event_data['operator_id']).get_nickname()}"
+                                f"({event_data['operator_id']}) "
+                                f"撤回了消息: "
+                               f"{event_data['message_id']}"
+                            )
+                        )
+                    ]
+                ),
+                # 好友消息撤回
+                Node(
+                    [
+                        Rule("notice_type", "friend_recall")
+                    ],
+                    lambda event_data:
+                    logger.info(
+                        f"好友 "
+                        f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                        f"({event_data['user_id']}) "
+                        f"撤回了消息: "
+                        f"{event_data['message_id']}"
+                    )
+                ),
+                # 通知
+                Node(
+                    [
+                        Rule("notice_type", "notify")
+                    ],
+                    [
+                        # 群内戳一戳
+                        Node(
+                            [
+                                Rule("sub_type", "poke")
+                            ],
+                            lambda event_data:
+                            logger.info(
+                                f"群 "
+                                f"{qq_data.get_group_info(event_data['group_id']).group_name}"
+                                f"({event_data['group_id']}) "
+                                f"内 "
+                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"({event_data['user_id']}) "
+                                f"戳了戳 "
+                                f"{qq_data.get_user_info(event_data['target_id']).get_nickname()}"
+                                f"({event_data['target_id']})"
+                            )
+                        ),
+                        # 红包运气王
+                        Node(
+                            [
+                                Rule("sub_type", "lucky_king")
+                            ],
+                            lambda event_data:
+                            logger.info(
+                                f"群 "
+                                f"{qq_data.get_group_info(event_data['group_id']).group_name}"
+                                f"({event_data['group_id']}) "
+                                f"内 "
+                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"({event_data['user_id']}) "
+                                f"成为了 "
+                                f"{qq_data.get_user_info(event_data['target_id']).get_nickname()}"
+                                f"({event_data['target_id']}) "
+                                f"发送的红包的运气王"
+                            )
+                        ),
+                        # 群成员荣誉变更
+                        Node(
+                            [
+                                Rule("sub_type", "honor")
+                            ],
+                            lambda event_data:
+                            logger.info(
+                                f"群 "
+                                f"{qq_data.get_group_info(event_data['group_id']).group_name}"
+                                f"({event_data['group_id']}) "
+                                f"内 "
+                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"({event_data['user_id']}) "
+                                f"获得了 " + {
+                                    "talkative": "群聊之火",
+                                    "performer": "群聊炽焰",
+                                    "emotion": "快乐源泉"
+                                }[event_data['honor_type']] +
+                                " 的称号"
+                            )
+                        )
+                    ]
+                )
+            ]
+        ),
+        # 请求事件
+        Node(
+            [
+                Rule("post_type", "request")
+            ],
+            [
+                # 添加好友请求
+                Node(
+                    [
+                        Rule("request_type", "friend")
+                    ],
+                    lambda event_data:
+                    logger.info(
+                        f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                        f"({event_data['user_id']})"
+                        f"请求添加机器人为好友\n"
+                        f"验证信息: {event_data['comment']}\n"
+                        f"flag: {event_data['flag']}"
+                    )
+                ),
+                # 加群请求/邀请
+                Node(
+                    [
+                        Rule("request_type", "group")
+                    ],
+                    [
+                        # 加群请求
+                        Node(
+                            [
+                                Rule("sub_type", "add")
+                            ],
+                            lambda event_data:
+                            logger.info(
+                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"({event_data['user_id']})"
+                                f"请求加入群 "
+                                f"{qq_data.get_group_info(event_data['group_id']).group_name}"
+                                f"({event_data['group_id']})\n"
+                                f"验证信息: {event_data['comment']}\n"
+                                f"flag: {event_data['flag']}"
+                            )
+                        ),
+                        # 加群邀请
+                        Node(
+                            [
+                                Rule("sub_type", "invite")
+                            ],
+                            lambda event_data:
+                            logger.info(
+                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"({event_data['user_id']})"
+                                f"邀请机器人加入群 "
+                                f"{qq_data.get_group_info(event_data['group_id']).group_name}"
+                            )
+                        )
+                    ]
+                )
+            ]
+        ),
+        # 元事件
+        Node(
+            [
+                Rule("post_type", "meta_event")
+            ],
+            [
+                # 生命周期
+                Node(
+                    [
+                        Rule("meta_event_type", "lifecycle")
+                    ],
+                    lambda event_data:
+                    logger.info(
+                        f"收到元事件: " + {
+                            "enable": "OneBot 启用",
+                            "disable": "OneBot 禁用",
+                            "connect": "OneBot 连接成功"
+                        }[event_data['sub_type']]
+                    )
                 )
             ]
         )
