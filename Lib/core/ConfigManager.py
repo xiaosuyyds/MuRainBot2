@@ -181,7 +181,7 @@ auto_restart_onebot: # 在Onebot实现端状态异常时自动重启Onebot实现
 
 
 if __name__ == "__main__":
-    config = GlobalConfig()
-    print(config.api)
-    config.set("api", {"host": "127.0.0.1", "port": 5700})
-    print(config.api)
+    test_config = GlobalConfig()
+    print(test_config.api)
+    test_config.set("api", {"host": "127.0.0.1", "port": 5700})
+    print(test_config.api)

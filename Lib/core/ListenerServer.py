@@ -23,7 +23,7 @@ class EscalationEvent(EventManager.Event):
 def post_data():
     data = request.get_json()
     logger.debug("收到上报: %s" % data)
-    threading.Thread(target=EscalationEvent(data).call()).start()
+    EscalationEvent(data).call_async()
 
     return "ok", 204
 

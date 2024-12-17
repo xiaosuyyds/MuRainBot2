@@ -20,13 +20,13 @@ class Event:
         """
         if self.__class__ in event_listeners:
             for listener in sorted(event_listeners[self.__class__], key=lambda i: i.priority, reverse=True):
-                try:
+                if not ConfigManager.GlobalConfig().debug.enable:
+                    try:
+                        listener.func(self, **listener.kwargs)
+                    except Exception as e:
+                        logger.error(f"Error occurred in listener: {repr(e)}")
+                else:
                     listener.func(self, **listener.kwargs)
-                except Exception as e:
-                    logger.error(f"Error occurred in listener: {repr(e)}")
-                    if ConfigManager.GlobalConfig().debug.enable:
-                        raise e
-
     @async_task
     def call_async(self):
         """

@@ -74,6 +74,11 @@ if __name__ == '__main__':
     logger = Logger.get_logger()
 
     logger.info("启动监听服务器")
+
+    # 禁用werkzeug的日志记录
+    log = logging.getLogger('werkzeug')
+    log.disabled = True
+
     threading.Thread(target=ListenerServer.server.serve_forever, daemon=True).start()
 
     try:

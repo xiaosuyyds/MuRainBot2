@@ -28,13 +28,18 @@ class CallAPIEvent(EventManager.Event):
 
 
 class OnebotAPI:
-    def __init__(self, host: str = config.api.host, port: int = config.api.port,
+    def __init__(self, host: str = None, port: int = None,
                  original: bool = False):
         """
         :param host: 调用的ip
         :param port: 调用的端口
         :param original: 是否返回全部json（默认只返回data内）
         """
+        if host is None:
+            host = config.api.host
+        if port is None:
+            port = config.api.port
+
         self.host = host
         self.port = port
         self.node = ""
@@ -80,7 +85,7 @@ class OnebotAPI:
         if not self.host:
             raise ValueError('The host cannot be empty.')
 
-        if isinstance(self.port, int) or self.port > 65535 or self.port < 0:
+        if (not isinstance(self.port, int)) or self.port > 65535 or self.port < 0:
             raise ValueError('The port cannot be empty.')
 
         # 广播call_api事件
@@ -89,14 +94,16 @@ class OnebotAPI:
         logger.debug(f"调用 API: {self.node} data: {self.data} by: {traceback.extract_stack()[-2].filename}")
         # 发起get请求
         try:
-            response = requests.post(str(self), data=json.dumps(self.data if self.data is not None else {}))
-            # 获取返回值
-            result = response.json()['data']
+            response = requests.post(
+                str(self),
+                headers={"Content-Type": "application/json"},
+                data=json.dumps(self.data if self.data is not None else {})
+            )
             # 如果original为真，则返回原值和response
             if self.original:
                 return response.json()
             else:
-                return result
+                return response.json()['data']
         except Exception as e:
             logger.error(f"调用 API: {self.node} data: {self.data} 异常: {repr(e)}")
             raise e
