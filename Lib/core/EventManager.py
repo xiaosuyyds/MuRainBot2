@@ -1,4 +1,4 @@
-from typing import Type, Any, TypeVar
+from typing import Any, TypeVar
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -8,12 +8,28 @@ from . import ConfigManager
 from ..utils import Logger
 import inspect
 
-
 logger = Logger.get_logger()
 
 
-# 定义基础事件类
-class Event:
+class _Event:
+    """
+    请勿使用此事件类，使用Event继承以创建自定义事件
+    """
+    pass
+
+
+# 定义事件
+T = TypeVar('T', bound='_Event')
+
+
+class Hook(_Event):
+    """
+    钩子事件，用于在事件处理过程中跳过某些监听器
+    """
+    def __init__(self, event, listener):
+        self.event = event
+        self.listener = listener
+
     def call(self):
         """
         按优先级顺序同步触发所有监听器
@@ -22,21 +38,15 @@ class Event:
             for listener in sorted(event_listeners[self.__class__], key=lambda i: i.priority, reverse=True):
                 if not ConfigManager.GlobalConfig().debug.enable:
                     try:
-                        listener.func(self, **listener.kwargs)
+                        res = listener.func(self, **listener.kwargs)
                     except Exception as e:
                         logger.error(f"Error occurred in listener: {repr(e)}")
+                        continue
                 else:
-                    listener.func(self, **listener.kwargs)
-    @async_task
-    def call_async(self):
-        """
-        无需等待的异步按优先级顺序触发所有监听器
-        """
-        self.call()
-
-
-# 定义事件
-T = TypeVar('T', bound='Event')
+                    res = listener.func(self, **listener.kwargs)
+                if res is True:
+                    return True
+            return False
 
 
 # 定义事件监听器的数据类
@@ -61,7 +71,7 @@ def event_listener(event_class: type[T], priority: int = 0, **kwargs):
     """
     用于注册监听器
     """
-    if not issubclass(event_class, Event):
+    if not issubclass(event_class, _Event):
         raise TypeError("Event class must be a subclass of Event")
 
     def wrapper(func: Callable[[T, ...], Any]):
@@ -71,6 +81,42 @@ def event_listener(event_class: type[T], priority: int = 0, **kwargs):
         return func
 
     return wrapper
+
+
+class Event(_Event):
+    """
+    基事件类，所有自定义事件均继承自此类，继承自此类以创建自定义事件
+    """
+
+    def _call_hook(self, listener):
+        return Hook(self, listener).call()
+
+    def call(self):
+        """
+        按优先级顺序同步触发所有监听器
+        """
+        if self.__class__ in event_listeners:
+            res_list = []
+            for listener in sorted(event_listeners[self.__class__], key=lambda i: i.priority, reverse=True):
+                if self._call_hook(listener):
+                    logger.debug(f"Skipped listener: {listener.func.__name__}")
+                    continue
+                if not ConfigManager.GlobalConfig().debug.enable:
+                    try:
+                        res = listener.func(self, **listener.kwargs)
+                    except Exception as e:
+                        logger.error(f"Error occurred in listener: {repr(e)}")
+                        continue
+                else:
+                    res = listener.func(self, **listener.kwargs)
+                res_list.append(res)
+
+    @async_task
+    def call_async(self):
+        """
+        无需等待的异步按优先级顺序触发所有监听器
+        """
+        self.call()
 
 
 if __name__ == "__main__":
@@ -83,10 +129,17 @@ if __name__ == "__main__":
     # 监听器函数
     @event_listener(MyEvent, priority=10, other_message="priority is 10")
     @event_listener(MyEvent, priority=100, other_message="priority is 100")
+    @event_listener(MyEvent, other_message="I'm going to be skipped")
     def on_my_event(event, other_message=""):
         print(f"Received event: {event.message}!", other_message)
 
 
+    @event_listener(Hook)
+    def on_hook(event):
+        if event.event.__class__ == MyEvent and event.listener.kwargs["other_message"] == "I'm going to be skipped":
+            return True
+
+
     # 触发事件
     event = MyEvent("Hello, World")
-    event.call()  # 输出: Received event: Hello, World!
+    event.call()
