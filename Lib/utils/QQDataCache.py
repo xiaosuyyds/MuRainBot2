@@ -1,6 +1,4 @@
-import dataclasses
 import time
-from collections import OrderedDict
 
 from ..core import OnebotAPI, ConfigManager
 from . import Logger
@@ -21,9 +19,6 @@ class QQDataItem:
 
     def refresh_cache(self):
         self.last_update = time.time()
-
-    def __getattr__(self, item):
-        pass
 
 
 class UserData(QQDataItem):
@@ -58,14 +53,11 @@ class UserData(QQDataItem):
             logger.warn(f"获取用户{self._user_id}缓存信息失败: {repr(e)}")
             return
 
-    def __getattribute__(self, item):
-        data = super().__getattribute__("_data")
-        if item not in list(data.keys()) + ["_data", "data"]:
-            return super().__getattribute__(item)
+    def __getattr__(self, item):
         if item == "_data" or item == "data":
-            return data
+            return self._data
 
-        if item in ["remark", "is_friend"] and data.get(item, None) != NotFetched:
+        if item in ["remark", "is_friend"] and self._data.get(item, None) != NotFetched:
             try:
                 res = api.get_friend_list()
                 for friend in res:
@@ -80,44 +72,16 @@ class UserData(QQDataItem):
                 logger.warn(f"获取用户{self._user_id}是否为好友失败: {repr(e)}")
                 return None
 
-        if data.get(item, None) == NotFetched or time.time() - self.last_update > expire_time:
+        if self._data.get(item, None) == NotFetched or time.time() - self.last_update > expire_time:
             self.refresh_cache()
 
-        if data.get(item, None) == NotFetched:
+        if self._data.get(item, None) == NotFetched:
             return None
 
-        return data.get(item, None)
+        return self._data.get(item, None)
 
     def get_nickname(self) -> str:
         return self.remark or self.nickname
-
-    @property
-    def data(self):
-        return self._data
-
-    @property
-    def user_id(self):
-        return self._user_id
-
-    @property
-    def nickname(self) -> str:
-        return
-
-    @property
-    def sex(self) -> str:
-        return
-
-    @property
-    def age(self) -> int:
-        return
-
-    @property
-    def is_friend(self) -> bool:
-        return
-
-    @property
-    def remark(self) -> str:
-        return
 
     def __repr__(self):
         return f"UserData(user_id={self._user_id})"
@@ -176,87 +140,19 @@ class GroupMemberData(QQDataItem):
             self._data["age"] = user_data.age if user_data.age else NotFetched
         super().refresh_cache()
 
-    def __getattribute__(self, item):
-        data = super().__getattribute__("_data")
-        if item not in list(data.keys()) + ["_data", "data"]:
-            return super().__getattribute__(item)
-
+    def __getattr__(self, item):
         if item == "_data" or item == "data":
-            return data
+            return self._data
 
-        if data.get(item, None) == NotFetched or time.time() - self.last_update > expire_time:
+        if self._data.get(item, None) == NotFetched or time.time() - self.last_update > expire_time:
             self.refresh_cache()
 
-        if data.get(item, None) == NotFetched:
+        if self._data.get(item, None) == NotFetched:
             return None
 
-        return data.get(item, None)
+        return self._data.get(item, None)
 
-    @property
-    def data(self):
-        return self._data
-
-    @property
-    def group_id(self):
-        return self._group_id
-
-    @property
-    def user_id(self):
-        return self._user_id
-
-    @property
-    def nickname(self) -> str:
-        return
-
-    @property
-    def card(self) -> str:
-        return
-
-    @property
-    def sex(self) -> str:
-        return
-
-    @property
-    def age(self) -> int:
-        return
-
-    @property
-    def area(self) -> str:
-        return
-
-    @property
-    def join_time(self) -> int:
-        return
-
-    @property
-    def last_sent_time(self) -> int:
-        return
-
-    @property
-    def level(self) -> str:
-        return
-
-    @property
-    def role(self) -> str:
-        return
-
-    @property
-    def unfriendly(self) -> bool:
-        return
-
-    @property
-    def title(self) -> str:
-        return
-
-    @property
-    def title_expire_time(self) -> int:
-        return
-
-    @property
-    def card_changeable(self) -> bool:
-        return
-
-    def __str__(self):
+    def __repr__(self):
         return f"GroupMemberData(group_id={self.group_id}, user_id={self.user_id})"
 
     def get_nickname(self):
@@ -292,15 +188,11 @@ class GroupData(QQDataItem):
             return
         super().refresh_cache()
 
-    def __getattribute__(self, item):
-        data = super().__getattribute__("_data")
-        if item not in list(data.keys()) + ["_data", "data"]:
-            return super().__getattribute__(item)
-
+    def __getattr__(self, item):
         if item == "_data" or item == "data":
-            return data
+            return self._data
 
-        if item == "group_member_list" and data.get(item, None) == NotFetched:
+        if item == "group_member_list" and self._data.get(item, None) == NotFetched:
             try:
                 res = api.get_group_member_list(self._group_id)
                 member_list = [GroupMemberData(**{k: (v if v is not None else NotFetched)
@@ -311,40 +203,16 @@ class GroupData(QQDataItem):
                 logger.warn(f"获取群{self._group_id}成员列表信息失败: {repr(e)}")
                 return
 
-        if data.get(item, None) == NotFetched or time.time() - self.last_update > expire_time:
+        if self._data.get(item, None) == NotFetched or time.time() - self.last_update > expire_time:
             self.refresh_cache()
 
-        if data.get(item, None) == NotFetched:
+        if self._data.get(item, None) == NotFetched:
             return None
 
-        return data.get(item, None)
+        return self._data.get(item, None)
 
-    def __str__(self):
+    def __repr__(self):
         return f"GroupData(group_id={self._group_id})"
-
-    @property
-    def data(self):
-        return self._data
-
-    @property
-    def group_id(self):
-        return self._group_id
-
-    @property
-    def group_name(self) -> str:
-        return
-
-    @property
-    def member_count(self) -> int:
-        return
-
-    @property
-    def max_member_count(self) -> int:
-        return
-
-    @property
-    def group_member_list(self) -> list[GroupMemberData]:
-        return
 
 
 class QQDataCache:
