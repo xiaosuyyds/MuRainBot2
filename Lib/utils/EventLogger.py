@@ -1,9 +1,9 @@
 from collections.abc import Callable
 
-from . import Logger, QQDataCache
+from . import Logger, QQDataCacher, QQRichText
 from ..core import EventManager, ListenerServer
 
-qq_data = QQDataCache.qq_data_cache
+qq_data = QQDataCacher.qq_data_cache
 logger = Logger.get_logger()
 
 
@@ -29,21 +29,22 @@ class Rule:
 
 
 class Node:
-    def __init__(self, rules: list[Rule], value):
+    def __init__(self, rules: list[Rule], value: str | Callable | list):
         self.rules: list[Rule] = rules
-        self.value: str | Callable | list = value
-        if isinstance(value, str) or isinstance(value, Callable):
-            self.value_type = "code"
-            if isinstance(value, str):
-                self.value = lambda _: eval(value)
-        elif isinstance(value, Node):
-            self.value_type = "nodes"
-            self.value = [value]
+        if isinstance(value, Node):
+            self.value = value
         elif isinstance(value, list):
             for item in value:
                 if not isinstance(item, Node):
                     raise TypeError("Node value must be Node or list of Node")
+            self.value = value
             self.value_type = "nodes"
+        elif isinstance(value, str) or isinstance(value, Callable):
+            self.value_type = "code"
+            if isinstance(value, str):
+                self.value = lambda _: eval(value)
+            else:
+                self.value = value
         else:
             raise TypeError("Node value must be Node or list of Node or callable or str")
 
@@ -84,7 +85,8 @@ root_node = Node(
                                        if k not in ['group_id', 'user_id']}).get_nickname()}"
                                 f"({event_data['user_id']}) "
                                 f"的消息: "
-                                f"{event_data['message']}"
+                                f"{QQRichText.QQRichText(event_data['message']).
+                                   render(group_id=event_data['group_id'])}"
                                 f"({event_data['message_id']})"
                             )
                         ),
@@ -102,7 +104,8 @@ root_node = Node(
                                 f"{qq_data.get_user_info(event_data['anonymous']).get('name')}"
                                 f"({event_data['anonymous']['id']}; flag: {event_data['anonymous']['flag']}) "
                                 f"的匿名消息: "
-                                f"{event_data['message']}"
+                                f"{QQRichText.QQRichText(event_data['message']).
+                                   render(group_id=event_data['group_id'])}"
                                 f"({event_data['message_id']})"
                             )
                         ),
@@ -117,7 +120,8 @@ root_node = Node(
                                 f"{qq_data.get_group_info(event_data['group_id']).group_name}"
                                 f"({event_data['group_id']}) "
                                 f"内的系统消息: "
-                                f"{event_data['message']}"
+                                f"{QQRichText.QQRichText(event_data['message']).
+                                   render(group_id=event_data['group_id'])}"
                                 f"({event_data['message_id']})"
                             )
                         )
@@ -144,7 +148,7 @@ root_node = Node(
                                 ).nickname}"
                                 f"({event_data['user_id']}) "
                                 f"的消息: "
-                                f"{event_data['message']}"
+                                f"{QQRichText.QQRichText(event_data['message']).render()}"
                                 f"({event_data['message_id']})"
                             )
                         ),
@@ -165,7 +169,7 @@ root_node = Node(
                                        if k not in ['group_id', 'user_id']}).get_nickname()}"
                                 f"({event_data['user_id']}) "
                                 f"的群临时会话消息: "
-                                f"{event_data['message']}"
+                                f"{QQRichText.QQRichText(event_data['message']).render()}"
                                 f"({event_data['message_id']})"
                             )
                         ),
@@ -184,7 +188,7 @@ root_node = Node(
                                 ).nickname}"
                                 f"({event_data['user_id']}) "
                                 f"的消息: "
-                                f"{event_data['message']}"
+                                f"{QQRichText.QQRichText(event_data['message']).render()}"
                                 f"({event_data['message_id']})"
                             )
                         )
@@ -460,7 +464,7 @@ root_node = Node(
                                 f"{qq_data.get_user_info(event_data['operator_id']).get_nickname()}"
                                 f"({event_data['operator_id']}) "
                                 f"撤回了消息: "
-                               f"{event_data['message_id']}"
+                                f"{event_data['message_id']}"
                             )
                         )
                     ]
