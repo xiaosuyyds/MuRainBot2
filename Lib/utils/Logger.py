@@ -1,6 +1,5 @@
 import logging
 import logging.handlers as handlers
-import os
 import sys
 from ..constants import *
 

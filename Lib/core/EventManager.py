@@ -4,8 +4,8 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from Lib.core.ThreadPool import async_task
-from . import ConfigManager
-from ..utils import Logger
+from Lib.core import ConfigManager
+from Lib.utils import Logger
 import inspect
 
 logger = Logger.get_logger()
@@ -16,10 +16,6 @@ class _Event:
     请勿使用此事件类，使用Event继承以创建自定义事件
     """
     pass
-
-
-# 定义事件
-T = TypeVar('T', bound='_Event')
 
 
 class Hook(_Event):
@@ -49,6 +45,9 @@ class Hook(_Event):
             return False
 
 
+T = TypeVar('T', bound='_Event')
+
+
 # 定义事件监听器的数据类
 @dataclass(order=True)
 class EventListener:
@@ -58,8 +57,7 @@ class EventListener:
 
     def __post_init__(self):
         # 确保监听器函数至少有一个参数
-        if len(inspect.signature(self.func).parameters) < 1:
-            raise TypeError("The listener takes at least 1 parameter")
+        assert len(inspect.signature(self.func).parameters) >= 1, "The listener takes at least 1 parameter"
 
 
 # 定义监听器的类型和存储
@@ -71,8 +69,7 @@ def event_listener(event_class: type[T], priority: int = 0, **kwargs):
     """
     用于注册监听器
     """
-    if not issubclass(event_class, _Event):
-        raise TypeError("Event class must be a subclass of Event")
+    assert issubclass(event_class, _Event), "Event class must be a subclass of Event"
 
     def wrapper(func: Callable[[T, ...], Any]):
         # 注册事件监听器

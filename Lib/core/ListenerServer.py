@@ -8,7 +8,6 @@ from wsgiref.simple_server import WSGIServer
 from flask import Flask, request
 from werkzeug.serving import WSGIRequestHandler
 
-import threading
 
 logger = Logger.get_logger()
 app = Flask(__name__)
