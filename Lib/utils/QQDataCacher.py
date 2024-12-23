@@ -1,4 +1,5 @@
 import time
+import threading
 
 from ..core import OnebotAPI, ConfigManager
 from . import Logger
@@ -16,6 +17,7 @@ class QQDataItem:
     def __init__(self):
         self._data = NotFetched  # 数据
         self.last_update = time.time()  # 最后刷新时间
+        self.last_use = -1  # 最后被使用时间（数据被使用）
 
     def refresh_cache(self):
         self.last_update = time.time()
@@ -57,7 +59,7 @@ class UserData(QQDataItem):
         if item == "_data" or item == "data":
             return self._data
 
-        if item in ["remark", "is_friend"] and self._data.get(item, None) != NotFetched:
+        if item in ["remark", "is_friend"] and self._data.get(item) != NotFetched:
             try:
                 res = api.get_friend_list()
                 for friend in res:
@@ -72,13 +74,16 @@ class UserData(QQDataItem):
                 logger.warn(f"获取用户{self._user_id}是否为好友失败: {repr(e)}")
                 return None
 
-        if self._data.get(item, None) == NotFetched or time.time() - self.last_update > expire_time:
+        if self._data.get(item) == NotFetched or time.time() - self.last_update > expire_time:
             self.refresh_cache()
 
-        if self._data.get(item, None) == NotFetched:
+        if self._data.get(item) == NotFetched:
             return None
 
-        return self._data.get(item, None)
+        if item in self._data:
+            self.last_use = time.time()
+
+        return self._data.get(item)
 
     def get_nickname(self) -> str:
         return self.remark or self.nickname
@@ -144,16 +149,19 @@ class GroupMemberData(QQDataItem):
         if item == "_data" or item == "data":
             return self._data
 
-        if self._data.get(item, None) == NotFetched or time.time() - self.last_update > expire_time:
+        if self._data.get(item) == NotFetched or time.time() - self.last_update > expire_time:
             self.refresh_cache()
 
-        if self._data.get(item, None) == NotFetched:
+        if self._data.get(item) == NotFetched:
             return None
 
-        return self._data.get(item, None)
+        if item in self._data:
+            self.last_use = time.time()
+
+        return self._data.get(item)
 
     def __repr__(self):
-        return f"GroupMemberData(group_id={self.group_id}, user_id={self.user_id})"
+        return f"GroupMemberData(group_id={self._group_id}, user_id={self._user_id})"
 
     def get_nickname(self):
         return self.card or self.nickname
@@ -192,7 +200,7 @@ class GroupData(QQDataItem):
         if item == "_data" or item == "data":
             return self._data
 
-        if item == "group_member_list" and self._data.get(item, None) == NotFetched:
+        if item == "group_member_list" and self._data.get(item) == NotFetched:
             try:
                 res = api.get_group_member_list(self._group_id)
                 member_list = [GroupMemberData(**{k: (v if v is not None else NotFetched)
@@ -203,13 +211,16 @@ class GroupData(QQDataItem):
                 logger.warn(f"获取群{self._group_id}成员列表信息失败: {repr(e)}")
                 return
 
-        if self._data.get(item, None) == NotFetched or time.time() - self.last_update > expire_time:
+        if self._data.get(item) == NotFetched or time.time() - self.last_update > expire_time:
             self.refresh_cache()
 
-        if self._data.get(item, None) == NotFetched:
+        if self._data.get(item) == NotFetched:
             return None
 
-        return self._data.get(item, None)
+        if item in self._data:
+            self.last_use = time.time()
+
+        return self._data.get(item)
 
     def __repr__(self):
         return f"GroupData(group_id={self._group_id})"
@@ -229,6 +240,8 @@ class QQDataCache:
         self.user_info = {}
         self.max_cache_size = ConfigManager.GlobalConfig().qq_data_cache.max_cache_size
         self.expire_time = ConfigManager.GlobalConfig().qq_data_cache.expire_time
+        # 启动垃圾回收线程
+        threading.Thread(target=self.scheduled_garbage_collection, daemon=True).start()
 
     def get_user_info(self, user_id: int, *args, **kwargs) -> UserData:
         if user_id not in self.user_info:
@@ -256,6 +269,57 @@ class QQDataCache:
 
         data = self.group_member_info[group_id][user_id]
         return data
+
+    def garbage_collection(self):
+        # 垃圾回收
+        for k in list(self.group_member_info.keys()):
+            group_member_items = list(zip(self.group_member_info[k].keys(), self.group_member_info[k].values()))
+            max_last_use_time = max([item[1].last_use for item in group_member_items])
+
+            if max_last_use_time < time.time() - self.expire_time * 2:
+                del self.group_member_info[k]
+
+            group_member_items.sort(key=lambda x: x[1].last_use)
+            if len(group_member_items) > self.max_cache_size * (2 / 3):
+                for user_id, _ in group_member_items[:int(self.max_cache_size * (1 / 3))]:
+                    del self.group_member_info[k][user_id]
+            del group_member_items, max_last_use_time
+
+        group_items = list(zip(self.group_info.keys(), self.group_info.values()))
+        group_items.sort(key=lambda x: x[1].last_use)
+        if len(group_items) > self.max_cache_size * (2 / 3):
+            for group_id, _ in group_items[:int(self.max_cache_size * (1 / 3))]:
+                del self.group_info[group_id]
+        del group_items
+
+        user_items = list(zip(self.user_info.keys(), self.user_info.values()))
+        user_items.sort(key=lambda x: x[1].last_use)
+        if len(user_items) > self.max_cache_size * (2 / 3):
+            for user_id, _ in user_items[:int(self.max_cache_size * (1 / 3))]:
+                del self.user_info[user_id]
+        del user_items
+
+    def scheduled_garbage_collection(self):
+        t = 0
+        while True:
+            time.sleep(60)
+            t += 1
+            if (
+                    t > 4 or (
+                        t > 1 and (
+                            len(self.group_info) > self.max_cache_size or
+                            len(self.user_info) > self.max_cache_size or
+                            len(self.group_member_info) > self.max_cache_size
+                        )
+                    )
+            ):
+                t = 0
+                logger.debug("QQ数据缓存清理开始...")
+                try:
+                    self.garbage_collection()
+                    logger.debug("QQ数据缓存清理完成")
+                except Exception as e:
+                    logger.warn(f"QQ数据缓存清理时出现异常: {repr(e)}")
 
 
 qq_data_cache = QQDataCache()

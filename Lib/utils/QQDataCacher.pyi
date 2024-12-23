@@ -7,6 +7,7 @@ class QQDataItem:
     def __init__(self):
         self._data: dict | NotFetched = NotFetched  # 数据
         self.last_update: float = None  # 最后刷新时间
+        self.last_use: float = None
 
     def refresh_cache(self):
         self.last_update = None
@@ -137,6 +138,7 @@ class GroupData(QQDataItem):
         self._group_id = None
         self._data = None
 
+    def refresh_cache(self) -> None: ...
 
     @property
     def data(self): ...
@@ -155,3 +157,25 @@ class GroupData(QQDataItem):
 
     @property
     def group_member_list(self) -> list[GroupMemberData]: ...
+
+
+class QQDataCacher:
+    def __init__(self, cache_path: str = None) -> None:
+        self.group_info: dict = None
+        self.group_member_info: dict =  None
+        self.user_info: dict =  None
+        self.max_cache_size: int =  None
+        self.expire_time: int =  None
+
+    def get_group_info(self, group_id: int) -> GroupData: ...
+
+    def get_group_member_info(self, group_id: int, user_id: int) -> GroupMemberData: ...
+
+    def get_user_info(self, user_id: int) -> UserData: ...
+
+    def garbage_collection(self) -> None: ...
+
+    def scheduled_garbage_collection(self) -> None: ...
+
+
+qq_data_cache = QQDataCacher()
