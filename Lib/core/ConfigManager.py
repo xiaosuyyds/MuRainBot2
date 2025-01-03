@@ -100,34 +100,35 @@ class GlobalConfig(ConfigManager):
         enable: bool
 
     DEFAULT_CONFIG = """
-# MuCloud Bot配置文件
-account: # 账号相关
-  user_id: 123456  # QQ账号（留空则自动获取）
-  nick_name: "" #昵称（留空则自动获取）
+# MuCloud Bot Python配置文件
+account:  # 账号相关
+  user_id: 0  # QQ账号（留空则自动获取）
+  nick_name: ""  # 昵称（留空则自动获取）
   bot_admin: []
 
-api: # Api设置
+api:  # Api设置
   host: '127.0.0.1'
   port: 5700
 
-server: # 监听服务器设置
+server:  # 监听服务器设置
   host: '127.0.0.1'
   port: 5701
 
-thread_pool: # 线程池最大线程数
-  max_workers: 10
+thread_pool:  # 线程池相关
+  max_workers: 10  # 线程池最大线程数
 
-qq_data_cache: # QQ数据缓存设置
-  enable: true # 是否启用缓存
+qq_data_cache:  # QQ数据缓存设置
+  enable: true  # 是否启用缓存
   expire_time: 300  # 缓存过期时间（秒）
   max_cache_size: 500  # 最大缓存数量（设置过大可能会导致报错）
 
 
-debug: # 调试模式
-  enable: false # 是否启用调试模式
+debug:  # 调试模式，若启用框架的日志等级将被设置为debug，同时部分异常处理将关闭，以及会产生大量的log信息，不建议在生产环境开启
+  enable: false  # 是否启用调试模式
 
-auto_restart_onebot: # 在Onebot实现端状态异常时自动重启Onebot实现端（需开启心跳包）
-  enable: true # 是否启用自动重启
+auto_restart_onebot:  # 在Onebot实现端状态异常时自动重启Onebot实现端（需开启心跳包）
+  enable: true  # 是否启用自动重启
+
 """
 
     def __new__(cls):

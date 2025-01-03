@@ -278,6 +278,7 @@ class QQDataCache:
 
             if max_last_use_time < time.time() - self.expire_time * 2:
                 del self.group_member_info[k]
+                return
 
             group_member_items.sort(key=lambda x: x[1].last_use)
             if len(group_member_items) > self.max_cache_size * (2 / 3):

@@ -22,6 +22,9 @@ class EscalationEvent(EventManager.Event):
 def post_data():
     data = request.get_json()
     logger.debug("收到上报: %s" % data)
+    if "self" in data and GlobalConfig().account.user_id != 0 and data.get("self") != GlobalConfig().account.user_id:
+        logger.warning(f"收到来自其他bot的消息，忽略: {data}")
+        return "ok", 204
     EscalationEvent(data).call_async()
 
     return "ok", 204

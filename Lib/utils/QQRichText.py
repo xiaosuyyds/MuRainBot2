@@ -26,7 +26,7 @@ def cq_encode(text, in_cq: bool = False) -> str:
             replace("]", "&#93;")
 
 
-def cq_2_array(cq: str) -> list:
+def cq_2_array(cq: str) -> list[dict[str, dict[str, str]]]:
     if not isinstance(cq, str):
         raise TypeError("cq_2_array: 输入类型错误")
 
@@ -226,7 +226,7 @@ class At(Segment):
         if group_id:
             return f"@{QQDataCacher.qq_data_cache.get_group_member_info(group_id, self.qq).get_nickname()}: {self.qq}"
         else:
-            return f"@{QQDataCacher.qq_data_cache.get_user_data(self.qq).nickname}: {self.qq}"
+            return f"@{QQDataCacher.qq_data_cache.get_user_info(self.qq).nickname}: {self.qq}"
 
 
 class Image(Segment):
