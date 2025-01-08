@@ -56,9 +56,11 @@ if __name__ == '__main__':
     start_loading = time.time()
 
     from Lib.utils import Logger
+
     Logger.init()
 
     from Lib.core import *
+
     ThreadPool.init()
 
     from Lib import *
@@ -72,6 +74,31 @@ if __name__ == '__main__':
           )
 
     logger = Logger.get_logger()
+
+    if ConfigManager.GlobalConfig().account.user_id == 0 or not ConfigManager.GlobalConfig().account.nick_name:
+        logger.info("正在尝试获取用户信息...")
+        try:
+            account = OnebotAPI.api.get_login_info()
+            ConfigManager.GlobalConfig().set("account", {
+                "user_id": account["user_id"],
+                "nick_name": account["nickname"]
+            })
+        except Exception as e:
+            logger.warning(f"获取用户信息失败: {repr(e)}, 可能会导致严重的问题！")
+
+    logger.info(f"欢迎使用: {ConfigManager.GlobalConfig().account.nick_name}"
+                f"({ConfigManager.GlobalConfig().account.user_id})")
+
+    logger.debug(f"准备加载插件")
+    PluginManager.load_plugins()
+    logger.info(f"插件加载完成！共成功加载了 {len(PluginManager.plugins)} 个插件"
+                f"{': \n' if len(PluginManager.plugins) >= 1 else ''}"
+                f"{'\n'.join(
+                    [
+                        f'{_['name']}: {_['info'].NAME}' if 'info' in _ else _['name'] 
+                        for _ in PluginManager.plugins for _ in PluginManager.plugins
+                     ]
+                )}")
 
     logger.info("启动监听服务器")
 
