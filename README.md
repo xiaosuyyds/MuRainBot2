@@ -39,7 +39,7 @@ MRB2本身**不具备任何**实际功能
 
 ~~作者自己写着用的，有一些写的不好的地方还请见谅（不过估计也没人会用我这个项目吧）~~
 
-~~*什么？你问我为什么要叫MRB2，因为这个框架是给我的一个叫做沐雨的qqbot写的，然后之前还有[一个写的很垃圾](https://github.com/xiaosuyyds/PyQQbot)的版本，所以就叫做MRB2*~~
+~~*什么？你问我为什么要叫MRB2，因为这个框架最初是给我的一个叫做沐雨的qqbot写的，然后之前还有[一个写的很垃圾](https://github.com/xiaosuyyds/PyQQbot)的版本，所以就叫做MRB2*~~
 
 
 ### 关于本Readme以及MRB2文档的一些术语
@@ -54,7 +54,7 @@ MRB2的插件，统一放在`plugins`文件夹中，每个插件都是一个pyth
 
 ### 关于一些提醒
 
-本项目在2024年12月4日在dev分支对框架进行了重构，主要重构了目录结构与一些Lib的实现，不支持过去的插件，如果你有旧版本的插件，可以尝试使用新的框架的文档来进行适配。
+本项目在2024年12月4日在dev分支对框架进行了重构，主要重构了目录结构与一些Lib的实现，不支持过去的插件，如果你有旧版本的插件，可以尝试使用新的框架的文档来进行适配（放心，差别不会很大）。
 
 目前重构尚未完成，请勿现在在将框架用于实际部署。
 
@@ -96,7 +96,9 @@ MRB2的插件，统一放在`plugins`文件夹中，每个插件都是一个pyth
 
 
 ## 💻如何部署？
-**作者在python3.12编写，由于使用了一些高版本python添加的特性，推荐在3.12.X部署和运行**
+**作者在python3.12编写，由于使用了一些高版本python添加的特性
+（例如[PEP701中取消部分f-string语法限制（这真的超方便的好不好(）](https://docs.python.org/zh-cn/3.13/whatsnew/3.12.html#whatsnew312-pep701)），
+推荐在3.12.X或以上版本部署和运行**
 
 ### 具体可查看本项目的[`文档`](https://mrb2.xiaosu.icu)
 
@@ -104,15 +106,14 @@ MRB2的插件，统一放在`plugins`文件夹中，每个插件都是一个pyth
 * 目前MRB2版本为2.0.0-dev
 
 ~~*你问我为什么第一个版本就是2.0.0?因为这是MRB2嘛自然就是2.0.0开始的咯*~~
-* 关于版本号与版本周的说明：
+* 关于版本号的说明：
    * 版本号格式为`<主版本>.<次版本>.<修订版本>-<特殊提醒/版本(如果有)>` 例如`2.0.0`
    * 测试版版本号后统一添加`-dev`后缀 例如`2.0.0-dev`
-   * 测试版本的版本周格式为`<年份>W<周数><当周内更新的版本数A-Z排列>` 例如`29W10A`
-   * 正式版本的版本周格式为`<年份>Y<周数>W` 例如`24Y09W`
 
 ## ❤️鸣谢❤️
 
-### 请勿直接提交到[`master`](https://github.com/xiaosuyyds/MuRainBot2)分支，请先提交到[`dev`](https://github.com/xiaosuyyds/MuRainBot2/tree/dev)分支，随后再创建PR合并分支
+### 请勿直接提交到[`master`](https://github.com/xiaosuyyds/MuRainBot2)分支，请先提交到[`dev`](https://github.com/xiaosuyyds/MuRainBot2/tree/dev)分支，每隔一段时间我们会合并到[`master`](https://github.com/xiaosuyyds/MuRainBot2)分支
+
 ### 感谢所有为此项目做出贡献的大大，你们的存在，让社区变得更加美好~！
 <a href="https://github.com/xiaosuyyds/MuRainBot2/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=xiaosuyyds/MuRainBot2&max=999" alt=感谢他们（鼓掌）！>
