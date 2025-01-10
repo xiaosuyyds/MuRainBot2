@@ -648,7 +648,7 @@ class QQRichText:
 
     def __add__(self, other):
         other = QQRichText(other)
-        return self.rich_array + other.rich_array
+        return QQRichText(self.rich_array + other.rich_array)
 
     def __eq__(self, other):
         other = QQRichText(other)
@@ -670,6 +670,14 @@ class QQRichText:
     def get_array(self):
         return [array.array for array in self.rich_array]
 
+    def add(self, *segments):
+        for segment in segments:
+            if isinstance(segment, Segment):
+                self.rich_array.append(segment)
+            else:
+                self.rich_array += QQRichText(segment).rich_array
+        return self
+
 
 # 单元测试
 if __name__ == "__main__":
@@ -690,3 +698,4 @@ if __name__ == "__main__":
     print(QQRichText(At(114514)))
     print(Segment(At(1919810)))
     print(QQRichText([{"type": "text", "data": {"text": "1919810"}}]))
+    print(QQRichText().add(At(114514)).add(Text("我吃柠檬"))+QQRichText(At(1919810)).rich_array)
