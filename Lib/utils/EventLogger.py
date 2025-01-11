@@ -629,6 +629,16 @@ root_node = Node(
                             "connect": "OneBot 连接成功"
                         }[event_data['sub_type']]
                     )
+                ),
+                # 心跳
+                Node(
+                    [
+                        Rule("meta_event_type", "heartbeat")
+                    ],
+                    lambda event_data:
+                    logger.debug(
+                        f"收到心跳包"
+                    )
                 )
             ]
         )
@@ -637,15 +647,21 @@ root_node = Node(
 
 
 def run_node(node: Node, event: ListenerServer.EscalationEvent):
+    flag = False
     if node.is_valid(event):
         if node.value_type == "code":
             node.value(event.event_data)
+            flag = True
 
         elif node.value_type == "nodes":
             for item in node.value:
-                run_node(item, event)
+                if run_node(item, event):
+                    flag = True
+    return flag
 
 
 @EventManager.event_listener(ListenerServer.EscalationEvent)
 def on_escalation(event):
-    run_node(root_node, event)
+    flag = run_node(root_node, event)
+    if not flag:
+        logger.warning(f"未匹配到任何事件处理器，未知的上报: {event.event_data}")
