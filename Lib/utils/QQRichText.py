@@ -527,13 +527,13 @@ class Forward(Segment):
 class XML(Segment):
     segment_type = "xml"
 
-    def __init__(self, xml):
-        self.xml = xml
-        super().__init__({"type": "xml", "data": {"xml": str(self.xml)}})
+    def __init__(self, data):
+        self.data = data
+        super().__init__({"type": "xml", "data": {"data": str(self.data)}})
 
-    def set_xml(self, xml):
-        self.xml = xml
-        self.array["data"]["xml"] = str(self.xml)
+    def set_xml_data(self, data):
+        self.data = data
+        self.array["data"]["data"] = str(self.data)
 
 
 class JSON(Segment):
