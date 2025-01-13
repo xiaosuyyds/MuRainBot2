@@ -11,7 +11,7 @@ BANNER = r""" __  __       ____       _         ____        _   _____
 | |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __| __) |
 | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/ 
 |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|"""
-BANNER_LINK = "https://github.com/xiaosuyyds/MuRainBot2"
+BANNER_LINK = "https://github.com/MuRainBot/MuRainBot2"
 
 
 def color_text(text: str, text_color: tuple[int, int, int] = None, bg_color: tuple[int, int, int] = None):
