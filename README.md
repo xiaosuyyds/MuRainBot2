@@ -1,27 +1,27 @@
 <h1 align="center">MuRain Bot2(MRB2)</h1>
 <p align="center" class="shields">
-    <a href="https://github.com/xiaosuyyds/MuRainBot2/issues" style="text-decoration:none">
-        <img src="https://img.shields.io/github/issues/xiaosuyyds/MuRainBot2.svg?style=for-the-badge" alt="GitHub issues"/>
+    <a href="https://github.com/MuRainBot/MuRainBot2/issues" style="text-decoration:none">
+        <img src="https://img.shields.io/github/issues/MuRainBot/MuRainBot2.svg?style=for-the-badge" alt="GitHub issues"/>
     </a>
-    <a href="https://github.com/xiaosuyyds/MuRainBot2/stargazers" style="text-decoration:none" >
-        <img src="https://img.shields.io/github/stars/xiaosuyyds/MuRainBot2.svg?style=for-the-badge" alt="GitHub stars"/>
+    <a href="https://github.com/MuRainBot/MuRainBot2/stargazers" style="text-decoration:none" >
+        <img src="https://img.shields.io/github/stars/MuRainBot/MuRainBot2.svg?style=for-the-badge" alt="GitHub stars"/>
     </a>
-    <a href="https://github.com/xiaosuyyds/MuRainBot2/forks" style="text-decoration:none" >
-        <img src="https://img.shields.io/github/forks/xiaosuyyds/MuRainBot2.svg?style=for-the-badge" alt="GitHub forks"/>
+    <a href="https://github.com/MuRainBot/MuRainBot2/forks" style="text-decoration:none" >
+        <img src="https://img.shields.io/github/forks/MuRainBot/MuRainBot2.svg?style=for-the-badge" alt="GitHub forks"/>
     </a>
     <!--
-    <a href="https://github.com/xiaosuyyds/MuRainBot2/actions">
-        <img src="https://img.shields.io/github/actions/workflow/status/xiaosuyyds/MuRainBot2/vuepress-deploy.yml?style=for-the-badge">
+    <a href="https://github.com/MuRainBot/MuRainBot2/actions">
+        <img src="https://img.shields.io/github/actions/workflow/status/MuRainBot/MuRainBot2/vuepress-deploy.yml?style=for-the-badge">
     </a>
     -->
-    <a href="https://github.com/xiaosuyyds/MuRainBot2/blob/master/LICENSE" style="text-decoration:none" >
+    <a href="https://github.com/MuRainBot/MuRainBot2/blob/master/LICENSE" style="text-decoration:none" >
         <img src="https://img.shields.io/static/v1?label=LICENSE&message=GPL-3.0&color=lightrey&style=for-the-badge" alt="GitHub license"/>
     </a>
     <a href="https://github.com/botuniverse/onebot" style="text-decoration:none">
         <img src="https://img.shields.io/badge/OneBot-11-black?style=for-the-badge&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHAAAABwCAMAAADxPgR5AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAAxQTFRF////29vbr6+vAAAAk1hCcwAAAAR0Uk5T////AEAqqfQAAAKcSURBVHja7NrbctswDATQXfD//zlpO7FlmwAWIOnOtNaTM5JwDMa8E+PNFz7g3waJ24fviyDPgfhz8fHP39cBcBL9KoJbQUxjA2iYqHL3FAnvzhL4GtVNUcoSZe6eSHizBcK5LL7dBr2AUZlev1ARRHCljzRALIEog6H3U6bCIyqIZdAT0eBuJYaGiJaHSjmkYIZd+qSGWAQnIaz2OArVnX6vrItQvbhZJtVGB5qX9wKqCMkb9W7aexfCO/rwQRBzsDIsYx4AOz0nhAtWu7bqkEQBO0Pr+Ftjt5fFCUEbm0Sbgdu8WSgJ5NgH2iu46R/o1UcBXJsFusWF/QUaz3RwJMEgngfaGGdSxJkE/Yg4lOBryBiMwvAhZrVMUUvwqU7F05b5WLaUIN4M4hRocQQRnEedgsn7TZB3UCpRrIJwQfqvGwsg18EnI2uSVNC8t+0QmMXogvbPg/xk+Mnw/6kW/rraUlvqgmFreAA09xW5t0AFlHrQZ3CsgvZm0FbHNKyBmheBKIF2cCA8A600aHPmFtRB1XvMsJAiza7LpPog0UJwccKdzw8rdf8MyN2ePYF896LC5hTzdZqxb6VNXInaupARLDNBWgI8spq4T0Qb5H4vWfPmHo8OyB1ito+AysNNz0oglj1U955sjUN9d41LnrX2D/u7eRwxyOaOpfyevCWbTgDEoilsOnu7zsKhjRCsnD/QzhdkYLBLXjiK4f3UWmcx2M7PO21CKVTH84638NTplt6JIQH0ZwCNuiWAfvuLhdrcOYPVO9eW3A67l7hZtgaY9GZo9AFc6cryjoeFBIWeU+npnk/nLE0OxCHL1eQsc1IciehjpJv5mqCsjeopaH6r15/MrxNnVhu7tmcslay2gO2Z1QfcfX0JMACG41/u0RrI9QAAAABJRU5ErkJggg==" alt="Badge">
     </a>
     <br>
-    <a href="https://github.com/xiaosuyyds/MuRainBot2">
+    <a href="https://github.com/MuRainBot/MuRainBot2">
         <img src="https://counter.seku.su/cmoe?name=murainbot2&theme=rule34" alt=""/>
     </a>
 </p>
@@ -112,11 +112,11 @@ MRB2的插件，统一放在`plugins`文件夹中，每个插件都是一个pyth
 
 ## ❤️鸣谢❤️
 
-### 请勿直接提交到[`master`](https://github.com/xiaosuyyds/MuRainBot2)分支，请先提交到[`dev`](https://github.com/xiaosuyyds/MuRainBot2/tree/dev)分支，每隔一段时间我们会合并到[`master`](https://github.com/xiaosuyyds/MuRainBot2)分支
+### 请勿直接提交到[`master`](https://github.com/MuRainBot/MuRainBot2)分支，请先提交到[`dev`](https://github.com/MuRainBot/MuRainBot2/tree/dev)分支，每隔一段时间我们会合并到[`master`](https://github.com/MuRainBot/MuRainBot2)分支
 
 ### 感谢所有为此项目做出贡献的大大，你们的存在，让社区变得更加美好~！
-<a href="https://github.com/xiaosuyyds/MuRainBot2/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=xiaosuyyds/MuRainBot2&max=999" alt=感谢他们（鼓掌）！>
+<a href="https://github.com/MuRainBot/MuRainBot2/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=MuRainBot/MuRainBot2&max=999" alt=感谢他们（鼓掌）！>
 </a>
 
 ### 以及特别鸣谢[HarcicYang](https://github.com/HarcicYang)和[kaokao221](https://github.com/kaokao221)为此项目提供了许多的帮助~
@@ -124,4 +124,4 @@ MRB2的插件，统一放在`plugins`文件夹中，每个插件都是一个pyth
 
 ## ⭐StarHistory⭐
 
-[![](https://api.star-history.com/svg?repos=xiaosuyyds/MuRainBot2&type=Date)](https://github.com/xiaosuyyds/MuRainBot2/stargazers)
+[![](https://api.star-history.com/svg?repos=MuRainBot/MuRainBot2&type=Date)](https://github.com/MuRainBot/MuRainBot2/stargazers)
