@@ -1,4 +1,5 @@
 import dataclasses
+from typing import TypedDict, NotRequired, Any, Literal
 
 from ..core import EventManager, ListenerServer
 from . import QQRichText
@@ -21,11 +22,10 @@ class Event(EventManager.Event):
         return str(self.event_data)
 
 
-@dataclasses.dataclass
-class EventData:
+class EventData(TypedDict):
     cls: Event
     post_type: str
-    roles: dict = dataclasses.field(default_factory=dict)
+    roles: dict
 
 
 events: list[EventData] = []
@@ -33,16 +33,40 @@ events: list[EventData] = []
 
 def register_event(post_type: str, **other_roles):
     def decorator(cls):
-        events.append(
-            EventData(
-                cls,
-                post_type,
-                other_roles
-            )
-        )
+        data: EventData = {
+            "cls": cls,
+            "post_type": post_type,
+            "roles": other_roles
+        }
+        events.append(data)
         return cls
 
     return decorator
+
+
+class SenderDict(TypedDict, total=False):
+    user_id: NotRequired[int]
+    nickname: NotRequired[str]
+    sex: NotRequired[Literal["male", "female", "unknown"]]
+    age: NotRequired[int]
+
+
+class PrivateDict(TypedDict, total=False):
+    user_id: NotRequired[int]
+    nickname: NotRequired[str]
+    sex: NotRequired[Literal["male", "female", "unknown"]]
+    age: NotRequired[int]
+
+
+class GroupSenderDict(TypedDict, total=False):
+    user_id: NotRequired[int]
+    nickname: NotRequired[str]
+    card: NotRequired[str]
+    sex: NotRequired[Literal["male", "female", "unknown"]]
+    age: NotRequired[int]
+    level: NotRequired[int]
+    role: NotRequired[Literal["owner", "admin", "member"]]
+    title: NotRequired[str]
 
 
 # 注册事件类
@@ -50,19 +74,20 @@ def register_event(post_type: str, **other_roles):
 class MessageEvent(Event):
     def __init__(self, event_data):
         super().__init__(event_data)
-        self.message_type: str = self["message_type"]
+        self.message_type = self["message_type"]
         self.user_id: int = int(self["user_id"])
         self.sub_type: str = self["sub_type"]
         self.message: QQRichText.QQRichText = QQRichText.QQRichText(self["message"])
         self.raw_message: str = self["raw_message"]
         self.message_id: int = int(self["message_id"])
-        self.sender: dict = self["sender"]
+        self.sender: SenderDict = self["sender"]
 
 
 @register_event("message", message_type="private")
 class PrivateMessageEvent(MessageEvent):
     def __init__(self, event_data):
         super().__init__(event_data)
+        self.sender: PrivateDict = self["sender"]
 
 
 @register_event("message", message_type="group")
@@ -70,6 +95,7 @@ class GroupMessageEvent(MessageEvent):
     def __init__(self, event_data):
         super().__init__(event_data)
         self.group_id: int = int(self["group_id"])
+        self.sender: GroupSenderDict = self["sender"]
 
 
 @register_event("notice")
@@ -77,6 +103,13 @@ class NoticeEvent(Event):
     def __init__(self, event_data):
         super().__init__(event_data)
         self.notice_type: str = self["notice_type"]
+
+
+class FileDict(TypedDict, total=False):
+    id: str
+    name: str
+    size: int
+    busid: int
 
 
 @register_event("notice", notice_type="group_upload")
@@ -89,7 +122,7 @@ class GroupUploadEvent(NoticeEvent):
 
 
 @register_event("notice", notice_type="group_admin")
-class GroupDecreaseEvent(NoticeEvent):
+class GroupAdminEvent(NoticeEvent):
     def __init__(self, event_data):
         super().__init__(event_data)
         self.group_id: int = int(self["group_id"])
@@ -97,14 +130,39 @@ class GroupDecreaseEvent(NoticeEvent):
         self.sub_type: str = self["sub_type"]
 
 
+@register_event("notice", notice_type="group_admin", sub_type="set")
+class GroupSetAdminEvent(GroupAdminEvent):
+    pass
+
+
+@register_event("notice", notice_type="group_admin", sub_type="unset")
+class GroupUnsetAdminEvent(GroupAdminEvent):
+    pass
+
+
 @register_event("notice", notice_type="group_decrease")
-class GroupIncreaseEvent(NoticeEvent):
+class GroupDecreaseEvent(NoticeEvent):
     def __init__(self, event_data):
         super().__init__(event_data)
         self.group_id: int = int(self["group_id"])
         self.user_id: int = int(self["user_id"])
         self.operator_id = int(self["operator_id"])
         self.sub_type: str = self["sub_type"]
+
+
+@register_event("notice", notice_type="group_decrease", sub_type="leave")
+class GroupDecreaseLeaveEvent(GroupDecreaseEvent):
+    pass
+
+
+@register_event("notice", notice_type="group_decrease", sub_type="kick")
+class GroupDecreaseKickEvent(GroupDecreaseEvent):
+    pass
+
+
+@register_event("notice", notice_type="group_decrease", sub_type="kick_me")
+class GroupDecreaseKickMeEvent(GroupDecreaseEvent):
+    pass
 
 
 @register_event("notice", notice_type="group_increase")
@@ -117,6 +175,16 @@ class GroupIncreaseEvent(NoticeEvent):
         self.sub_type: str = self["sub_type"]
 
 
+@register_event("notice", notice_type="group_increase", sub_type="approve")
+class GroupIncreaseApproveEvent(GroupIncreaseEvent):
+    pass
+
+
+@register_event("notice", notice_type="group_increase", sub_type="invite")
+class GroupIncreaseInviteEvent(GroupIncreaseEvent):
+    pass
+
+
 @register_event("notice", notice_type="group_ban")
 class GroupBanEvent(NoticeEvent):
     def __init__(self, event_data):
@@ -126,6 +194,16 @@ class GroupBanEvent(NoticeEvent):
         self.operator_id: int = int(self["operator_id"])
         self.sub_type: str = self["sub_type"]
         self.duration: int = int(self["duration"])
+
+
+@register_event("notice", notice_type="group_ban", sub_type="ban")
+class GroupBanSetEvent(GroupBanEvent):
+    pass
+
+
+@register_event("notice", notice_type="group_ban", sub_type="lift_ban")
+class GroupBanLiftEvent(GroupBanEvent):
+    pass
 
 
 @register_event("notice", notice_type="friend_add")
@@ -180,11 +258,28 @@ class GroupHonorEvent(NoticeEvent):
         self.honor_type: str = self["honor_type"]
 
 
+@register_event("notice", notice_type="notify", sub_type="honor", honor_type="talkative")
+class GroupTalkativeHonorEvent(GroupHonorEvent):
+    pass
+
+
+@register_event("notice", notice_type="notify", sub_type="honor", honor_type="performer")
+class GroupPerformerHonorEvent(GroupHonorEvent):
+    pass
+
+
+@register_event("notice", notice_type="notify", sub_type="honor", honor_type="emotion")
+class GroupEmotionHonorEvent(GroupHonorEvent):
+    pass
+
+
 @register_event("request")
 class RequestEvent(Event):
     def __init__(self, event_data):
         super().__init__(event_data)
         self.request_type: str = self["request_type"]
+        self.comment: str = self["comment"]
+        self.flag: str = self["flag"]
 
 
 @register_event("request", request_type="friend")
@@ -192,8 +287,6 @@ class FriendRequestEvent(RequestEvent):
     def __init__(self, event_data):
         super().__init__(event_data)
         self.user_id: int = int(self["user_id"])
-        self.comment: str = self["comment"]
-        self.flag: str = self["flag"]
 
 
 @register_event("request", request_type="group")
@@ -203,20 +296,16 @@ class GroupRequestEvent(RequestEvent):
         self.sub_type: str = self["sub_type"]
         self.group_id: int = int(self["group_id"])
         self.user_id: int = int(self["user_id"])
-        self.comment: str = self["comment"]
-        self.flag: str = self["flag"]
 
 
 @register_event("request", request_type="group", sub_type="add")
 class GroupAddRequestEvent(GroupRequestEvent):
-    def __init__(self, event_data):
-        super().__init__(event_data)
+    pass
 
 
 @register_event("request", request_type="group", sub_type="invite")
 class GroupInviteRequestEvent(GroupRequestEvent):
-    def __init__(self, event_data):
-        super().__init__(event_data)
+    pass
 
 
 @register_event("meta_event")
@@ -231,6 +320,21 @@ class LifecycleMetaEvent(MetaEvent):
     def __init__(self, event_data):
         super().__init__(event_data)
         self.sub_type: str = self["sub_type"]
+
+
+@register_event("meta_event", meta_event_type="lifecycle", sub_type="enable")
+class EnableMetaEvent(LifecycleMetaEvent):
+    pass
+
+
+@register_event("meta_event", meta_event_type="lifecycle", sub_type="disable")
+class DisableMetaEvent(LifecycleMetaEvent):
+    pass
+
+
+@register_event("meta_event", meta_event_type="lifecycle", sub_type="connect")
+class ConnectMetaEvent(LifecycleMetaEvent):
+    pass
 
 
 @register_event("meta_event", meta_event_type="heartbeat")
@@ -248,8 +352,8 @@ def on_escalation(event_data):
     event_data = event_data.event_data
     for event in events:
         if (
-                event_data["post_type"] == event.post_type and
-                all(k in event_data and event_data[k] == v for k, v in event.roles.items())
+                event_data["post_type"] == event['post_type'] and
+                all(k in event_data and event_data[k] == v for k, v in event['roles'].items())
         ):
-            event = event.cls(event_data)
+            event = event['cls'](event_data)
             event.call()
