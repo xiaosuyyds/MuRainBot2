@@ -541,11 +541,11 @@ class JSON(Segment):
 
     def __init__(self, data):
         self.data = data
-        super().__init__({"type": "json", "data": {"json": str(self.data)}})
+        super().__init__({"type": "json", "data": {"data": str(self.data)}})
 
     def set_json(self, data):
         self.data = data
-        self.array["data"]["json"] = str(self.data)
+        self.array["data"]["data"] = str(self.data)
 
 
 class QQRichText:
