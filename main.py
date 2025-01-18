@@ -3,7 +3,9 @@
 #  | |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __| __) |
 #  | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
+import atexit
 import logging
+import os
 import threading
 
 BANNER = r""" __  __       ____       _         ____        _   _____ 
@@ -64,6 +66,17 @@ if __name__ == '__main__':
     ThreadPool.init()
 
     from Lib import *
+
+    # 结束运行
+    @atexit.register
+    def finalize_and_cleanup():
+        logger.info("MuRainBot即将关闭，正在删除缓存")
+
+        common.clean_cache()
+
+        logger.warning("MuRainBot结束运行！")
+        logger.info("再见！\n")
+        os._exit(0)
 
     Logger.set_logger_level(logging.DEBUG if ConfigManager.GlobalConfig().debug.enable else logging.INFO)
 
