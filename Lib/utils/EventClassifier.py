@@ -118,7 +118,7 @@ class GroupUploadEvent(NoticeEvent):
         super().__init__(event_data)
         self.group_id: int = int(self["group_id"])
         self.user_id: int = int(self["user_id"])
-        self.file: dict = self["file"]
+        self.file: FileDict = self["file"]
 
 
 @register_event("notice", notice_type="group_admin")
