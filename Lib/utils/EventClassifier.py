@@ -25,18 +25,18 @@ class Event(EventManager.Event):
 class EventData(TypedDict):
     cls: Event
     post_type: str
-    roles: dict
+    rules: dict
 
 
 events: list[EventData] = []
 
 
-def register_event(post_type: str, **other_roles):
+def register_event(post_type: str, **other_rules):
     def decorator(cls):
         data: EventData = {
             "cls": cls,
             "post_type": post_type,
-            "roles": other_roles
+            "rules": other_rules
         }
         events.append(data)
         return cls
@@ -353,7 +353,7 @@ def on_escalation(event_data):
     for event in events:
         if (
                 event_data["post_type"] == event['post_type'] and
-                all(k in event_data and event_data[k] == v for k, v in event['roles'].items())
+                all(k in event_data and event_data[k] == v for k, v in event['rules'].items())
         ):
             event = event['cls'](event_data)
             event.call()
