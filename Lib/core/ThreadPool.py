@@ -19,6 +19,9 @@ def async_task(func):
     def wrapper(*args, **kwargs):
         if isinstance(thread_pool, ThreadPoolExecutor):
             return thread_pool.submit(func, *args, **kwargs)
+        else:
+            logger.warning("Thread Pool is not initialized. Please call init() before using it.")
+            return func(*args, **kwargs)
 
     return wrapper
 
