@@ -80,6 +80,7 @@ class GlobalConfig(ConfigManager):
     class Server:
         host: str
         port: int
+        max_works: int
 
     @dataclasses.dataclass
     class ThreadPool:
@@ -113,6 +114,7 @@ api:  # Api设置
 server:  # 监听服务器设置
   host: '127.0.0.1'
   port: 5701
+  max_works: 4  # 最大工作线程数
 
 thread_pool:  # 线程池相关
   max_workers: 10  # 线程池最大线程数
@@ -163,7 +165,8 @@ auto_restart_onebot:  # 在Onebot实现端状态异常时自动重启Onebot实�
         )
         self.server = self.Server(
             host=self.get("server", {}).get("host", ""),
-            port=self.get("server", {}).get("port", 5701)
+            port=self.get("server", {}).get("port", 5701),
+            max_works=self.get("server", {}).get("max_works", 4)
         )
         self.thread_pool = self.ThreadPool(
             max_workers=self.get("thread_pool", {}).get("max_workers", 10)

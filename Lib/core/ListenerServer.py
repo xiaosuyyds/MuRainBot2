@@ -61,5 +61,5 @@ class ThreadPoolWSGIRequestHandler(WSGIRequestHandler):
 config = GlobalConfig()
 server = ThreadPoolWSGIServer((config.server.host, config.server.port),
                               app=app,
-                              max_workers=config.thread_pool.max_workers)
+                              max_workers=config.server.max_works)
 server.RequestHandlerClass = ThreadPoolWSGIRequestHandler

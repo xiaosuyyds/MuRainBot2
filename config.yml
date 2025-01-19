@@ -11,6 +11,7 @@ api:  # Api设置
 server:  # 监听服务器设置
   host: '127.0.0.1'
   port: 5701
+  max_works: 4  # 最大工作线程数
 
 thread_pool:  # 线程池相关
   max_workers: 10  # 线程池最大线程数
