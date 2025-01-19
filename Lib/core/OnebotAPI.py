@@ -99,6 +99,9 @@ class OnebotAPI:
                 headers={"Content-Type": "application/json"},
                 data=json.dumps(self.data if self.data is not None else {})
             )
+            if response.status_code != 200 or (response.json()['status'] != 'ok' or response.json()['retcode'] != 0):
+                raise Exception(response.text)
+
             # 如果original为真，则返回原值和response
             if self.original:
                 return response.json()
@@ -214,12 +217,12 @@ class OnebotAPI:
         }
         return self.get("/set_group_kick", data)
 
-    def set_group_ban(self, group_id: int, user_id: int, duration: int = 30):
+    def set_group_ban(self, group_id: int, user_id: int, duration: int = 30 * 60):
         """
         群组单人禁言
         :param group_id: 群号
         :param user_id: 用户id
-        :param duration: 禁言时长，单位秒，无法取消禁言
+        :param duration: 禁言时长，单位秒，0 表示取消禁言
         :return:
         """
         data = {
@@ -229,7 +232,7 @@ class OnebotAPI:
         }
         return self.get("/set_group_ban", data)
 
-    def set_group_anonymous_ban(self, group_id: int, anonymous: dict, duration: int = 600):
+    def set_group_anonymous_ban(self, group_id: int, anonymous: dict, duration: int = 30 * 60):
         """
         群组匿名用户禁言
         :param group_id: 群号
@@ -526,12 +529,16 @@ class OnebotAPI:
         """
         return self.get("/get_version_info")
 
-    def set_restart(self):
+    def set_restart(self, delay: int = 0):
         """
         重启OneBot
+        :param delay: 延迟时间，单位秒，默认0
         :return:
         """
-        return self.get("/set_restart")
+        data = {
+            "delay": delay
+        }
+        return self.get("/set_restart", data)
 
     def clean_cache(self):
         """
