@@ -10,9 +10,18 @@ thread_pool = None
 logger = get_logger()
 
 
+def shutdown():
+    global thread_pool
+    if isinstance(thread_pool, ThreadPoolExecutor):
+        logger.debug("Closing Thread Pool")
+        thread_pool.shutdown()
+        thread_pool = None
+
+
 def init():
     global thread_pool
     thread_pool = ThreadPoolExecutor(max_workers=GlobalConfig().thread_pool.max_workers)
+    atexit.register(shutdown)
 
 
 def async_task(func):
@@ -25,9 +34,3 @@ def async_task(func):
 
     return wrapper
 
-
-@atexit.register
-def shutdown():
-    if isinstance(thread_pool, ThreadPoolExecutor):
-        logger.debug("Closing Thread Pool")
-        thread_pool.shutdown()

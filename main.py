@@ -63,8 +63,6 @@ if __name__ == '__main__':
 
     from Lib.core import *
 
-    ThreadPool.init()
-
     from Lib import *
 
     # 结束运行
@@ -76,7 +74,9 @@ if __name__ == '__main__':
 
         logger.warning("MuRainBot结束运行！")
         logger.info("再见！\n")
-        os._exit(0)
+
+
+    ThreadPool.init()
 
     Logger.set_logger_level(logging.DEBUG if ConfigManager.GlobalConfig().debug.enable else logging.INFO)
 
