@@ -31,7 +31,7 @@ def load_plugins():
                     os.path.exists(os.path.join(full_path, "__init__.py")) and
                     os.path.isfile(os.path.join(full_path, "__init__.py"))
             ):
-                file_path = os.path.basename(os.path.join(full_path, "__init__.py"))
+                file_path = os.path.join(os.path.join(full_path, "__init__.py"))
                 name = plugin
             elif os.path.isfile(full_path) and full_path.endswith(".py"):
                 file_path = full_path
