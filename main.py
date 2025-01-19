@@ -109,7 +109,7 @@ if __name__ == '__main__':
                 f"{'\n'.join(
                     [
                         f'{_['name']}: {_['info'].NAME}' if 'info' in _ else _['name'] 
-                        for _ in PluginManager.plugins for _ in PluginManager.plugins
+                        for _ in PluginManager.plugins
                      ]
                 )}")
 
