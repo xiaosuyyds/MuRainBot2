@@ -88,6 +88,8 @@ if __name__ == '__main__':
 
     logger = Logger.get_logger()
 
+    logger.info("日志初始化完成，MuRainBot正在启动...")
+
     if ConfigManager.GlobalConfig().account.user_id == 0 or not ConfigManager.GlobalConfig().account.nick_name:
         logger.info("正在尝试获取用户信息...")
         try:

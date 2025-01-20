@@ -39,7 +39,7 @@ def load_plugins():
             else:
                 logger.warning(f"{full_path} 不是一个有效的插件")
                 continue
-            logger.debug(f"加载插件: {file_path}")
+            logger.debug(f"正在加载插件 {file_path}")
             # 创建模块规范
             spec = importlib.util.spec_from_file_location(name, file_path)
 
@@ -64,8 +64,9 @@ def load_plugins():
                 logger.warning(f"插件 {name} 未定义 plugin_info 属性，无法获取插件信息")
 
             plugins.append({"name": name, "plugin": module, "info": plugin_info})
+            logger.debug(f"插件 {name}({file_path}) 加载成功！")
         except Exception as e:
-            logger.error(f"加载插件 {full_path} 失败！ 原因:{repr(e)}")
+            logger.error(f"尝试加载插件 {full_path} 时失败！ 原因:{repr(e)}")
 
 
 @dataclasses.dataclass
