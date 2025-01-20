@@ -345,8 +345,6 @@ class ConnectMetaEvent(LifecycleMetaEvent):
 class HeartbeatMetaEvent(MetaEvent):
     def __init__(self, event_data):
         super().__init__(event_data)
-        self.time: int = int(self["time"])
-        self.self_id: int = int(self["self_id"])
         self.status: dict = self["status"]
         self.interval: int = int(self["interval"])
 

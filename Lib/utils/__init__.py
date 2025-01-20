@@ -5,3 +5,4 @@ from . import QQRichText
 from . import QQDataCacher
 from . import Actions
 from . import EventHandlers
+from . import AutoRestartOnebot
