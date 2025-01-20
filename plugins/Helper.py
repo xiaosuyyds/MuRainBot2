@@ -3,11 +3,9 @@
 #  | |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __|
 #  | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|
-# Code with by Xiaosu. Copyright (c) 2023 Guppy team. All rights reserved.
-# 本代码由由校溯写。版权所有 （c） 2023 Guppy团队。保留所有权利。
 
 from Lib import *
-from Lib.core import PluginManager
+from Lib.core import PluginManager, ConfigManager
 
 logger = Logger.get_logger()
 
@@ -16,13 +14,14 @@ plugin_info = PluginManager.PluginInfo(
     AUTHOR="Xiaosu",
     VERSION="1.0.0",
     DESCRIPTION="用于获取插件帮助信息",
-    HELP_MSG="发送/help或/帮助以获取全部的插件帮助信息"
+    HELP_MSG="发送 /help 或 /帮助 以获取所有插件的帮助信息"
 )
 
 
+@common.function_cache(1)
 def get_help_text():
     plugins = PluginManager.plugins
-    text = "沐云bot帮助"
+    text = f"{ConfigManager.GlobalConfig().account.nick_name} 帮助"
     for plugin in plugins:
         try:
             plugin_info = plugin["info"]
