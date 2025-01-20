@@ -8,7 +8,11 @@ logger = Logger.get_logger()
 
 
 class Rule:
-    pass
+    """
+    Rule基类，请勿直接使用
+    """
+    def match(self, event_data: EventClassifier.Event):
+        pass
 
 
 class KeyValueRule(Rule):
@@ -18,7 +22,7 @@ class KeyValueRule(Rule):
         self.value = value
         self.model = model
         if model == "func" and func is None:
-            raise ValueError("func must be a callable")
+            raise ValueError("if model is func, func must be a callable")
         self.func = func
 
     def match(self, event_data: EventClassifier.Event):
@@ -38,6 +42,7 @@ class KeyValueRule(Rule):
             logger.error(f"Error occurred while matching event {event_data}: {repr(e)}")
             return False
 
+
 class FuncRule(Rule):
     def __init__(self, func):
         self.func = func
@@ -54,7 +59,7 @@ class Matcher:
     def __init__(self):
         self.handlers = []
 
-    def register_handler(self, priority: int = 0, rules: list = None, *args, **kwargs):
+    def register_handler(self, priority: int = 0, rules: list[Rule] = None, *args, **kwargs):
         if rules is None:
             rules = []
         if any(not isinstance(rule, Rule) for rule in rules):
@@ -74,7 +79,7 @@ class Matcher:
                 logger.error(f"Error occurred while matching event {event_data}: {repr(e)}")
 
 
-events_matchers = {}
+events_matchers: dict[str, dict[Type[EventClassifier.Event], list[tuple[int, list[Rule], Matcher]]]] = {}
 
 
 def _on_event(event_data, path, event_type):
@@ -84,7 +89,7 @@ def _on_event(event_data, path, event_type):
             matcher.match(event_data)
 
 
-def on_event(event: Type[EventClassifier.Event], priority: int = 0, rules: list = None):
+def on_event(event: Type[EventClassifier.Event], priority: int = 0, rules: list[Rule] = None):
     if rules is None:
         rules = []
     if any(not isinstance(rule, Rule) for rule in rules):
