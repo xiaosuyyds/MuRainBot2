@@ -10,7 +10,10 @@ NotFetched = type("NotFetched", (), {"__getattr__": lambda _, __: NotFetched,
 api = OnebotAPI.api
 logger = Logger.get_logger()
 
-expire_time = ConfigManager.GlobalConfig().qq_data_cache.expire_time
+if ConfigManager.GlobalConfig().qq_data_cache.enable:
+    expire_time = ConfigManager.GlobalConfig().qq_data_cache.expire_time
+else:
+    expire_time = 0
 
 
 class QQDataItem:
@@ -239,7 +242,7 @@ class QQDataCache:
         self.group_member_info = {}
         self.user_info = {}
         self.max_cache_size = ConfigManager.GlobalConfig().qq_data_cache.max_cache_size
-        self.expire_time = ConfigManager.GlobalConfig().qq_data_cache.expire_time
+        self.expire_time = expire_time
         # 启动垃圾回收线程
         threading.Thread(target=self.scheduled_garbage_collection, daemon=True).start()
 
