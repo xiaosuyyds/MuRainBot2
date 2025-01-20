@@ -1,5 +1,4 @@
-import dataclasses
-from typing import TypedDict, NotRequired, Any, Literal
+from typing import TypedDict, NotRequired, Literal
 
 from ..core import EventManager, ListenerServer
 from . import QQRichText
@@ -13,7 +12,12 @@ class Event(EventManager.Event):
         self.post_type: str = self["post_type"]
 
     def __getitem__(self, item):
+        if item not in self.event_data:
+           raise KeyError(f"{item} not in {self.event_data}")
         return self.event_data.get(item)
+
+    def get(self, key, default=None):
+        return self.event_data.get(key, default)
 
     def __contains__(self, other):
         return other in self.event_data
@@ -350,6 +354,8 @@ class HeartbeatMetaEvent(MetaEvent):
 @EventManager.event_listener(ListenerServer.EscalationEvent)
 def on_escalation(event_data):
     event_data = event_data.event_data
+    event = Event(event_data)
+    event.call()
     for event in events:
         if (
                 event_data["post_type"] == event['post_type'] and
