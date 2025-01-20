@@ -34,11 +34,15 @@ def on_heartbeat(event: EventClassifier.HeartbeatMetaEvent):
 
 def check_heartbeat():
     flag = False
+    interval = 0.1
     while True:
         if heartbeat_interval != -1:
+            interval = heartbeat_interval / 2
             if time.time() - last_heartbeat_time > heartbeat_interval * 2:
                 logger.warning("心跳包超时！请检查 Onebot 实现端是否正常运行！")
                 restart_onebot("心跳包超时")
                 flag = True
             elif flag:
                 logger.info("心跳包间隔已恢复正常")
+
+        time.sleep(interval)

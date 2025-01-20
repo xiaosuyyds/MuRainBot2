@@ -115,6 +115,8 @@ if __name__ == '__main__':
                      ]
                 )}")
 
+    threading.Thread(target=AutoRestartOnebot.check_heartbeat, daemon=True).start()
+
     logger.info("启动监听服务器")
 
     # 禁用werkzeug的日志记录
