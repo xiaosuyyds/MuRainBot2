@@ -57,15 +57,19 @@ class FuncRule(Rule):
 
 
 class CommandRule(Rule):
-    def __init__(self, command: str, aliases: set[str] = None):
+    def __init__(self, command: str, aliases: set[str] = None, command_start: list[str] = None):
         if aliases is None:
             aliases = set()
+        if command_start is None:
+            command_start = ConfigManager.GlobalConfig().command.command_start
         if any(_ in command for _ in ['[', ']']):
             raise ValueError("command cannot contain [ or ]")
         if command in aliases:
             raise ValueError("command cannot be an alias")
+
         self.command = command
         self.aliases = aliases
+        self.command_start = command_start
 
     def match(self, event_data: EventClassifier.MessageEvent):
         if not isinstance(event_data, EventClassifier.MessageEvent):
@@ -77,7 +81,7 @@ class CommandRule(Rule):
         message = str(QQRichText.QQRichText(segments))
         while len(message) > 0 and message[0] == " ":
             message = message[1:]
-        for _ in ConfigManager.GlobalConfig().command.command_start:
+        for _ in self.command_start:
             if message.startswith(_):
                 if len(_) > 0:
                     message = message[len(_):]
