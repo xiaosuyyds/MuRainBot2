@@ -100,6 +100,10 @@ class GlobalConfig(ConfigManager):
     class AutoRestartOnebot:
         enable: bool
 
+    @dataclasses.dataclass
+    class Command:
+        command_start: list[str]
+
     DEFAULT_CONFIG = """# MuRainBot2配置文件
 account:  # 账号相关
   user_id: 0  # QQ账号（留空则自动获取）
@@ -129,6 +133,9 @@ debug:  # 调试模式，若启用框架的日志等级将被设置为debug，�
 
 auto_restart_onebot:  # 在Onebot实现端状态异常时自动重启Onebot实现端（需开启心跳包）
   enable: true  # 是否启用自动重启
+
+command:  # 命令相关
+  command_start: ["/", ""]  # 命令起始符
 
 """
 
@@ -180,6 +187,9 @@ auto_restart_onebot:  # 在Onebot实现端状态异常时自动重启Onebot实�
         )
         self.auto_restart_onebot = self.AutoRestartOnebot(
             enable=self.get("auto_restart_onebot", {}).get("enable", True)
+        )
+        self.command = self.Command(
+            command_start=self.get("command", {}).get("command_start", ["/", ""])
         )
 
 

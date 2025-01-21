@@ -33,15 +33,14 @@ def get_help_text():
     return text
 
 
-rule = EventHandlers.KeyValueRule("message", "/help", "func",
-                                  lambda a, b: a.startswith("/帮助") or a.startswith("/help"))
+rule = EventHandlers.CommandRule("help", aliases={"帮助"})
 
-matcher = EventHandlers.on_event(EventClassifier.GroupMessageEvent, priority=0, rules=[rule])
+matcher = EventHandlers.on_event(EventClassifier.GroupMessageEvent, priority=0, rules=[EventHandlers.to_me, rule])
 
 
 @matcher.register_handler()
 def on_help(event_data):
-    if event_data.message == "/帮助" or event_data.message == "/help":
+    if event_data.message == "帮助" or event_data.message == "help":
         Actions.SendMsg(
             message=QQRichText.QQRichText(
                 QQRichText.Reply(event_data["message_id"]),

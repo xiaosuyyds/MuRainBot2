@@ -1,5 +1,5 @@
-from Lib.core import EventManager
-from Lib.utils import EventClassifier, Logger
+from Lib.core import EventManager, ConfigManager
+from Lib.utils import EventClassifier, Logger, QQRichText
 
 import inspect
 from typing import Literal, Callable, Any, Type
@@ -11,6 +11,7 @@ class Rule:
     """
     Rule基类，请勿直接使用
     """
+
     def match(self, event_data: EventClassifier.Event):
         pass
 
@@ -55,6 +56,58 @@ class FuncRule(Rule):
             return False
 
 
+class CommandRule(Rule):
+    def __init__(self, command: str, aliases: set[str] = None):
+        if aliases is None:
+            aliases = set()
+        if any(_ in command for _ in ['[', ']']):
+            raise ValueError("command cannot contain [ or ]")
+        if command in aliases:
+            raise ValueError("command cannot be an alias")
+        self.command = command
+        self.aliases = aliases
+
+    def match(self, event_data: EventClassifier.MessageEvent):
+        if not isinstance(event_data, EventClassifier.MessageEvent):
+            logger.warning(f"event {event_data} is not a MessageEvent, cannot match command")
+
+        segments = event_data.message.rich_array
+        if isinstance(segments[0], QQRichText.At) and int(segments[0].data.get("qq")) == event_data.self_id:
+            segments = segments[1:]
+        message = str(QQRichText.QQRichText(segments))
+        while len(message) > 0 and message[0] == " ":
+            message = message[1:]
+        for _ in ConfigManager.GlobalConfig().command.command_start:
+            if message.startswith(_):
+                if len(_) > 0:
+                    message = message[len(_):]
+                break
+
+        message = QQRichText.QQRichText(message)
+        string_message = str(message)
+        if string_message.startswith(self.command) or any(string_message.startswith(alias) for alias in self.aliases):
+            event_data.message = message
+            event_data.raw_message = string_message
+            return True
+        return False
+
+
+def _to_me(event_data: EventClassifier.MessageEvent):
+    if not isinstance(event_data, EventClassifier.MessageEvent):
+        logger.warning(f"event {event_data} is not a MessageEvent, cannot match to_me")
+        return False
+    if isinstance(event_data, EventClassifier.PrivateMessageEvent):
+        return True
+    if isinstance(event_data, EventClassifier.GroupMessageEvent):
+        for rich in event_data.message.rich_array:
+            if isinstance(rich, QQRichText.At) and int(rich.data.get("qq")) == event_data.self_id:
+                return True
+    return False
+
+
+to_me = FuncRule(_to_me)
+
+
 class Matcher:
     def __init__(self):
         self.handlers = []
@@ -68,6 +121,7 @@ class Matcher:
         def wrapper(func):
             self.handlers.append((priority, rules, func, args, kwargs))
             return func
+
         return wrapper
 
     def match(self, event_data: EventClassifier.Event):
