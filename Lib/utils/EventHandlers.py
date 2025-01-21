@@ -74,6 +74,7 @@ class CommandRule(Rule):
     def match(self, event_data: EventClassifier.MessageEvent):
         if not isinstance(event_data, EventClassifier.MessageEvent):
             logger.warning(f"event {event_data} is not a MessageEvent, cannot match command")
+            return False
 
         segments = event_data.message.rich_array
         if isinstance(segments[0], QQRichText.At) and int(segments[0].data.get("qq")) == event_data.self_id:
