@@ -1,7 +1,10 @@
 import dataclasses
 import os
 import importlib
+import sys
 import time
+import traceback
+
 from Lib.utils.Logger import get_logger
 from Lib.core.ListenerServer import EscalationEvent
 from Lib.core.EventManager import event_listener
@@ -66,7 +69,10 @@ def load_plugins():
             plugins.append({"name": name, "plugin": module, "info": plugin_info})
             logger.debug(f"插件 {name}({file_path}) 加载成功！")
         except Exception as e:
-            logger.error(f"尝试加载插件 {full_path} 时失败！ 原因:{repr(e)}")
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+
+            logger.error(f"尝试加载插件 {full_path} 时失败！ 原因:{repr(e)}\n"
+                         f"{"".join(traceback.format_exception(exc_type, exc_value, exc_traceback))}")
 
 
 @dataclasses.dataclass
