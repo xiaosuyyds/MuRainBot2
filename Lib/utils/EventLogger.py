@@ -22,7 +22,7 @@ class Rule:
         if self.item_type == "key":
             return self.item in event.event_data and (self.value is None or event.event_data[self.item] == self.value)
         elif self.item_type == "code":
-            return self.item(event)
+            return self.item(event.event_data)
 
     def __repr__(self):
         return f"Rule(item={self.item}, value={self.value})"
@@ -428,7 +428,7 @@ root_node = Node(
                             [
                                 Rule(
                                     lambda event_data:
-                                    event_data["user_id"] == event_data.event_data["operator_id"],
+                                    event_data["user_id"] == event_data["operator_id"],
                                     None
                                 )
                             ],
@@ -448,7 +448,7 @@ root_node = Node(
                             [
                                 Rule(
                                     lambda event_data:
-                                    event_data["user_id"] != event_data.event_data["operator_id"],
+                                    event_data["user_id"] != event_data["operator_id"],
                                     None
                                 )
                             ],
