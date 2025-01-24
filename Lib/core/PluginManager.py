@@ -69,6 +69,11 @@ def load_plugins():
             except AttributeError:
                 logger.warning(f"插件 {name} 未定义 plugin_info 属性，无法获取插件信息")
 
+            if plugin_info.ENABLED is False:
+                logger.warning(f"插件 {name} 已被禁用，将不会被加载")
+                plugins.remove(plugin)
+                continue
+
             plugin["info"] = plugin_info
             plugin["plugin"] = module
             logger.debug(f"插件 {name}({file_path}) 加载成功！")
