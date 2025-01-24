@@ -43,6 +43,9 @@ def load_plugins():
                 logger.warning(f"{full_path} 不是一个有效的插件")
                 continue
             logger.debug(f"正在加载插件 {file_path}")
+            plugin = {"name": name, "plugin": None, "info": None, "file_path": file_path}
+            plugins.append(plugin)
+
             # 创建模块规范
             spec = importlib.util.spec_from_file_location(name, file_path)
 
@@ -66,13 +69,16 @@ def load_plugins():
             except AttributeError:
                 logger.warning(f"插件 {name} 未定义 plugin_info 属性，无法获取插件信息")
 
-            plugins.append({"name": name, "plugin": module, "info": plugin_info})
+            plugin["info"] = plugin_info
+            plugin["plugin"] = module
             logger.debug(f"插件 {name}({file_path}) 加载成功！")
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
 
             logger.error(f"尝试加载插件 {full_path} 时失败！ 原因:{repr(e)}\n"
                          f"{"".join(traceback.format_exception(exc_type, exc_value, exc_traceback))}")
+
+            plugins.remove(plugin)
 
 
 @dataclasses.dataclass

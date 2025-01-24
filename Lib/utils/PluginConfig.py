@@ -1,14 +1,20 @@
 import traceback
 
-from Lib.core import ConfigManager
+from Lib.core import ConfigManager, PluginManager
 from Lib.constants import *
 
 
 class PluginConfig(ConfigManager.ConfigManager):
     def __init__(
             self,
-            plugin_name: str = os.path.splitext(os.path.split(traceback.extract_stack()[-2].filename)[-1])[0],
+            plugin_name: str = None,
             default_config: str | dict = None
     ):
+        if plugin_name is None:
+            plugin_path = traceback.extract_stack()[-2].filename
+            for plugin in PluginManager.plugins:
+                if os.path.samefile(plugin_path, plugin["file_path"]):
+                    plugin_name = plugin["name"]
+                    break
         super().__init__(os.path.join(PLUGIN_CONFIGS_PATH, f"{plugin_name}.yml"), default_config)
         self.plugin_name = plugin_name
