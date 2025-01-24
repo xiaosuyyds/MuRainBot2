@@ -12,12 +12,15 @@ from Lib.constants import *
 
 logger = get_logger()
 
-
 plugins: list[dict] = []
 has_main_func_plugins: list[dict] = []
 
 if not os.path.exists(PLUGINS_PATH):
     os.makedirs(PLUGINS_PATH)
+
+
+class NotEnabledPluginException(Exception):
+    pass
 
 
 def load_plugins():
@@ -69,14 +72,14 @@ def load_plugins():
             except AttributeError:
                 logger.warning(f"插件 {name} 未定义 plugin_info 属性，无法获取插件信息")
 
-            if plugin_info.ENABLED is False:
-                logger.warning(f"插件 {name} 已被禁用，将不会被加载")
-                plugins.remove(plugin)
-                continue
-
             plugin["info"] = plugin_info
             plugin["plugin"] = module
             logger.debug(f"插件 {name}({file_path}) 加载成功！")
+        except NotEnabledPluginException:
+            logger.warning(f"插件 {full_path} 已被禁用，将不会被加载")
+            plugins.remove(plugin)
+            continue
+
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
 
@@ -95,6 +98,10 @@ class PluginInfo:
     HELP_MSG: str  # 插件帮助
     ENABLED: bool = True  # 插件是否启用
     IS_HIDDEN: bool = False  # 插件是否隐藏（在/help命令中）
+
+    def __post_init__(self):
+        if self.ENABLED is not True:
+            raise NotEnabledPluginException
 
 
 # 该方法已被弃用
