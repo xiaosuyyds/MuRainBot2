@@ -58,6 +58,10 @@ MRB2的插件，统一放在`plugins`文件夹中，每个插件都是一个pyth
 
 目前重构尚未完成，请勿现在在将框架用于实际部署。
 
+如果使用时遇到问题，请将config.yml的`debug.enable`设置为`true`，然后复现bug，
+并检测该问题是否是你使用的Onebot实现端的问题，如果是，请自行在你使用的Onebot实现端进行反馈。
+如果不是，将完整 完整 完整的将日志信息（部分不重要的敏感信息（如QQ群号、QQ号等）可自行遮挡） 和错误描述发到[issues](https://github.com/MuRainBot/MuRainBot2/issues/new/choose)。
+
 ### 目录结构
 
 
