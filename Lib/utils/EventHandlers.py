@@ -62,7 +62,7 @@ class CommandRule(Rule):
             aliases = set()
         if command_start is None:
             command_start = ConfigManager.GlobalConfig().command.command_start
-        if any(_ in command for _ in ['[', ']']):
+        if any(_ in command for _ in ['[', ']'] + command_start):
             raise ValueError("command cannot contain [ or ]")
         if command in aliases:
             raise ValueError("command cannot be an alias")
@@ -78,7 +78,11 @@ class CommandRule(Rule):
 
         flag = False
         segments = event_data.message.rich_array
-        if isinstance(segments[0], QQRichText.At) and int(segments[0].data.get("qq")) == event_data.self_id:
+        if (
+                len(segments) > 0 and
+                isinstance(segments[0], QQRichText.At) and
+                int(segments[0].data.get("qq")) == event_data.self_id
+        ):
             segments = segments[1:]
             flag = True
         message = str(QQRichText.QQRichText(segments))
@@ -87,13 +91,19 @@ class CommandRule(Rule):
 
         message = QQRichText.QQRichText(message)
         string_message = str(message)
-        commands = [self.command + _ for _ in self.command_start]
+        commands = [_ + self.command for _ in self.command_start]
         if flag:
             # 如果消息前面有at，则不需要命令起始符
             commands += [self.command] + [alias for alias in self.aliases]
 
         commands += [_ + alias for alias in self.aliases for _ in self.command_start]
+
         if any(string_message.startswith(_) for _ in commands):
+            for start in self.command_start:
+                if string_message.startswith(start):
+                    string_message = string_message[len(start):]
+                    break
+            message = QQRichText.QQRichText(string_message)
             event_data.message = message
             event_data.raw_message = string_message
             return True
