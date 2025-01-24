@@ -4,7 +4,7 @@ import yaml
 from ..constants import *
 from ..utils import Logger
 
-logger = Logger.logger
+logger = Logger.get_logger()
 
 
 class ConfigManager:
@@ -152,6 +152,7 @@ command:  # 命令相关
         self.qq_data_cache: GlobalConfig.QQDataCache = None
         self.debug: GlobalConfig.Debug = None
         self.auto_restart_onebot: GlobalConfig.AutoRestartOnebot = None
+        self.command: GlobalConfig.Command = None
         if not self._init_flag:
             self._init_flag = True
             super().__init__(CONFIG_PATH, self.DEFAULT_CONFIG)
