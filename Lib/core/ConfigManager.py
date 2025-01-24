@@ -135,7 +135,7 @@ auto_restart_onebot:  # 在Onebot实现端状态异常时自动重启Onebot实�
   enable: true  # 是否启用自动重启
 
 command:  # 命令相关
-  command_start: ["/", ""]  # 命令起始符
+  command_start: ["/"]  # 命令起始符
 
 """
 
@@ -190,7 +190,7 @@ command:  # 命令相关
             enable=self.get("auto_restart_onebot", {}).get("enable", True)
         )
         self.command = self.Command(
-            command_start=self.get("command", {}).get("command_start", ["/", ""])
+            command_start=self.get("command", {}).get("command_start", ["/"])
         )
 
 
