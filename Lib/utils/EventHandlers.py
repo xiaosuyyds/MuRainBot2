@@ -76,21 +76,24 @@ class CommandRule(Rule):
             logger.warning(f"event {event_data} is not a MessageEvent, cannot match command")
             return False
 
+        flag = False
         segments = event_data.message.rich_array
         if isinstance(segments[0], QQRichText.At) and int(segments[0].data.get("qq")) == event_data.self_id:
             segments = segments[1:]
+            flag = True
         message = str(QQRichText.QQRichText(segments))
         while len(message) > 0 and message[0] == " ":
             message = message[1:]
-        for _ in self.command_start:
-            if message.startswith(_):
-                if len(_) > 0:
-                    message = message[len(_):]
-                break
 
         message = QQRichText.QQRichText(message)
         string_message = str(message)
-        if string_message.startswith(self.command) or any(string_message.startswith(alias) for alias in self.aliases):
+        commands = [self.command + _ for _ in self.command_start]
+        if flag:
+            # 如果消息前面有at，则不需要命令起始符
+            commands += [self.command] + [alias for alias in self.aliases]
+
+        commands += [_ + alias for alias in self.aliases for _ in self.command_start]
+        if any(string_message.startswith(_) for _ in commands):
             event_data.message = message
             event_data.raw_message = string_message
             return True

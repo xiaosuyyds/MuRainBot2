@@ -35,7 +35,7 @@ def get_help_text():
 
 rule = EventHandlers.CommandRule("help", aliases={"帮助"})
 
-matcher = EventHandlers.on_event(EventClassifier.GroupMessageEvent, priority=0, rules=[EventHandlers.to_me, rule])
+matcher = EventHandlers.on_event(EventClassifier.GroupMessageEvent, priority=0, rules=[rule])
 
 
 @matcher.register_handler()
