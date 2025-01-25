@@ -103,6 +103,10 @@ class CommandRule(Rule):
                 if string_message.startswith(start):
                     string_message = string_message[len(start):]
                     break
+            for alias in self.aliases:
+                if string_message.startswith(alias):
+                    string_message = self.command + string_message[len(alias):]
+                    break
             message = QQRichText.QQRichText(string_message)
             event_data.message = message
             event_data.raw_message = string_message

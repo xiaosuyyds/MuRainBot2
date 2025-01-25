@@ -40,7 +40,7 @@ matcher = EventHandlers.on_event(EventClassifier.GroupMessageEvent, priority=0, 
 
 @matcher.register_handler()
 def on_help(event_data):
-    if event_data.message == "帮助" or event_data.message == "help":
+    if event_data.message == "help":
         Actions.SendMsg(
             message=QQRichText.QQRichText(
                 QQRichText.Reply(event_data["message_id"]),
