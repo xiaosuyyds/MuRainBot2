@@ -110,7 +110,7 @@ if __name__ == '__main__':
                 f"{': \n' if len(PluginManager.plugins) >= 1 else ''}"
                 f"{'\n'.join(
                     [
-                        f'{_['name']}: {_['info'].NAME}' if 'info' in _ else _['name'] 
+                        f'{_['name']}: {_['info'].NAME}' if 'info' in _ and _['info'] else _['name'] 
                         for _ in PluginManager.plugins
                      ]
                 )}")
