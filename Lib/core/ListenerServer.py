@@ -1,3 +1,7 @@
+"""
+监听服务器
+"""
+
 from ..utils import Logger
 from .ConfigManager import GlobalConfig
 from Lib.core import EventManager
@@ -20,6 +24,10 @@ class EscalationEvent(EventManager.Event):
 
 @app.route("/", methods=["POST"])
 def post_data():
+    """
+    上报处理
+    @return: 204
+    """
     data = request.get_json()
     logger.debug("收到上报: %s" % data)
     if "self" in data and GlobalConfig().account.user_id != 0 and data.get("self") != GlobalConfig().account.user_id:
@@ -31,6 +39,10 @@ def post_data():
 
 
 class ThreadPoolWSGIServer(WSGIServer):
+    """
+    线程池WSGI服务器
+    """
+
     def __init__(self, server_address, app=None, max_workers=10, passthrough_errors=False,
                  handler_class=WSGIRequestHandler, **kwargs):
         super().__init__(server_address, handler_class, **kwargs)
@@ -43,11 +55,17 @@ class ThreadPoolWSGIServer(WSGIServer):
         self.passthrough_errors = passthrough_errors
 
     def handle_request(self):
+        """
+        处理请求
+        """
         request, client_address = self.get_request()
         if self.verify_request(request, client_address):
             self.executor.submit(self.process_request, request, client_address)
 
     def serve_forever(self):
+        """
+        启动服务器
+        """
         logger.info("监听服务器启动成功！")
         while True:
             self.handle_request()

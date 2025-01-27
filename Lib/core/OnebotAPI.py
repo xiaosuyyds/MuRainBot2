@@ -28,6 +28,9 @@ class CallAPIEvent(EventManager.Event):
 
 
 class OnebotAPI:
+    """
+    OnebotAPI
+    """
     def __init__(self, host: str = None, port: int = None,
                  original: bool = False):
         """
@@ -54,6 +57,12 @@ class OnebotAPI:
         return self.url
 
     def set_node(self, node: str, data: dict = None):
+        """
+        设置节点和数据
+        @param node: 节点
+        @param data: 数据
+        @return:
+        """
         if data is None:
             data = {}
         self.node = node
@@ -61,14 +70,32 @@ class OnebotAPI:
         return self
 
     def set_url(self, host: str, port: int):
+        """
+        设置url
+        @param host: 请求的host
+        @param port: 请求的端口
+        @return:
+        """
         self.host = host
         self.port = port
 
     def set_data(self, data: dict):
+        """
+        设置数据
+        @param data: 数据
+        @return:
+        """
         self.data = data
         return self
 
     def get(self, node: str = "", data: dict = None, original: bool = None):
+        """
+        调用api
+        @param node: 节点
+        @param data: 数据
+        @param original: 是否返回全部json（默认只返回data内）
+        @return:
+        """
         if node != "":
             self.node = node
         if data is not None:

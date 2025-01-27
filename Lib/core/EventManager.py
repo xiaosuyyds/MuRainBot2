@@ -1,3 +1,7 @@
+"""
+事件管理器，用于管理事件与事件监听器
+"""
+
 from typing import Any, TypeVar
 
 from collections.abc import Callable
@@ -51,6 +55,9 @@ T = TypeVar('T', bound='_Event')
 # 定义事件监听器的数据类
 @dataclass(order=True)
 class EventListener:
+    """
+    事件监听器数据类
+    """
     priority: int  # 优先级，默认为排序的依据
     func: Callable[[T, ...], Any]  # 监听器函数
     kwargs: dict[str, Any] = field(default_factory=dict)  # 附加参数
@@ -118,6 +125,7 @@ class Event(_Event):
 
 if __name__ == "__main__":
     # 示例：自定义事件
+    """
     class MyEvent(Event):
         def __init__(self, message):
             self.message = message
@@ -140,3 +148,4 @@ if __name__ == "__main__":
     # 触发事件
     event = MyEvent("Hello, World")
     event.call()
+"""

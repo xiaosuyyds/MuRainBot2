@@ -1,3 +1,7 @@
+"""
+配置管理器
+"""
+
 import dataclasses
 
 import yaml
@@ -8,6 +12,9 @@ logger = Logger.get_logger()
 
 
 class ConfigManager:
+    """
+    配置管理器
+    """
     def __init__(self, config_path, default_config: str | dict = None):
         self.config_path = config_path
         self.default_config = default_config
@@ -15,6 +22,10 @@ class ConfigManager:
         self.load_config()
 
     def load_config(self):
+        """
+        加载配置文件
+        @return:
+        """
         if os.path.exists(self.config_path):
             try:
                 with open(self.config_path, encoding="utf-8") as f:
@@ -50,58 +61,101 @@ class ConfigManager:
         pass
 
     def save_config(self):
+        """
+        保存配置文件
+        @return:
+        """
         with open(self.config_path, "w", encoding="utf-8") as f:
             yaml.safe_dump(self.config, f)
 
     def get(self, key, default=None):
+        """
+        获取配置项
+        @param key: 配置项键
+        @param default: 默认值
+        @return: 配置项值
+        """
         return self.config.get(key, default)
 
     def set(self, key, value):
+        """
+        设置配置项
+        @param key:  配置项键
+        @param value: 配置项值
+        @return:
+        """
         self.config[key] = value
         self.init()
 
 
 class GlobalConfig(ConfigManager):
+    """
+    MRB2配置管理器
+    """
     _instance = None
     _init_flag = False
 
     @dataclasses.dataclass
     class Account:
+        """
+        账号相关
+        """
         user_id: int
         nick_name: str
         bot_admin: list
 
     @dataclasses.dataclass
     class Api:
+        """
+        Api设置
+        """
         host: str
         port: int
 
     @dataclasses.dataclass
     class Server:
+        """
+        监听服务器设置
+        """
         host: str
         port: int
         max_works: int
 
     @dataclasses.dataclass
     class ThreadPool:
+        """
+        线程池相关
+        """
         max_workers: int
 
     @dataclasses.dataclass
     class QQDataCache:
+        """
+        QQ数据缓存设置
+        """
         enable: bool
         expire_time: int
         max_cache_size: int
 
     @dataclasses.dataclass
     class Debug:
+        """
+        调试模式，若启用框架的日志等级将被设置为debug，不建议在生产环境开启
+        """
         enable: bool
 
     @dataclasses.dataclass
     class AutoRestartOnebot:
+        """
+        在Onebot实现端状态异常时自动重启Onebot实现端（需开启心跳包）
+        """
         enable: bool
 
     @dataclasses.dataclass
     class Command:
+        """
+        命令相关
+        """
         command_start: list[str]
 
     DEFAULT_CONFIG = """# MuRainBot2配置文件

@@ -1,3 +1,7 @@
+"""
+自动重启 Onebot 实现端
+"""
+
 from Lib.utils import EventClassifier, Logger, Actions
 from Lib.core import ConfigManager, EventManager, ThreadPool
 
@@ -10,6 +14,11 @@ logger = Logger.get_logger()
 
 @ThreadPool.async_task
 def restart_onebot(message):
+    """
+    重启 Onebot 实现端
+    @param message: 触发重启的原因
+    @return: None
+    """
     if ConfigManager.GlobalConfig().auto_restart_onebot.enable is False:
         logger.warning(f"检测到 {message}，由于未启用自动重启功能，将不会自动重启 Onebot 实现端")
         return
@@ -23,6 +32,10 @@ def restart_onebot(message):
 
 @EventManager.event_listener(EventClassifier.HeartbeatMetaEvent)
 def on_heartbeat(event: EventClassifier.HeartbeatMetaEvent):
+    """
+    心跳包事件监听器
+    @param event: 心跳包事件
+    """
     global heartbeat_interval, last_heartbeat_time
     heartbeat_interval = event.interval / 1000
     last_heartbeat_time = time.time()
@@ -33,6 +46,9 @@ def on_heartbeat(event: EventClassifier.HeartbeatMetaEvent):
 
 
 def check_heartbeat():
+    """
+    心跳包检查线程
+    """
     flag = False
     interval = 0.1
     while True:

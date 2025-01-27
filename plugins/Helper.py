@@ -1,3 +1,8 @@
+"""
+MRB2示例插件 - 帮助插件
+"""
+
+
 #   __  __       ____       _         ____        _
 #  |  \/  |_   _|  _ \ __ _(_)_ __   | __ )  ___ | |_
 #  | |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __|
@@ -20,6 +25,10 @@ plugin_info = PluginManager.PluginInfo(
 
 @common.function_cache(1)
 def get_help_text():
+    """
+    获取所有插件的帮助信息
+    @return: 帮助信息
+    """
     plugins = PluginManager.plugins
     text = f"{ConfigManager.GlobalConfig().account.nick_name} 帮助"
     for plugin in plugins:
@@ -40,6 +49,11 @@ matcher = EventHandlers.on_event(EventClassifier.GroupMessageEvent, priority=0, 
 
 @matcher.register_handler()
 def on_help(event_data):
+    """
+    帮助命令处理
+    @param event_data: 事件数据
+    @return: None
+    """
     if event_data.message == "help":
         Actions.SendMsg(
             message=QQRichText.QQRichText(
@@ -52,6 +66,8 @@ def on_help(event_data):
         for plugin in PluginManager.plugins:
             try:
                 plugin_info = plugin["info"]
+                if plugin_info is None:
+                    continue
                 if plugin_info.NAME.lower() == plugin_name and plugin_info.IS_HIDDEN is False:
                     Actions.SendMsg(
                         message=QQRichText.QQRichText(
@@ -60,8 +76,9 @@ def on_help(event_data):
                         ), group_id=event_data["group_id"]
                     ).call()
                     return
-            except:
-                pass
+            except Exception as e:
+                logger.warning(f"获取插件{plugin['name']}信息时发生错误: {repr(e)}")
+                continue
         else:
             Actions.SendMsg(
                 message=QQRichText.QQRichText(

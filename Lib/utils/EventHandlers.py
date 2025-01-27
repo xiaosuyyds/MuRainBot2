@@ -1,3 +1,7 @@
+"""
+事件处理器
+"""
+
 from Lib.core import EventManager, ConfigManager
 from Lib.utils import EventClassifier, Logger, QQRichText
 
@@ -13,10 +17,18 @@ class Rule:
     """
 
     def match(self, event_data: EventClassifier.Event):
+        """
+        匹配事件
+        @param event_data: 事件数据
+        @return: 是否匹配到事件
+        """
         pass
 
 
 class KeyValueRule(Rule):
+    """
+    键值规则
+    """
     def __init__(self, key, value, model: Literal["eq", "ne", "in", "not in", "func"],
                  func: Callable[[Any, Any], bool] = None):
         self.key = key
@@ -45,6 +57,9 @@ class KeyValueRule(Rule):
 
 
 class FuncRule(Rule):
+    """
+    函数规则
+    """
     def __init__(self, func):
         self.func = func
 
@@ -57,6 +72,9 @@ class FuncRule(Rule):
 
 
 class CommandRule(Rule):
+    """
+    命令规则
+    """
     def __init__(self, command: str, aliases: set[str] = None, command_start: list[str] = None):
         if aliases is None:
             aliases = set()
@@ -115,6 +133,11 @@ class CommandRule(Rule):
 
 
 def _to_me(event_data: EventClassifier.MessageEvent):
+    """
+    判断是否是@自己或是私聊
+    @param event_data: 事件数据
+    @return: 是否是@自己或是私聊
+    """
     if not isinstance(event_data, EventClassifier.MessageEvent):
         logger.warning(f"event {event_data} is not a MessageEvent, cannot match to_me")
         return False
@@ -131,10 +154,18 @@ to_me = FuncRule(_to_me)
 
 
 class Matcher:
+    """
+    事件处理器
+    """
     def __init__(self):
         self.handlers = []
 
     def register_handler(self, priority: int = 0, rules: list[Rule] = None, *args, **kwargs):
+        """
+        注册事件处理器
+        @param priority: 事件优先级
+        @param rules: 匹配规则
+        """
         if rules is None:
             rules = []
         if any(not isinstance(rule, Rule) for rule in rules):
@@ -147,6 +178,10 @@ class Matcher:
         return wrapper
 
     def match(self, event_data: EventClassifier.Event):
+        """
+        匹配事件处理器
+        @param event_data: 事件数据
+        """
         for priority, rules, handler, args, kwargs in sorted(self.handlers, key=lambda x: x[0], reverse=True):
             try:
                 if all(rule.match(event_data) for rule in rules):
@@ -166,6 +201,13 @@ def _on_event(event_data, path, event_type):
 
 
 def on_event(event: Type[EventClassifier.Event], priority: int = 0, rules: list[Rule] = None):
+    """
+    注册事件处理器
+    @param event: 事件类型
+    @param priority: 事件优先级
+    @param rules: 匹配规则
+    @return: 事件处理器
+    """
     if rules is None:
         rules = []
     if any(not isinstance(rule, Rule) for rule in rules):

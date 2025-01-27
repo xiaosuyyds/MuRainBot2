@@ -1,3 +1,6 @@
+"""
+QQ数据缓存
+"""
 import time
 import threading
 
@@ -17,16 +20,26 @@ else:
 
 
 class QQDataItem:
+    """
+    QQ数据缓存类
+    """
     def __init__(self):
         self._data = NotFetched  # 数据
         self.last_update = time.time()  # 最后刷新时间
         self.last_use = -1  # 最后被使用时间（数据被使用）
 
     def refresh_cache(self):
+        """
+        刷新缓存
+        @return:
+        """
         self.last_update = time.time()
 
 
 class UserData(QQDataItem):
+    """
+    QQ用户数据缓存类
+    """
     def __init__(
             self,
             user_id: int,
@@ -48,6 +61,10 @@ class UserData(QQDataItem):
         }
 
     def refresh_cache(self):
+        """
+        刷新缓存
+        @return:
+        """
         try:
             data = api.get_stranger_info(self._user_id)
             for k in data:
@@ -89,6 +106,10 @@ class UserData(QQDataItem):
         return self._data.get(item)
 
     def get_nickname(self) -> str:
+        """
+        获取昵称（如果有备注名优先返回备注名）
+        @return:
+        """
         return self.remark or self.nickname
 
     def __repr__(self):
@@ -96,6 +117,9 @@ class UserData(QQDataItem):
 
 
 class GroupMemberData(QQDataItem):
+    """
+    QQ群成员数据缓存类
+    """
     def __init__(
             self,
             group_id: int,
@@ -136,6 +160,10 @@ class GroupMemberData(QQDataItem):
         }
 
     def refresh_cache(self):
+        """
+        刷新缓存
+        @return:
+        """
         try:
             data = api.get_group_member_info(self._group_id, self._user_id, no_cache=True)
             for k in data:
@@ -167,10 +195,17 @@ class GroupMemberData(QQDataItem):
         return f"GroupMemberData(group_id={self._group_id}, user_id={self._user_id})"
 
     def get_nickname(self):
+        """
+        获取群名片（如果有群名片优先返回群名片）
+        @return:
+        """
         return self.card or self.nickname
 
 
 class GroupData(QQDataItem):
+    """
+    QQ群数据缓存类
+    """
     def __init__(
             self,
             group_id: int,
@@ -189,6 +224,10 @@ class GroupData(QQDataItem):
         }
 
     def refresh_cache(self):
+        """
+        刷新缓存
+        @return:
+        """
         try:
             data = api.get_group_info(group_id=self._group_id, no_cache=True)
             for k in data:
@@ -230,6 +269,9 @@ class GroupData(QQDataItem):
 
 
 class QQDataCache:
+    """
+    QQ数据缓存类
+    """
     _instance = None
 
     def __new__(cls):
@@ -247,6 +289,11 @@ class QQDataCache:
         threading.Thread(target=self.scheduled_garbage_collection, daemon=True).start()
 
     def get_user_info(self, user_id: int, *args, **kwargs) -> UserData:
+        """
+        获取用户信息
+        @param user_id: 用户ID
+        @return:
+        """
         if user_id not in self.user_info:
             data = UserData(user_id, *args, **kwargs)
             self.user_info[user_id] = data
@@ -255,6 +302,11 @@ class QQDataCache:
         return data
 
     def get_group_info(self, group_id: int, *args, **kwargs) -> GroupData:
+        """
+        获取群信息
+        @param group_id: 群号
+        @return:
+        """
         if group_id not in self.group_info:
             data = GroupData(group_id, *args, **kwargs)
             self.group_info[group_id] = data
@@ -263,6 +315,12 @@ class QQDataCache:
         return data
 
     def get_group_member_info(self, group_id: int, user_id: int, *args, **kwargs) -> GroupMemberData:
+        """
+        获取群成员信息
+        @param group_id: 群号
+        @param user_id: 用户ID
+        @return:
+        """
         if group_id not in self.group_member_info:
             self.group_member_info[group_id] = {}
 
@@ -274,7 +332,10 @@ class QQDataCache:
         return data
 
     def garbage_collection(self):
-        # 垃圾回收
+        """
+        垃圾回收
+        @return:
+        """
         for k in list(self.group_member_info.keys()):
             group_member_items = list(zip(self.group_member_info[k].keys(), self.group_member_info[k].values()))
             max_last_use_time = max([item[1].last_use for item in group_member_items])
@@ -304,6 +365,10 @@ class QQDataCache:
         del user_items
 
     def scheduled_garbage_collection(self):
+        """
+        定时垃圾回收
+        @return:
+        """
         t = 0
         while True:
             time.sleep(60)

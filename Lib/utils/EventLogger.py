@@ -1,3 +1,7 @@
+"""
+事件日志记录器
+"""
+
 from collections.abc import Callable
 
 from . import Logger, QQDataCacher, QQRichText
@@ -8,6 +12,9 @@ logger = Logger.get_logger()
 
 
 class Rule:
+    """
+    事件规则
+    """
     def __init__(self, item: str | Callable[[ListenerServer.EscalationEvent], bool], value):
         self.item = item
         self.value = value
@@ -19,6 +26,11 @@ class Rule:
             raise TypeError("Rule item must be str or callable")
 
     def is_valid(self, event: ListenerServer.EscalationEvent) -> bool:
+        """
+        判断事件是否满足规则
+        @param event: 事件
+        @return: bool
+        """
         if self.item_type == "key":
             return self.item in event.event_data and (self.value is None or event.event_data[self.item] == self.value)
         elif self.item_type == "code":
@@ -29,6 +41,9 @@ class Rule:
 
 
 class Node:
+    """
+    事件节点
+    """
     def __init__(self, rules: list[Rule], value: str | Callable | list):
         self.rules: list[Rule] = rules
         if isinstance(value, Node):
@@ -49,6 +64,11 @@ class Node:
             raise TypeError("Node value must be Node or list of Node or callable or str")
 
     def is_valid(self, event: ListenerServer.EscalationEvent) -> bool:
+        """
+        判断事件是否满足节点要求
+        @param event: 事件
+        @return: bool
+        """
         return all(rule.is_valid(event) for rule in self.rules)
 
     def __repr__(self):
@@ -647,6 +667,12 @@ root_node = Node(
 
 
 def run_node(node: Node, event: ListenerServer.EscalationEvent):
+    """
+    运行节点
+    @param node: 节点
+    @param event: 事件
+    @return: 是否匹配到事件
+    """
     flag = False
     if node.is_valid(event):
         if node.value_type == "code":
@@ -662,6 +688,11 @@ def run_node(node: Node, event: ListenerServer.EscalationEvent):
 
 @EventManager.event_listener(ListenerServer.EscalationEvent)
 def on_escalation(event):
+    """
+    事件记录
+    @param event: 事件
+    @return: None
+    """
     flag = run_node(root_node, event)
     if not flag:
         logger.warning(f"未匹配到任何事件处理器，未知的上报: {event.event_data}")

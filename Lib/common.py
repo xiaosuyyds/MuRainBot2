@@ -1,3 +1,7 @@
+"""
+工具
+"""
+
 import shutil
 import sys
 import time
@@ -13,6 +17,9 @@ logger = Logger.get_logger()
 
 
 class LimitedSizeDict(OrderedDict):
+    """
+    带有限制大小的字典
+    """
     def __init__(self, max_size):
         self._max_size = max_size
         super().__init__()
@@ -27,6 +34,10 @@ class LimitedSizeDict(OrderedDict):
 
 
 def restart() -> None:
+    """
+    MRB2重启
+    @return: None
+    """
     # 获取当前解释器路径
     p = sys.executable
     try:
@@ -39,6 +50,16 @@ def restart() -> None:
 
 def download_file_to_cache(url: str, headers=None, file_name: str = "",
                            download_path: str = None, stream=False, fake_headers: bool = True) -> str | None:
+    """
+    下载文件到缓存
+    @param url: 下载的url
+    @param headers: 下载请求的请求头
+    @param file_name: 文件名
+    @param download_path: 下载路径
+    @param stream: 是否使用流式传输
+    @param fake_headers: 是否使用自动生成的假请求头
+    @return: 文件路径
+    """
     if headers is None:
         headers = {}
 
@@ -99,6 +120,10 @@ def download_file_to_cache(url: str, headers=None, file_name: str = "",
 
 # 删除缓存文件
 def clean_cache() -> None:
+    """
+    清理缓存
+    @return:
+    """
     if os.path.exists(CACHE_PATH):
         try:
             shutil.rmtree(CACHE_PATH, ignore_errors=True)
@@ -108,9 +133,20 @@ def clean_cache() -> None:
 
 # 函数缓存
 def function_cache(max_size: int, expiration_time: int = -1):
+    """
+    函数缓存
+    @param max_size: 最大大小
+    @param expiration_time: 过期时间
+    @return:
+    """
     cache = LimitedSizeDict(max_size)
 
     def cache_decorator(func):
+        """
+        缓存装饰器
+        @param func:
+        @return:
+        """
         def wrapper(*args, **kwargs):
             key = str(func.__name__) + str(args) + str(kwargs)
             if key in cache and (expiration_time == -1 or time.time() - cache[key][1] < expiration_time):

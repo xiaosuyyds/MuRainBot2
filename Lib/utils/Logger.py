@@ -1,3 +1,7 @@
+"""
+日志记录器
+"""
+
 import logging
 import logging.handlers as handlers
 import sys
@@ -10,6 +14,12 @@ logger: logging.Logger = None
 
 
 def init(logs_path: str = LOGS_PATH, logger_level: int = logging.INFO):
+    """
+    初始化日志记录器
+    @param logs_path:
+    @param logger_level:
+    @return:
+    """
     global logger
 
     if logger is not None:
@@ -45,6 +55,11 @@ def init(logs_path: str = LOGS_PATH, logger_level: int = logging.INFO):
         os.makedirs(logs_path)
 
     def namer(filename):
+        """
+        生成文件名
+        @param filename: 文件名
+        @return: 文件名
+        """
         dir_name, base_name = os.path.split(filename)
         base_name = base_name.replace(log_name + '.', "")
         rotation_filename = os.path.join(dir_name, base_name)
@@ -59,12 +74,21 @@ def init(logs_path: str = LOGS_PATH, logger_level: int = logging.INFO):
 
 
 def set_logger_level(level: int):
+    """
+    设置日志级别
+    @param level: 日志级别
+    @return: None
+    """
     global logger
     logger.setLevel(level)
     coloredlogs.set_level(level)
 
 
 def get_logger():
+    """
+    获取日志记录器
+    @return: Logger
+    """
     if not logger:
         init()
     return logger

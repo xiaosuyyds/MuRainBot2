@@ -1,4 +1,8 @@
-# Created by BigCookie233
+"""
+ThreadPool - 线程池
+Created by BigCookie233
+"""
+
 import sys
 import traceback
 from concurrent.futures import ThreadPoolExecutor
@@ -12,6 +16,9 @@ logger = get_logger()
 
 
 def shutdown():
+    """
+    关闭线程池
+    """
     global thread_pool
     if isinstance(thread_pool, ThreadPoolExecutor):
         logger.debug("Closing Thread Pool")
@@ -20,6 +27,10 @@ def shutdown():
 
 
 def init():
+    """
+    初始化线程池
+    @return: None
+    """
     global thread_pool
     thread_pool = ThreadPoolExecutor(max_workers=GlobalConfig().thread_pool.max_workers)
     atexit.register(shutdown)
@@ -39,6 +50,11 @@ def _wrapper(func, *args, **kwargs):
 
 
 def async_task(func):
+    """
+    异步任务装饰器
+    @param func:
+    @return:
+    """
     def wrapper(*args, **kwargs):
         if isinstance(thread_pool, ThreadPoolExecutor):
             return thread_pool.submit(_wrapper, func, *args, **kwargs)
@@ -47,4 +63,3 @@ def async_task(func):
             return func(*args, **kwargs)
 
     return wrapper
-

@@ -1,14 +1,16 @@
+"""
+插件管理器
+"""
+
 import dataclasses
-import os
 import importlib
 import sys
-import time
 import traceback
 
-from Lib.utils.Logger import get_logger
-from Lib.core.ListenerServer import EscalationEvent
-from Lib.core.EventManager import event_listener
 from Lib.constants import *
+from Lib.core.EventManager import event_listener
+from Lib.core.ListenerServer import EscalationEvent
+from Lib.utils.Logger import get_logger
 
 logger = get_logger()
 
@@ -20,10 +22,16 @@ if not os.path.exists(PLUGINS_PATH):
 
 
 class NotEnabledPluginException(Exception):
+    """
+    插件未启用的异常
+    """
     pass
 
 
 def load_plugins():
+    """
+    加载插件
+    """
     global plugins
     plugins = []
     # 获取插件目录下的所有文件
@@ -91,6 +99,9 @@ def load_plugins():
 
 @dataclasses.dataclass
 class PluginInfo:
+    """
+    插件信息
+    """
     NAME: str  # 插件名称
     AUTHOR: str  # 插件作者
     VERSION: str  # 插件版本
@@ -106,6 +117,10 @@ class PluginInfo:
 
 # 该方法已被弃用
 def run_plugin_main(event_data):
+    """
+    运行插件的main函数
+    @param event_data: 事件数据
+    """
     global has_main_func_plugins
     for plugin in has_main_func_plugins:
         logger.debug(f"执行插件: {plugin['name']}")
@@ -118,4 +133,8 @@ def run_plugin_main(event_data):
 
 @event_listener(EscalationEvent)
 def run_plugin_main_wrapper(event):
+    """
+    运行插件的main函数
+    @param event: 事件
+    """
     run_plugin_main(event.event_data)

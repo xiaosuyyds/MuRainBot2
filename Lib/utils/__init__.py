@@ -1,3 +1,6 @@
+"""
+MRB2 Lib 工具模块
+"""
 from . import Logger
 from . import EventClassifier
 from . import EventLogger

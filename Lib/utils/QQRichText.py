@@ -4,8 +4,13 @@ from Lib.core import OnebotAPI
 from Lib.utils import QQDataCacher, Logger
 
 
-# CQ解码
 def cq_decode(text, in_cq: bool = False) -> str:
+    """
+    CQ解码
+    @param text: 文本（CQ）
+    @param in_cq: 该文本是否是在CQ内的
+    @return: 解码后的文本
+    """
     text = str(text)
     if in_cq:
         return text.replace("&amp;", "&").replace("&#91;", "["). \
@@ -15,8 +20,13 @@ def cq_decode(text, in_cq: bool = False) -> str:
             replace("&#93;", "]")
 
 
-# CQ编码
 def cq_encode(text, in_cq: bool = False) -> str:
+    """
+    CQ编码
+    @param text: 文本
+    @param in_cq: 该文本是否是在CQ内的
+    @return: 编码后的文本
+    """
     text = str(text)
     if in_cq:
         return text.replace("&", "&amp;").replace("[", "&#91;"). \
@@ -27,6 +37,11 @@ def cq_encode(text, in_cq: bool = False) -> str:
 
 
 def cq_2_array(cq: str) -> list[dict[str, dict[str, str]]]:
+    """
+    CQCode转array消息段
+    @param cq: CQCode
+    @return: array消息段
+    """
     if not isinstance(cq, str):
         raise TypeError("cq_2_array: 输入类型错误")
 
@@ -62,6 +77,11 @@ def cq_2_array(cq: str) -> list[dict[str, dict[str, str]]]:
 
 
 def array_2_cq(cq_array: list | dict) -> str:
+    """
+    array消息段转CQCode
+    @param cq_array: array消息段
+    @return: CQCode
+    """
     # 特判
     if isinstance(cq_array, dict):
         cq_array = [cq_array]
@@ -90,7 +110,11 @@ segments = []
 segments_map = {}
 
 
-class Meta(type):
+class SegmentMeta(type):
+    """
+    元类用于自动注册 Segment 子类到全局列表 segments 和映射 segments_map 中。
+    """
+
     def __init__(cls, name, bases, dct):
         super().__init__(name, bases, dct)
         if 'Segment' in globals() and issubclass(cls, Segment):
@@ -98,7 +122,10 @@ class Meta(type):
             segments_map[cls.segment_type] = cls
 
 
-class Segment(metaclass=Meta):
+class Segment(metaclass=SegmentMeta):
+    """
+    消息段
+    """
     segment_type = None
 
     def __init__(self, cq):
@@ -155,9 +182,19 @@ class Segment(metaclass=Meta):
                 return False
 
     def render(self, group_id: int | None = None):
+        """
+        渲染消息段为字符串
+        @param group_id: 群号（选填）
+        @return: 渲染完毕的消息段
+        """
         return f"[{self.array.get('type', 'unknown')}: {self.cq}]"
 
     def set_data(self, k, v):
+        """
+        设置消息段的Data项
+        @param k: 要修改的key
+        @param v: 要修改成的value
+        """
         self.array["data"][k] = v
 
 
@@ -165,6 +202,9 @@ segments.append(Segment)
 
 
 class Text(Segment):
+    """
+    文本消息段
+    """
     segment_type = "text"
 
     def __init__(self, text):
@@ -189,6 +229,10 @@ class Text(Segment):
                 return False
 
     def set_text(self, text):
+        """
+        设置文本
+        @param text: 文本
+        """
         self.text = text
         self["data"]["text"] = text
 
@@ -197,6 +241,9 @@ class Text(Segment):
 
 
 class Face(Segment):
+    """
+    表情消息段
+    """
     segment_type = "face"
 
     def __init__(self, face_id):
@@ -204,6 +251,10 @@ class Face(Segment):
         super().__init__({"type": "face", "data": {"id": str(face_id)}})
 
     def set_id(self, face_id):
+        """
+        设置表情id
+        @param face_id: 表情id
+        """
         self.face_id = face_id
         self.array["data"]["id"] = str(face_id)
 

@@ -1,3 +1,7 @@
+"""
+操作
+"""
+
 from Lib.core import OnebotAPI, ThreadPool
 from Lib.utils import QQRichText
 
@@ -10,29 +14,53 @@ E = TypeVar("E")  # 错误类型
 
 
 class Result(Generic[T, E]):
+    """
+    结果类
+    """
     def __init__(self, value: Union[T, E], is_ok: bool):
         self._value = value
         self._is_ok = is_ok
 
     @property
     def is_ok(self) -> bool:
+        """
+        判断是否成功
+        @return: 是否成功
+        """
         return self._is_ok
 
     @property
     def is_err(self) -> bool:
+        """
+        判断是否失败
+        @return: 是否失败
+        """
         return not self._is_ok
 
     def unwrap(self) -> T:
+        """
+        获取结果（如果成功，否则触发异常）
+        @return: 结果
+        """
         if self.is_ok:
             return self._value
         raise Exception(f"Called unwrap on an Err value: {self._value}")
 
     def unwrap_err(self) -> E:
+        """
+        获取错误（如果失败，否则触发异常）
+        @return: 错误
+        """
         if self.is_err:
             return self._value
         raise Exception(f"Called unwrap_err on an Ok value: {self._value}")
 
     def expect(self, message: str) -> T:
+        """
+        获取结果（如果失败，否则触发异常）
+        @param message: 错误信息
+        @return: 结果
+        """
         if self.is_ok:
             return self._value
         raise Exception(message)
@@ -54,6 +82,10 @@ class Action:
         self.kwargs = kwargs
 
     def call(self):
+        """
+        调用Action
+        @return: Action
+        """
         try:
             result = Result(self.call_func(*self.args, **self.kwargs), True)
         except Exception as e:
@@ -62,6 +94,10 @@ class Action:
         return self
 
     def get_result(self) -> Result:
+        """
+        获取结果
+        @return: 结果
+        """
         if self._async is not None:
             self._async.result()
             self._async = None
@@ -70,10 +106,18 @@ class Action:
         return self._result
 
     def call_get_result(self):
+        """
+        同步调用Action并获取结果
+        @return: 结果
+        """
         self.call()
         return self.get_result()
 
     def call_async(self):
+        """
+        异步调用Action
+        @return: Action
+        """
         @ThreadPool.async_task
         def _call_async():
             return self.call()
@@ -82,6 +126,10 @@ class Action:
         return self
 
     def wait_async(self):
+        """
+        等待异步调用
+        @return: Action
+        """
         if self._async is None:
             raise Exception("Action not called")
         self._async.result()

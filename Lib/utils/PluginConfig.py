@@ -1,3 +1,7 @@
+"""
+插件配置管理
+"""
+
 import traceback
 
 from Lib.core import ConfigManager, PluginManager
@@ -5,6 +9,9 @@ from Lib.constants import *
 
 
 class PluginConfig(ConfigManager.ConfigManager):
+    """
+    插件配置管理
+    """
     def __init__(
             self,
             plugin_name: str = None,

@@ -1,3 +1,7 @@
+"""
+MuRainBot2
+"""
+
 #   __  __       ____       _         ____        _   _____
 #  |  \/  |_   _|  _ \ __ _(_)_ __   | __ )  ___ | |_|___  \
 #  | |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __| __) |
@@ -5,7 +9,6 @@
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
 import atexit
 import logging
-import os
 import threading
 
 BANNER = r""" __  __       ____       _         ____        _   _____ 
@@ -17,6 +20,13 @@ BANNER_LINK = "https://github.com/MuRainBot/MuRainBot2"
 
 
 def color_text(text: str, text_color: tuple[int, int, int] = None, bg_color: tuple[int, int, int] = None):
+    """
+    富文本生成器
+    @param text: 文本
+    @param text_color: 文本颜色
+    @param bg_color: 背景颜色
+    @return: 富文本
+    """
     text = text + "\033[0m" if text_color is not None or bg_color is not None else text
     if text_color is not None:
         text = f"\033[38;2;{text_color[0]};{text_color[1]};{text_color[2]}m" + text
@@ -26,7 +36,13 @@ def color_text(text: str, text_color: tuple[int, int, int] = None, bg_color: tup
 
 
 def get_gradient(start_color: tuple[int, int, int], end_color: tuple[int, int, int], length: float):
-    # length 为0-1的值，返回一个渐变色当前length的RGB颜色
+    """
+    渐变色生成
+    @param start_color: 开始颜色
+    @param end_color: 结束颜色
+    @param length: 0-1的值
+    @return: RGB颜色
+    """
     return (
         int(start_color[0] + (end_color[0] - start_color[0]) * length),
         int(start_color[1] + (end_color[1] - start_color[1]) * length),
@@ -68,6 +84,10 @@ if __name__ == '__main__':
     # 结束运行
     @atexit.register
     def finalize_and_cleanup():
+        """
+        结束运行
+        @return:
+        """
         logger.info("MuRainBot即将关闭，正在删除缓存")
 
         common.clean_cache()
