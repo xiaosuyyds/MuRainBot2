@@ -26,9 +26,11 @@ class Event(EventManager.Event):
     def get(self, key, default=None):
         """
         获取事件数据
-        @param key: 键
-        @param default: 默认值
-        @return:
+        Args:
+            key: 键
+            default: 默认值
+        Returns:
+            None
         """
         return self.event_data.get(key, default)
 
@@ -54,14 +56,18 @@ events: list[EventData] = []
 def register_event(post_type: str, **other_rules):
     """
     注册事件
-    @param post_type: 事件类型
-    @param other_rules: 其他规则
-    @return:
+    Args:
+        post_type: 事件类型
+        other_rules: 其他规则
+    Returns:
+        None
     """
     def decorator(cls):
         """
-        @param cls:
-        @return:
+        Args:
+            @param cls:
+        Returns:
+            None
         """
         data: EventData = {
             "cls": cls,
@@ -505,8 +511,10 @@ class HeartbeatMetaEvent(MetaEvent):
 def on_escalation(event_data):
     """
     事件分发器
-    @param event_data: 事件数据
-    @return: None
+    Args:
+        event_data: 事件数据
+    Returns:
+        None
     """
     event_data = event_data.event_data
     event = Event(event_data)

@@ -17,6 +17,11 @@ class PluginConfig(ConfigManager.ConfigManager):
             plugin_name: str = None,
             default_config: str | dict = None
     ):
+        """
+        Args:
+            plugin_name: 插件名称，留空自动获取
+            default_config: 默认配置，选填
+        """
         if plugin_name is None:
             plugin_path = traceback.extract_stack()[-2].filename
             for plugin in PluginManager.plugins:

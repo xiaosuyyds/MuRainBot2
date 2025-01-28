@@ -31,7 +31,8 @@ class QQDataItem:
     def refresh_cache(self):
         """
         刷新缓存
-        @return:
+        Returns:
+            None
         """
         self.last_update = time.time()
 
@@ -63,7 +64,8 @@ class UserData(QQDataItem):
     def refresh_cache(self):
         """
         刷新缓存
-        @return:
+        Returns:
+            None
         """
         try:
             data = api.get_stranger_info(self._user_id)
@@ -108,7 +110,8 @@ class UserData(QQDataItem):
     def get_nickname(self) -> str:
         """
         获取昵称（如果有备注名优先返回备注名）
-        @return:
+        Returns:
+            昵称
         """
         return self.remark or self.nickname
 
@@ -162,7 +165,8 @@ class GroupMemberData(QQDataItem):
     def refresh_cache(self):
         """
         刷新缓存
-        @return:
+        Returns:
+            None
         """
         try:
             data = api.get_group_member_info(self._group_id, self._user_id, no_cache=True)
@@ -197,7 +201,8 @@ class GroupMemberData(QQDataItem):
     def get_nickname(self):
         """
         获取群名片（如果有群名片优先返回群名片）
-        @return:
+        Returns:
+            群名片
         """
         return self.card or self.nickname
 
@@ -226,7 +231,8 @@ class GroupData(QQDataItem):
     def refresh_cache(self):
         """
         刷新缓存
-        @return:
+        Returns:
+            None
         """
         try:
             data = api.get_group_info(group_id=self._group_id, no_cache=True)
@@ -291,8 +297,10 @@ class QQDataCache:
     def get_user_info(self, user_id: int, *args, **kwargs) -> UserData:
         """
         获取用户信息
-        @param user_id: 用户ID
-        @return:
+        Args:
+            user_id: 用户ID
+        Returns:
+            None
         """
         if user_id not in self.user_info:
             data = UserData(user_id, *args, **kwargs)
@@ -304,8 +312,10 @@ class QQDataCache:
     def get_group_info(self, group_id: int, *args, **kwargs) -> GroupData:
         """
         获取群信息
-        @param group_id: 群号
-        @return:
+        Args:
+            group_id: 群号
+        Returns:
+            None
         """
         if group_id not in self.group_info:
             data = GroupData(group_id, *args, **kwargs)
@@ -317,9 +327,11 @@ class QQDataCache:
     def get_group_member_info(self, group_id: int, user_id: int, *args, **kwargs) -> GroupMemberData:
         """
         获取群成员信息
-        @param group_id: 群号
-        @param user_id: 用户ID
-        @return:
+        Args:
+            group_id: 群号
+            user_id: 用户ID
+        Returns:
+            None
         """
         if group_id not in self.group_member_info:
             self.group_member_info[group_id] = {}
@@ -334,7 +346,8 @@ class QQDataCache:
     def garbage_collection(self):
         """
         垃圾回收
-        @return:
+        Returns:
+            None
         """
         for k in list(self.group_member_info.keys()):
             group_member_items = list(zip(self.group_member_info[k].keys(), self.group_member_info[k].values()))
@@ -367,7 +380,8 @@ class QQDataCache:
     def scheduled_garbage_collection(self):
         """
         定时垃圾回收
-        @return:
+        Returns:
+            None
         """
         t = 0
         while True:

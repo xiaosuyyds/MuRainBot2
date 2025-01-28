@@ -75,6 +75,11 @@ event_listeners: dict[type[T], list[EventListener]] = {}
 def event_listener(event_class: type[T], priority: int = 0, **kwargs):
     """
     用于注册监听器
+
+    Args:
+        event_class: 事件类型
+        priority: 优先级，默认为0
+        **kwargs: 附加参数
     """
     assert issubclass(event_class, _Event), "Event class must be a subclass of Event"
 

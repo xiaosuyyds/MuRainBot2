@@ -28,8 +28,10 @@ class Rule:
     def is_valid(self, event: ListenerServer.EscalationEvent) -> bool:
         """
         判断事件是否满足规则
-        @param event: 事件
-        @return: bool
+        Args:
+            event: 事件
+        Returns:
+            bool
         """
         if self.item_type == "key":
             return self.item in event.event_data and (self.value is None or event.event_data[self.item] == self.value)
@@ -66,8 +68,10 @@ class Node:
     def is_valid(self, event: ListenerServer.EscalationEvent) -> bool:
         """
         判断事件是否满足节点要求
-        @param event: 事件
-        @return: bool
+        Args:
+            event: 事件
+        Returns:
+            bool
         """
         return all(rule.is_valid(event) for rule in self.rules)
 
@@ -669,9 +673,11 @@ root_node = Node(
 def run_node(node: Node, event: ListenerServer.EscalationEvent):
     """
     运行节点
-    @param node: 节点
-    @param event: 事件
-    @return: 是否匹配到事件
+    Args:
+        node: 节点
+        event: 事件
+    Returns:
+        是否匹配到事件
     """
     flag = False
     if node.is_valid(event):
@@ -690,8 +696,10 @@ def run_node(node: Node, event: ListenerServer.EscalationEvent):
 def on_escalation(event):
     """
     事件记录
-    @param event: 事件
-    @return: None
+    Args:
+        event: 事件
+    Returns:
+        None
     """
     flag = run_node(root_node, event)
     if not flag:

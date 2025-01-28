@@ -25,7 +25,8 @@ class Result(Generic[T, E]):
     def is_ok(self) -> bool:
         """
         判断是否成功
-        @return: 是否成功
+        Returns:
+            是否成功
         """
         return self._is_ok
 
@@ -33,14 +34,16 @@ class Result(Generic[T, E]):
     def is_err(self) -> bool:
         """
         判断是否失败
-        @return: 是否失败
+        Returns:
+            是否失败
         """
         return not self._is_ok
 
     def unwrap(self) -> T:
         """
         获取结果（如果成功，否则触发异常）
-        @return: 结果
+        Returns:
+            结果
         """
         if self.is_ok:
             return self._value
@@ -49,7 +52,8 @@ class Result(Generic[T, E]):
     def unwrap_err(self) -> E:
         """
         获取错误（如果失败，否则触发异常）
-        @return: 错误
+        Returns:
+            错误
         """
         if self.is_err:
             return self._value
@@ -58,8 +62,10 @@ class Result(Generic[T, E]):
     def expect(self, message: str) -> T:
         """
         获取结果（如果失败，否则触发异常）
-        @param message: 错误信息
-        @return: 结果
+        Args:
+            message: 错误信息
+        Returns:
+            结果
         """
         if self.is_ok:
             return self._value
@@ -84,7 +90,8 @@ class Action:
     def call(self):
         """
         调用Action
-        @return: Action
+        Returns:
+            Action
         """
         try:
             result = Result(self.call_func(*self.args, **self.kwargs), True)
@@ -96,7 +103,8 @@ class Action:
     def get_result(self) -> Result:
         """
         获取结果
-        @return: 结果
+        Returns:
+            结果
         """
         if self._async is not None:
             self._async.result()
@@ -108,7 +116,8 @@ class Action:
     def call_get_result(self):
         """
         同步调用Action并获取结果
-        @return: 结果
+        Returns:
+            结果
         """
         self.call()
         return self.get_result()
@@ -116,7 +125,8 @@ class Action:
     def call_async(self):
         """
         异步调用Action
-        @return: Action
+        Returns:
+            Action
         """
         @ThreadPool.async_task
         def _call_async():
@@ -128,7 +138,8 @@ class Action:
     def wait_async(self):
         """
         等待异步调用
-        @return: Action
+        Returns:
+            Action
         """
         if self._async is None:
             raise Exception("Action not called")

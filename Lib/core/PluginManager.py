@@ -119,7 +119,8 @@ class PluginInfo:
 def run_plugin_main(event_data):
     """
     运行插件的main函数
-    @param event_data: 事件数据
+    Args:
+        event_data: 事件数据
     """
     global has_main_func_plugins
     for plugin in has_main_func_plugins:
@@ -135,6 +136,7 @@ def run_plugin_main(event_data):
 def run_plugin_main_wrapper(event):
     """
     运行插件的main函数
-    @param event: 事件
+    Args:
+        event: 事件
     """
     run_plugin_main(event.event_data)

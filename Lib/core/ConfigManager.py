@@ -24,7 +24,8 @@ class ConfigManager:
     def load_config(self):
         """
         加载配置文件
-        @return:
+        Returns:
+            None
         """
         if os.path.exists(self.config_path):
             try:
@@ -63,7 +64,8 @@ class ConfigManager:
     def save_config(self):
         """
         保存配置文件
-        @return:
+        Returns:
+            None
         """
         with open(self.config_path, "w", encoding="utf-8") as f:
             yaml.safe_dump(self.config, f)
@@ -71,18 +73,22 @@ class ConfigManager:
     def get(self, key, default=None):
         """
         获取配置项
-        @param key: 配置项键
-        @param default: 默认值
-        @return: 配置项值
+        Args:
+            key: 配置项键
+            default: 默认值
+        Returns:
+            配置项值
         """
         return self.config.get(key, default)
 
     def set(self, key, value):
         """
         设置配置项
-        @param key:  配置项键
-        @param value: 配置项值
-        @return:
+        Args:
+            key: 配置项键
+            value: 配置项值
+        Returns:
+            None
         """
         self.config[key] = value
         self.init()

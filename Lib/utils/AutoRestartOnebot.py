@@ -16,8 +16,10 @@ logger = Logger.get_logger()
 def restart_onebot(message):
     """
     重启 Onebot 实现端
-    @param message: 触发重启的原因
-    @return: None
+    Args:
+        message: 触发重启的原因
+    Returns:
+        None
     """
     if ConfigManager.GlobalConfig().auto_restart_onebot.enable is False:
         logger.warning(f"检测到 {message}，由于未启用自动重启功能，将不会自动重启 Onebot 实现端")
@@ -34,7 +36,8 @@ def restart_onebot(message):
 def on_heartbeat(event: EventClassifier.HeartbeatMetaEvent):
     """
     心跳包事件监听器
-    @param event: 心跳包事件
+    Args:
+        event: 心跳包事件
     """
     global heartbeat_interval, last_heartbeat_time
     heartbeat_interval = event.interval / 1000

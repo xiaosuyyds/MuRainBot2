@@ -18,6 +18,9 @@ app = Flask(__name__)
 
 
 class EscalationEvent(EventManager.Event):
+    """
+    上报事件
+    """
     def __init__(self, event_data):
         self.event_data = event_data
 
@@ -26,7 +29,6 @@ class EscalationEvent(EventManager.Event):
 def post_data():
     """
     上报处理
-    @return: 204
     """
     data = request.get_json()
     logger.debug("收到上报: %s" % data)

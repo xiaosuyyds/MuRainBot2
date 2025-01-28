@@ -1,5 +1,5 @@
 """
-ThreadPool - 线程池
+线程池
 Created by BigCookie233
 """
 
@@ -29,7 +29,8 @@ def shutdown():
 def init():
     """
     初始化线程池
-    @return: None
+    Returns:
+        None
     """
     global thread_pool
     thread_pool = ThreadPoolExecutor(max_workers=GlobalConfig().thread_pool.max_workers)
@@ -52,8 +53,6 @@ def _wrapper(func, *args, **kwargs):
 def async_task(func):
     """
     异步任务装饰器
-    @param func:
-    @return:
     """
     def wrapper(*args, **kwargs):
         if isinstance(thread_pool, ThreadPoolExecutor):

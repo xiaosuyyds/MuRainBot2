@@ -19,8 +19,10 @@ class Rule:
     def match(self, event_data: EventClassifier.Event):
         """
         匹配事件
-        @param event_data: 事件数据
-        @return: 是否匹配到事件
+        Args:
+            event_data: 事件数据
+        Returns:
+            是否匹配到事件
         """
         pass
 
@@ -135,8 +137,10 @@ class CommandRule(Rule):
 def _to_me(event_data: EventClassifier.MessageEvent):
     """
     判断是否是@自己或是私聊
-    @param event_data: 事件数据
-    @return: 是否是@自己或是私聊
+    Args:
+        event_data: 事件数据
+    Returns:
+        是否是@自己或是私聊
     """
     if not isinstance(event_data, EventClassifier.MessageEvent):
         logger.warning(f"event {event_data} is not a MessageEvent, cannot match to_me")
@@ -163,8 +167,9 @@ class Matcher:
     def register_handler(self, priority: int = 0, rules: list[Rule] = None, *args, **kwargs):
         """
         注册事件处理器
-        @param priority: 事件优先级
-        @param rules: 匹配规则
+        Args:
+            priority: 事件优先级
+            rules: 匹配规则
         """
         if rules is None:
             rules = []
@@ -180,7 +185,8 @@ class Matcher:
     def match(self, event_data: EventClassifier.Event):
         """
         匹配事件处理器
-        @param event_data: 事件数据
+        Args:
+            event_data: 事件数据
         """
         for priority, rules, handler, args, kwargs in sorted(self.handlers, key=lambda x: x[0], reverse=True):
             try:
@@ -203,10 +209,12 @@ def _on_event(event_data, path, event_type):
 def on_event(event: Type[EventClassifier.Event], priority: int = 0, rules: list[Rule] = None):
     """
     注册事件处理器
-    @param event: 事件类型
-    @param priority: 事件优先级
-    @param rules: 匹配规则
-    @return: 事件处理器
+    Args:
+        event: 事件类型
+        priority: 事件优先级
+        rules: 匹配规则
+    Returns:
+        事件处理器
     """
     if rules is None:
         rules = []

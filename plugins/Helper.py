@@ -27,7 +27,8 @@ plugin_info = PluginManager.PluginInfo(
 def get_help_text():
     """
     获取所有插件的帮助信息
-    @return: 帮助信息
+    Returns:
+        str: 帮助信息
     """
     plugins = PluginManager.plugins
     text = f"{ConfigManager.GlobalConfig().account.nick_name} 帮助"
@@ -51,8 +52,6 @@ matcher = EventHandlers.on_event(EventClassifier.GroupMessageEvent, priority=0, 
 def on_help(event_data):
     """
     帮助命令处理
-    @param event_data: 事件数据
-    @return: None
     """
     if event_data.message == "help":
         Actions.SendMsg(

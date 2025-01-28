@@ -16,9 +16,11 @@ logger: logging.Logger = None
 def init(logs_path: str = LOGS_PATH, logger_level: int = logging.INFO):
     """
     初始化日志记录器
-    @param logs_path:
-    @param logger_level:
-    @return:
+    Args:
+        @param logs_path:
+        @param logger_level:
+    Returns:
+        None
     """
     global logger
 
@@ -57,8 +59,10 @@ def init(logs_path: str = LOGS_PATH, logger_level: int = logging.INFO):
     def namer(filename):
         """
         生成文件名
-        @param filename: 文件名
-        @return: 文件名
+        Args:
+            filename: 文件名
+        Returns:
+            文件名
         """
         dir_name, base_name = os.path.split(filename)
         base_name = base_name.replace(log_name + '.', "")
@@ -76,8 +80,10 @@ def init(logs_path: str = LOGS_PATH, logger_level: int = logging.INFO):
 def set_logger_level(level: int):
     """
     设置日志级别
-    @param level: 日志级别
-    @return: None
+    Args:
+        level: 日志级别
+    Returns:
+        None
     """
     global logger
     logger.setLevel(level)
@@ -87,7 +93,8 @@ def set_logger_level(level: int):
 def get_logger():
     """
     获取日志记录器
-    @return: Logger
+    Returns:
+        Logger
     """
     if not logger:
         init()
