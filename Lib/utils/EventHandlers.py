@@ -167,6 +167,7 @@ class Matcher:
     def register_handler(self, priority: int = 0, rules: list[Rule] = None, *args, **kwargs):
         """
         注册事件处理器
+        如果注册的处理器返回True，则事件传播将被阻断
         Args:
             priority: 事件优先级
             rules: 匹配规则
@@ -191,7 +192,9 @@ class Matcher:
         for priority, rules, handler, args, kwargs in sorted(self.handlers, key=lambda x: x[0], reverse=True):
             try:
                 if all(rule.match(event_data) for rule in rules):
-                    handler(event_data, *args, **kwargs)
+                    if handler(event_data, *args, **kwargs) is True:
+                        logger.debug(f"处理器 {handler.__name__} 阻断了事件 {event_data} 的传播")
+                        return
             except Exception as e:
                 logger.error(f"Error occurred while matching event {event_data}: {repr(e)}")
 
