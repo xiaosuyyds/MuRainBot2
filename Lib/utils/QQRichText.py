@@ -1,23 +1,23 @@
-#   __  __       ____       _         ____        _   _____
-#  |  \/  |_   _|  _ \ __ _(_)_ __   | __ )  ___ | |_|___  \
-#  | |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __| __) |
-#  | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/
-#  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
-
 """
-QQRichText
-QQ富文本处理
+QQ富文本
 """
-
 import inspect
+import json
 import re
-import Lib.OnebotAPI as OnebotAPI
-import Lib.QQDataCacher as QQDataCacher
-import Lib.Logger as Logger
+from typing import Any
+
+from Lib.utils import QQDataCacher, Logger
 
 
-# CQ解码
 def cq_decode(text, in_cq: bool = False) -> str:
+    """
+    CQ解码
+    Args:
+        text: 文本（CQ）
+        in_cq: 该文本是否是在CQ内的
+    Returns:
+        解码后的文本
+    """
     text = str(text)
     if in_cq:
         return text.replace("&amp;", "&").replace("&#91;", "["). \
@@ -27,8 +27,15 @@ def cq_decode(text, in_cq: bool = False) -> str:
             replace("&#93;", "]")
 
 
-# CQ编码
 def cq_encode(text, in_cq: bool = False) -> str:
+    """
+    CQ编码
+    Args:
+        text: 文本
+        in_cq: 该文本是否是在CQ内的
+    Returns:
+        编码后的文本
+    """
     text = str(text)
     if in_cq:
         return text.replace("&", "&amp;").replace("[", "&#91;"). \
@@ -38,7 +45,14 @@ def cq_encode(text, in_cq: bool = False) -> str:
             replace("]", "&#93;")
 
 
-def cq_2_array(cq: str) -> list:
+def cq_2_array(cq: str) -> list[dict[str, dict[str, Any]]]:
+    """
+    CQCode转array消息段
+    Args:
+        cq: CQCode
+    Returns:
+        array消息段
+    """
     if not isinstance(cq, str):
         raise TypeError("cq_2_array: 输入类型错误")
 
@@ -74,6 +88,13 @@ def cq_2_array(cq: str) -> list:
 
 
 def array_2_cq(cq_array: list | dict) -> str:
+    """
+    array消息段转CQCode
+    Args:
+        cq_array: array消息段
+    Returns:
+        CQCode
+    """
     # 特判
     if isinstance(cq_array, dict):
         cq_array = [cq_array]
@@ -102,7 +123,11 @@ segments = []
 segments_map = {}
 
 
-class Meta(type):
+class SegmentMeta(type):
+    """
+    元类用于自动注册 Segment 子类到全局列表 segments 和映射 segments_map 中。
+    """
+
     def __init__(cls, name, bases, dct):
         super().__init__(name, bases, dct)
         if 'Segment' in globals() and issubclass(cls, Segment):
@@ -110,7 +135,10 @@ class Meta(type):
             segments_map[cls.segment_type] = cls
 
 
-class Segment(metaclass=Meta):
+class Segment(metaclass=SegmentMeta):
+    """
+    消息段
+    """
     segment_type = None
 
     def __init__(self, cq):
@@ -147,8 +175,17 @@ class Segment(metaclass=Meta):
     def __getitem__(self, key):
         return self.array.get(key)
 
-    def get(self, *args, **kwargs):
-        return self.array.get(*args, **kwargs)
+    def get(self, key, default=None):
+        """
+        获取消息段中的数据
+        Args:
+            key: key
+            default: 默认值（默认为None）
+
+        Returns:
+            获取到的数据
+        """
+        return self.array.get(key, default)
 
     def __delitem__(self, key):
         del self.array[key]
@@ -167,9 +204,22 @@ class Segment(metaclass=Meta):
                 return False
 
     def render(self, group_id: int | None = None):
+        """
+        渲染消息段为字符串
+        Args:
+            group_id: 群号（选填）
+        Returns:
+            渲染完毕的消息段
+        """
         return f"[{self.array.get('type', 'unknown')}: {self.cq}]"
 
     def set_data(self, k, v):
+        """
+        设置消息段的Data项
+        Args:
+            k: 要修改的key
+            v: 要修改成的value
+        """
         self.array["data"][k] = v
 
 
@@ -177,9 +227,16 @@ segments.append(Segment)
 
 
 class Text(Segment):
+    """
+    文本消息段
+    """
     segment_type = "text"
 
     def __init__(self, text):
+        """
+        Args:
+            text: 文本
+        """
         super().__init__(text)
         self.text = self["data"]["text"] = text
 
@@ -201,6 +258,11 @@ class Text(Segment):
                 return False
 
     def set_text(self, text):
+        """
+        设置文本
+        Args:
+            text: 文本
+        """
         self.text = text
         self["data"]["text"] = text
 
@@ -209,13 +271,25 @@ class Text(Segment):
 
 
 class Face(Segment):
+    """
+    表情消息段
+    """
     segment_type = "face"
 
     def __init__(self, face_id):
+        """
+        Args:
+            face_id: 表情id
+        """
         self.face_id = face_id
         super().__init__({"type": "face", "data": {"id": str(face_id)}})
 
     def set_id(self, face_id):
+        """
+        设置表情id
+        Args:
+            face_id: 表情id
+        """
         self.face_id = face_id
         self.array["data"]["id"] = str(face_id)
 
@@ -224,31 +298,55 @@ class Face(Segment):
 
 
 class At(Segment):
+    """
+    At消息段
+    """
     segment_type = "at"
 
     def __init__(self, qq):
+        """
+        Args:
+            qq: qq号
+        """
         self.qq = qq
         super().__init__({"type": "at", "data": {"qq": str(qq)}})
 
     def set_id(self, qq_id):
+        """
+        设置At的id
+        Args:
+            qq_id: qq号
+        """
         self.qq = qq_id
         self.array["data"]["qq"] = str(qq_id)
 
     def render(self, group_id: int | None = None):
         if group_id:
-            return f"@{QQDataCacher.get_group_user_data(group_id, self.qq).nickname}: {self.qq}"
+            return f"@{QQDataCacher.qq_data_cache.get_group_member_info(group_id, self.qq).get_nickname()}: {self.qq}"
         else:
-            return f"@{QQDataCacher.get_user_data(self.qq).nickname}: {self.qq}"
+            return f"@{QQDataCacher.qq_data_cache.get_user_info(self.qq).nickname}: {self.qq}"
 
 
 class Image(Segment):
+    """
+    图片消息段
+    """
     segment_type = "image"
 
     def __init__(self, file):
+        """
+        Args:
+            file: 图片文件(url，对于文件使用file url格式)
+        """
         self.file = file
         super().__init__({"type": "image", "data": {"file": str(file)}})
 
     def set_file(self, file):
+        """
+        设置图片文件
+        Args:
+            file: 图片文件
+        """
         self.file = file
         self.array["data"]["file"] = str(file)
 
@@ -257,13 +355,25 @@ class Image(Segment):
 
 
 class Record(Segment):
+    """
+    语音消息段
+    """
     segment_type = "record"
 
     def __init__(self, file):
+        """
+        Args:
+            file: 语音文件(url，对于文件使用file url格式)
+        """
         self.file = file
         super().__init__({"type": "record", "data": {"file": str(file)}})
 
     def set_file(self, file):
+        """
+        设置语音文件
+        Args:
+            file: 语音文件(url，对于文件使用file url格式)
+        """
         self.file = file
         self.array["data"]["file"] = str(file)
 
@@ -272,13 +382,25 @@ class Record(Segment):
 
 
 class Video(Segment):
+    """
+    视频消息段
+    """
     segment_type = "video"
 
     def __init__(self, file):
+        """
+        Args:
+            file: 视频文件(url，对于文件使用file url格式)
+        """
         self.file = file
         super().__init__({"type": "video", "data": {"file": str(file)}})
 
     def set_file(self, file):
+        """
+        设置视频文件
+        Args:
+            file: 视频文件(url，对于文件使用file url格式)
+        """
         self.file = file
         self.array["data"]["file"] = str(file)
 
@@ -287,6 +409,9 @@ class Video(Segment):
 
 
 class Rps(Segment):
+    """
+    猜拳消息段
+    """
     segment_type = "rps"
 
     def __init__(self):
@@ -301,41 +426,92 @@ class Dice(Segment):
 
 
 class Shake(Segment):
+    """
+    窗口抖动消息段
+    (相当于戳一戳最基本类型的快捷方式。)
+    """
     segment_type = "shake"
 
     def __init__(self):
         super().__init__({"type": "shake"})
 
 
-# 戳一戳（未完全实现）
 class Poke(Segment):
+    """
+    戳一戳消息段
+    """
     segment_type = "poke"
 
-    def __init__(self, type_):
+    def __init__(self, type_, poke_id):
+        """
+        Args:
+            type_: 见https://github.com/botuniverse/onebot-11/blob/master/message/segment.md#%E6%88%B3%E4%B8%80%E6%88%B3
+            poke_id: 同上
+        """
         self.type = type_
-        super().__init__({"type": "poke", "data": {"type": str(self.type)}})
+        self.poke_id = poke_id
+        super().__init__({"type": "poke", "data": {"type": str(self.type)}, "id": str(self.poke_id)})
 
     def set_type(self, qq_type):
+        """
+        设置戳一戳类型
+        Args:
+            qq_type: qq类型
+        """
         self.type = qq_type
         self.array["data"]["type"] = str(qq_type)
 
+    def set_id(self, poke_id):
+        """
+        设置戳一戳id
+        Args:
+            poke_id: 戳一戳id
+        """
+        self.poke_id = poke_id
+        self.array["data"]["id"] = str(poke_id)
+
+    def render(self, group_id: int | None = None):
+        return f"[戳一戳: {self.type}]"
+
 
 class Anonymous(Segment):
+    """
+    匿名消息段
+    """
     segment_type = "anonymous"
 
     def __init__(self, ignore=False):
+        """
+        Args:
+            ignore: 是否忽略
+        """
         self.ignore = 0 if ignore else 1
         super().__init__({"type": "anonymous", "data": {"ignore": str(self.ignore)}})
 
     def set_ignore(self, ignore):
+        """
+        设置是否忽略
+        Args:
+            ignore: 是否忽略
+        """
         self.ignore = 0 if ignore else 1
         self.array["data"]["ignore"] = str(self.ignore)
 
 
 class Share(Segment):
+    """
+    链接分享消息段
+    """
     segment_type = "share"
 
     def __init__(self, url, title, content="", image=""):
+        """
+        Args:
+            url: URL
+            title: 标题
+            content: 发送时可选，内容描述
+            image: 发送时可选，图片 URL
+        """
         self.url = url
         self.title = title
         self.content = content
@@ -349,43 +525,91 @@ class Share(Segment):
             self.array["data"]["image"] = str(self.image)
 
     def set_url(self, url):
+        """
+        设置URL
+        Args:
+            url: URL
+        """
         self.array["data"]["url"] = str(url)
         self.url = url
 
     def set_title(self, title):
+        """
+        设置标题
+        Args:
+            title: 标题
+        """
         self.title = title
         self.array["data"]["title"] = str(title)
 
     def set_content(self, content):
+        """
+        设置内容描述
+        Args:
+            content: 内容描述
+        """
         self.content = content
         self.array["data"]["content"] = str(content)
 
     def set_image(self, image):
+        """
+        设置图片 URL
+        Args:
+            image: 图片 URL
+        """
         self.image = image
         self.array["data"]["image"] = str(image)
 
 
 class Contact(Segment):
+    """
+    推荐好友/推荐群
+    """
     segment_type = "contact"
 
     def __init__(self, type_, id_):
+        """
+        Args:
+            type_: 推荐的类型（friend/group）
+            id_: 推荐的qqid
+        """
         self.type = type_
         self.id = id_
         super().__init__({"type": "contact", "data": {"type": str(self.type), "id": str(self.id)}})
 
     def set_type(self, type_):
+        """
+        设置推荐类型
+        Args:
+            type_: 推荐的类型（friend/group）
+        """
         self.type = type_
         self.array["data"]["type"] = str(type_)
 
     def set_id(self, id_):
+        """
+        设置推荐的qqid
+        Args:
+            id_: qqid
+        """
         self.id = id_
         self.array["data"]["id"] = str(id_)
 
 
 class Location(Segment):
+    """
+    位置消息段
+    """
     segment_type = "location"
 
     def __init__(self, lat, lon, title="", content=""):
+        """
+        Args:
+            lat: 纬度
+            lon: 经度
+            title: 发送时可选，标题
+            content: 发送时可选，内容描述
+        """
         self.lat = lat
         self.lon = lon
         self.title = title
@@ -399,104 +623,230 @@ class Location(Segment):
             self.array["data"]["content"] = str(self.content)
 
     def set_lat(self, lat):
+        """
+        设置纬度
+        Args:
+            lat: 纬度
+        """
         self.lat = lat
         self.array["data"]["lat"] = str(lat)
 
     def set_lon(self, lon):
+        """
+        设置经度
+        Args:
+            lon: 经度
+        """
         self.lon = lon
         self.array["data"]["lon"] = str(lon)
 
+    def set_title(self, title):
+        """
+        设置标题
+        Args:
+            title: 标题
+        """
+        self.title = title
+        self.array["data"]["title"] = str(title)
+
+    def set_content(self, content):
+        """
+        设置内容描述
+        Args:
+            content: 内容描述
+        """
+        self.content = content
+        self.array["data"]["content"] = str(content)
+
 
 class Node(Segment):
+    """
+    合并转发消息节点
+    接收时，此消息段不会直接出现在消息事件的 message 中，需通过 get_forward_msg API 获取。
+    """
     segment_type = "node"
 
-    def __init__(self, name: str, uid: int, message, message_id: int = None):
+    def __init__(self, name: str, user_id: int, message, message_id: int = None):
+        """
+        Args:
+            name: 发送者昵称
+            user_id: 发送者 QQ 号
+            message: 消息内容
+            message_id: 消息 ID（选填，若设置，上面三者失效）
+        """
         if message_id is None:
             self.name = name
-            self.user_id = uid
+            self.user_id = user_id
             self.message = QQRichText(message).get_array()
-            super().__init__({"type": "node", "data": {"nickname": str(self.name), "user_id": str(self.user_id), "content": self.message}})
+            super().__init__({"type": "node", "data": {"nickname": str(self.name), "user_id": str(self.user_id),
+                                                       "content": self.message}})
         else:
             self.message_id = message_id
             super().__init__({"type": "node", "data": {"id": str(message_id)}})
 
     def set_message(self, message):
-        self.message = message
+        """
+        设置消息
+        Args:
+            message: 消息内容
+        """
+        self.message = QQRichText(message).get_array()
+        self.array["data"]["content"] = self.message
 
     def set_name(self, name):
+        """
+        设置发送者昵称
+        Args:
+            name: 发送者昵称
+        """
         self.name = name
         self.array["data"]["name"] = str(name)
 
-    def set_uid(self, uid):
-        self.uid = uid
-        self.array["data"]["uin"] = str(uid)
+    def set_user_id(self, user_id):
+        """
+        设置发送者 QQ 号
+        Args:
+            user_id: 发送者 QQ 号
+        """
+        self.user_id = user_id
+        self.array["data"]["uin"] = str(user_id)
 
     def render(self, group_id: int | None = None):
         if self.message_id is not None:
-            return f"[合并转发节点: {self.name}({self.uid}): {self.message}]"
+            return f"[合并转发节点: {self.name}({self.user_id}): {self.message}]"
         else:
             return f"[合并转发节点: {self.message_id}]"
 
 
 class Music(Segment):
+    """
+    音乐消息段
+    """
     segment_type = "music"
 
     def __init__(self, type_, id_):
+        """
+        Args:
+            type_: 音乐类型（可为qq 163 xm）
+            id_: 音乐 ID
+        """
         self.type = type_
         self.id = id_
         super().__init__({"type": "music", "data": {"type": str(self.type), "id": str(self.id)}})
 
     def set_type(self, type_):
+        """
+        设置音乐类型
+        Args:
+            type_: 音乐类型（qq 163 xm）
+        """
         self.type = type_
         self.array["data"]["type"] = str(type_)
 
     def set_id(self, id_):
+        """
+        设置音乐 ID
+        Args:
+            id_: 音乐 ID
+        """
         self.id = id_
         self.array["data"]["id"] = str(id_)
 
 
 class CustomizeMusic(Segment):
+    """
+    自定义音乐消息段
+    """
     segment_type = "music"
 
-    def __init__(self, url, audio, image, title, content):
+    def __init__(self, url, audio, image, title="", content=""):
+        """
+        Args:
+            url: 点击后跳转目标 URL
+            audio: 音乐 URL
+            image: 标题
+            title: 发送时可选，内容描述
+            content: 发送时可选，图片 URL
+        """
         self.url = url
         self.audio = audio
         self.image = image
         self.title = title
         self.content = content
         super().__init__({"type": "music", "data": {"type": "custom", "url": str(self.url), "audio": str(self.audio),
-                                                    "image": str(self.image), "title": str(self.title),
-                                                    "content": str(self.content)}})
+                                                    "image": str(self.image)}})
+        if title != "":
+            self.array["data"]["title"] = str(self.title)
+
+        if content != "":
+            self.array["data"]["content"] = str(self.content)
 
     def set_url(self, url):
+        """
+        设置 URL
+        Args:
+            url: 点击后跳转目标 URL
+        """
         self.url = url
         self.array["data"]["url"] = str(url)
 
     def set_audio(self, audio):
+        """
+        设置音乐 URL
+        Args:
+            audio: 音乐 URL
+        """
         self.audio = audio
         self.array["data"]["audio"] = str(audio)
 
     def set_image(self, image):
+        """
+        设置图片 URL
+        Args:
+            image: 图片 URL
+        """
         self.image = image
         self.array["data"]["image"] = str(image)
 
     def set_title(self, title):
+        """
+        设置标题
+        Args:
+            title: 标题
+        """
         self.title = title
         self.array["data"]["title"] = str(title)
 
     def set_content(self, content):
+        """
+        设置内容描述
+        Args:
+            content:
+        """
         self.content = content
         self.array["data"]["content"] = str(content)
 
 
 class Reply(Segment):
+    """
+    回复消息段
+    """
     segment_type = "reply"
 
     def __init__(self, message_id):
+        """
+        Args:
+            message_id: 回复消息 ID
+        """
         self.message_id = message_id
         super().__init__({"type": "reply", "data": {"id": str(self.message_id)}})
 
     def set_message_id(self, message_id):
+        """
+        设置消息 ID
+        Args:
+            message_id: 消息 ID
+        """
         self.message_id = message_id
         self.array["data"]["id"] = str(self.message_id)
 
@@ -505,13 +855,25 @@ class Reply(Segment):
 
 
 class Forward(Segment):
+    """
+    合并转发消息段
+    """
     segment_type = "forward"
 
     def __init__(self, forward_id):
+        """
+        Args:
+            forward_id: 合并转发消息 ID
+        """
         self.forward_id = forward_id
         super().__init__({"type": "forward", "data": {"id": str(self.forward_id)}})
 
     def set_forward_id(self, forward_id):
+        """
+        设置合并转发消息 ID
+        Args:
+            forward_id: 合并转发消息 ID
+        """
         self.forward_id = forward_id
         self.array["data"]["id"] = str(self.forward_id)
 
@@ -519,49 +881,67 @@ class Forward(Segment):
         return f"[合并转发: {self.forward_id}]"
 
 
-# 并不是很想写这个东西.png
-# class CustomizeForward(Segment):
-#     def __init__(self, title, content, source):
-#         self.title = title
-#         self.content = content
-#         self.source = source
-#         super().__init__({"type": "forward", "data": {"title": str(self.title)
-#         , "content": str(self.content), "source": str(self.source)}})
-#
-#     def set_title(self, title):
-#         self.array["data"]["title"] = str(self.title)
-#         self.title = title
-#
-#     def set_content(self, content):
-
-
 class XML(Segment):
+    """
+    XML消息段
+    """
     segment_type = "xml"
-
-    def __init__(self, xml):
-        self.xml = xml
-        super().__init__({"type": "xml", "data": {"xml": str(self.xml)}})
-
-    def set_xml(self, xml):
-        self.xml = xml
-        self.array["data"]["xml"] = str(self.xml)
-
-
-class JSON(Segment):
-    segment_type = "json"
 
     def __init__(self, data):
         self.data = data
-        super().__init__({"type": "json", "data": {"json": str(self.data)}})
+        super().__init__({"type": "xml", "data": {"data": str(self.data)}})
+
+    def set_xml_data(self, data):
+        """
+        设置xml数据
+        Args:
+            data: xml数据
+        """
+        self.data = data
+        self.array["data"]["data"] = str(self.data)
+
+
+class JSON(Segment):
+    """
+    JSON消息段
+    """
+    segment_type = "json"
+
+    def __init__(self, data):
+        """
+        Args:
+            data: JSON 内容
+        """
+        self.data = data
+        super().__init__({"type": "json", "data": {"data": str(self.data)}})
 
     def set_json(self, data):
+        """
+        设置json数据
+        Args:
+            data: json 内容
+        """
         self.data = data
-        self.array["data"]["json"] = str(self.data)
+        self.array["data"]["data"] = str(self.data)
+
+    def get_json(self):
+        """
+        获取json数据（自动序列化）
+        Returns:
+            json: json数据
+        """
+        return json.loads(self.data)
 
 
 class QQRichText:
-
+    """
+    QQ富文本
+    """
     def __init__(self, *rich: str | dict | list | tuple | Segment):
+        """
+        Args:
+            *rich: 富文本内容，可为 str、dict、list、tuple、Segment、QQRichText
+        """
 
         # 特判
         self.rich_array: list[Segment] = []
@@ -623,6 +1003,12 @@ class QQRichText:
                                 kwargs[param] = rich[_]["data"].get("id")
                             elif rich[_]["type"] == "forward" and param == "forward_id":
                                 kwargs[param] = rich[_]["data"].get("id")
+                            elif rich[_]["type"] == "poke" and param == "poke_id":
+                                kwargs[param] = rich[_]["data"].get("id")
+                            elif param == "id_":
+                                kwargs[param] = rich[_]["data"].get("id")
+                            elif param == "type_":
+                                kwargs[param] = rich[_]["data"].get("type")
                             else:
                                 if params[param].default != params[param].empty:
                                     kwargs[param] = params[param].default
@@ -641,7 +1027,11 @@ class QQRichText:
         self.rich_array: list[Segment] = rich
 
     def render(self, group_id: int | None = None):
-        # 渲染成类似: abc123[图片:<URL>]@xxxx[uid]
+        """
+        渲染消息（调用rich_array下所有消息段的render方法拼接）
+        Args:
+            group_id: 群号，选填，可优化效果
+        """
         text = ""
         for rich in self.rich_array:
             text += rich.render(group_id=group_id)
@@ -659,7 +1049,7 @@ class QQRichText:
 
     def __add__(self, other):
         other = QQRichText(other)
-        return self.rich_array + other.rich_array
+        return QQRichText(self.rich_array + other.rich_array)
 
     def __eq__(self, other):
         other = QQRichText(other)
@@ -675,14 +1065,32 @@ class QQRichText:
             except (TypeError, AttributeError):
                 return False
 
-    def send(self, user_id=-1, group_id=-1):
-        OnebotAPI.OnebotAPI().send_msg(user_id=user_id, group_id=group_id, message=str(self))
-
     def get_array(self):
+        """
+        获取rich_array（非抽象类，可用于API调用等）
+        Returns:
+            rich_array
+        """
         return [array.array for array in self.rich_array]
 
+    def add(self, *segments):
+        """
+        添加消息段
+        Args:
+            *segments: 消息段
 
-# 单元测试
+        Returns:
+            self
+        """
+        for segment in segments:
+            if isinstance(segment, Segment):
+                self.rich_array.append(segment)
+            else:
+                self.rich_array += QQRichText(segment).rich_array
+        return self
+
+
+# 使用示例
 if __name__ == "__main__":
     # 测试CQ解码
     print(cq_decode(" - &#91;x&#93; 使用 `&amp;data` 获取地址"))
@@ -701,3 +1109,4 @@ if __name__ == "__main__":
     print(QQRichText(At(114514)))
     print(Segment(At(1919810)))
     print(QQRichText([{"type": "text", "data": {"text": "1919810"}}]))
+    print(QQRichText().add(At(114514)).add(Text("我吃柠檬"))+QQRichText(At(1919810)).rich_array)

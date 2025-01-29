@@ -1,33 +1,25 @@
-#   __  __       ____       _         ____        _   _____
-#  |  \/  |_   _|  _ \ __ _(_)_ __   | __ )  ___ | |_|___  \
-#  | |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __| __) |
-#  | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/
-#  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
+"""
+工具
+"""
 
-"""
-MuRainLib
-用于MuRain Bot框架
-"""
-import atexit
-import hashlib
-import logging
-import os
-import sys
-import requests
 import shutil
+import sys
 import time
-import random
+import uuid
 from collections import OrderedDict
-import Lib.Logger as Logger
 
-work_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-data_path = os.path.join(work_path, "data")
-logs_path = os.path.join(work_path, "logs")
-cache_path = os.path.join(data_path, "cache")
-logger = Logger.logger
+import requests
+
+from .constants import *
+from .utils import Logger
+
+logger = Logger.get_logger()
 
 
 class LimitedSizeDict(OrderedDict):
+    """
+    带有限制大小的字典
+    """
     def __init__(self, max_size):
         self._max_size = max_size
         super().__init__()
@@ -42,6 +34,11 @@ class LimitedSizeDict(OrderedDict):
 
 
 def restart() -> None:
+    """
+    MRB2重启
+    Returns:
+        None
+    """
     # 获取当前解释器路径
     p = sys.executable
     try:
@@ -54,6 +51,18 @@ def restart() -> None:
 
 def download_file_to_cache(url: str, headers=None, file_name: str = "",
                            download_path: str = None, stream=False, fake_headers: bool = True) -> str | None:
+    """
+    下载文件到缓存
+    Args:
+        url: 下载的url
+        headers: 下载请求的请求头
+        file_name: 文件名
+        download_path: 下载路径
+        stream: 是否使用流式传输
+        fake_headers: 是否使用自动生成的假请求头
+    Returns:
+        文件路径
+    """
     if headers is None:
         headers = {}
 
@@ -77,20 +86,17 @@ def download_file_to_cache(url: str, headers=None, file_name: str = "",
         headers["Host"] = url.split("/")[2]
 
     # 路径拼接
-    flag = False
     if file_name == "":
-        file_name = hex(int(hash(url.split("/")[-1]) + random.randint(10000, 99999) + time.time()))[2:] + ".cache"
-    else:
-        flag = True
+        file_name = uuid.uuid4().hex + ".cache"
 
     if download_path is None:
-        file_path = os.path.join(cache_path, file_name)
+        file_path = os.path.join(CACHE_PATH, file_name)
     else:
         file_path = os.path.join(download_path, file_name)
 
     # 路径不存在特判
-    if not os.path.exists(cache_path):
-        os.makedirs(cache_path)
+    if not os.path.exists(CACHE_PATH):
+        os.makedirs(CACHE_PATH)
 
     try:
         # 下载
@@ -107,45 +113,48 @@ def download_file_to_cache(url: str, headers=None, file_name: str = "",
             with open(file_path, "wb") as f:
                 f.write(res.content)
     except requests.exceptions.RequestException as e:
-        logging.warning(f"下载文件失败: {e}")
+        logger.warning(f"下载文件失败: {e}")
         if os.path.exists(file_path):
             os.remove(file_path)
         return None
 
-    if not flag:
-        # 计算MD5
-        md5_hash = hashlib.md5()
-        with open(file_path, "rb") as f:
-            for byte_block in iter(lambda: f.read(4096), b""):
-                md5_hash.update(byte_block)
-            rename = md5_hash.hexdigest() + ".cache"
-            rename_path = os.path.join(cache_path, rename)
-
-        # 重命名（MD5）
-        if os.path.exists(rename_path):
-            os.remove(rename_path)
-
-        os.rename(file_path, rename_path)
-
-        return rename_path
-    else:
-        return file_path
+    return file_path
 
 
 # 删除缓存文件
 def clean_cache() -> None:
-    if os.path.exists(cache_path):
+    """
+    清理缓存
+    Returns:
+        None
+    """
+    if os.path.exists(CACHE_PATH):
         try:
-            shutil.rmtree(cache_path, ignore_errors=True)
+            shutil.rmtree(CACHE_PATH, ignore_errors=True)
         except Exception as e:
-            logging.warning("删除缓存时报错，报错信息: %s" % repr(e))
+            logger.warning("删除缓存时报错，报错信息: %s" % repr(e))
 
 
 # 函数缓存
 def function_cache(max_size: int, expiration_time: int = -1):
+    """
+    函数缓存
+    Args:
+        max_size: 最大大小
+        expiration_time: 过期时间
+    Returns:
+        None
+    """
     cache = LimitedSizeDict(max_size)
 
     def cache_decorator(func):
+        """
+        缓存装饰器
+        Args:
+            @param func:
+        Returns:
+            None
+        """
         def wrapper(*args, **kwargs):
             key = str(func.__name__) + str(args) + str(kwargs)
             if key in cache and (expiration_time == -1 or time.time() - cache[key][1] < expiration_time):
@@ -172,15 +181,3 @@ def function_cache(max_size: int, expiration_time: int = -1):
         return wrapper
 
     return cache_decorator
-
-
-# 结束运行
-@atexit.register
-def finalize_and_cleanup():
-    logger.info("MuRainBot即将关闭，正在删除缓存")
-
-    clean_cache()
-
-    logger.warning("MuRainBot结束运行！")
-    logger.info("再见！\n")
-    os._exit(0)

@@ -1,18 +1,32 @@
+"""
+MuRainBot2
+"""
+
 #   __  __       ____       _         ____        _   _____
 #  |  \/  |_   _|  _ \ __ _(_)_ __   | __ )  ___ | |_|___  \
 #  | |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __| __) |
 #  | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/
 #  |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|
+import atexit
+import logging
+import threading
 
 BANNER = r""" __  __       ____       _         ____        _   _____ 
 |  \/  |_   _|  _ \ __ _(_)_ __   | __ )  ___ | |_|___  \
 | |\/| | | | | |_) / _` | | '_ \  |  _ \ / _ \| __| __) |
 | |  | | |_| |  _ < (_| | | | | | | |_) | (_) | |_ / __/ 
 |_|  |_|\__,_|_| \_\__,_|_|_| |_| |____/ \___/ \__|_____|"""
-BANNER_LINK = "https://github.com/xiaosuyyds/MuRainBot2"
+BANNER_LINK = "https://github.com/MuRainBot/MuRainBot2"
 
 
 def color_text(text: str, text_color: tuple[int, int, int] = None, bg_color: tuple[int, int, int] = None):
+    """
+    富文本生成器
+    @param text: 文本
+    @param text_color: 文本颜色
+    @param bg_color: 背景颜色
+    @return: 富文本
+    """
     text = text + "\033[0m" if text_color is not None or bg_color is not None else text
     if text_color is not None:
         text = f"\033[38;2;{text_color[0]};{text_color[1]};{text_color[2]}m" + text
@@ -22,7 +36,13 @@ def color_text(text: str, text_color: tuple[int, int, int] = None, bg_color: tup
 
 
 def get_gradient(start_color: tuple[int, int, int], end_color: tuple[int, int, int], length: float):
-    # length 为0-1的值，返回一个渐变色当前length的RGB颜色
+    """
+    渐变色生成
+    @param start_color: 开始颜色
+    @param end_color: 结束颜色
+    @param length: 0-1的值
+    @return: RGB颜色
+    """
     return (
         int(start_color[0] + (end_color[0] - start_color[0]) * length),
         int(start_color[1] + (end_color[1] - start_color[1]) * length),
@@ -53,100 +73,80 @@ if __name__ == '__main__':
 
     start_loading = time.time()
 
+    from Lib.utils import Logger
+
+    Logger.init()
+
+    from Lib.core import *
+
     from Lib import *
+
+    # 结束运行
+    @atexit.register
+    def finalize_and_cleanup():
+        """
+        结束运行
+        @return:
+        """
+        logger.info("MuRainBot即将关闭，正在删除缓存")
+
+        common.clean_cache()
+
+        logger.warning("MuRainBot结束运行！")
+        logger.info("再见！\n")
+
+
+    ThreadPool.init()
+
+    Logger.set_logger_level(logging.DEBUG if ConfigManager.GlobalConfig().debug.enable else logging.INFO)
 
     print("\r" + color_text(
         f"Lib 加载完成！耗时: {round(time.time() - start_loading, 2)}s 正在启动 MuRainBot...",
         banner_end_color
-        )
     )
+          )
 
-    logger = Logger.logger
-    VERSION = "2.0.0-dev"  # 版本
-    VERSION_WEEK = "24W18A"  # 版本周
+    logger = Logger.get_logger()
 
-    logger.info(f"MuRainBot开始运行，当前版本：{VERSION}({VERSION_WEEK})")
+    logger.info("日志初始化完成，MuRainBot正在启动...")
 
-    api = OnebotAPI.OnebotAPI()
-    ThreadPool.init()
-    request_list = []
+    if ConfigManager.GlobalConfig().account.user_id == 0 or not ConfigManager.GlobalConfig().account.nick_name:
+        logger.info("正在尝试获取用户信息...")
+        try:
+            account = OnebotAPI.api.get_login_info()
+            ConfigManager.GlobalConfig().set("account", {
+                "user_id": account["user_id"],
+                "nick_name": account["nickname"]
+            })
+        except Exception as e:
+            logger.warning(f"获取用户信息失败: {repr(e)}, 可能会导致严重的问题！")
 
-    work_path = os.path.abspath(os.path.dirname(__file__))
-    data_path = os.path.join(work_path, 'data')
+    logger.info(f"欢迎使用: {ConfigManager.GlobalConfig().account.nick_name}"
+                f"({ConfigManager.GlobalConfig().account.user_id})")
 
-    if not os.path.exists(data_path):
-        os.makedirs(data_path)
-
-    if not os.path.exists(cache_path):
-        os.makedirs(cache_path)
-
-    # TODO: 把废物的版本检测删了
-    LibInfo.main_version, LibInfo.main_version_week = VERSION, VERSION_WEEK
-
-    # 版本检测
-    if LibInfo().version != LibInfo.main_version:
-        logger.warning("MuRainLib版本检测未通过，可能会发生异常\n"
-                       f"MuRainLib版本:{LibInfo().version} MuRain Bot版本:{LibInfo.main_version}\n"
-                       "注意：我们将不会受理在此模式下运行的报错")
-        if input("Continue?(Y/n)").lower() != "y":
-            sys.exit()
-        logger.warning("MuRainLib版本检测未通过，可能会发生异常，将继续运行！")
-
-    bot_uid = Configs.global_config.user_id
-    bot_name = Configs.global_config.nick_name
-    bot_admin = Configs.global_config.bot_admin
-
+    logger.debug(f"准备加载插件")
     PluginManager.load_plugins()
-    if len(PluginManager.plugins) > 0:
-        logger.info(f"插件导入完成，共成功导入 {len(PluginManager.plugins)} 个插件:")
-        for plugin in PluginManager.plugins:
-            try:
-                plugin_info = plugin["plugin"].PluginInfo()
-                logger.info(" - {}: {} 作者:{}".format(plugin["name"], plugin_info.NAME, plugin_info.AUTHOR))
-            except ArithmeticError:
-                logger.warning("插件{} 没有信息".format(plugin["name"]))
-            except Exception as e:
-                logger.warning("插件{} 信息获取失败: {}".format(plugin["name"], repr(e)))
-    else:
-        logger.warning("无插件成功导入！")
+    logger.info(f"插件加载完成！共成功加载了 {len(PluginManager.plugins)} 个插件"
+                f"{': \n' if len(PluginManager.plugins) >= 1 else ''}"
+                f"{'\n'.join(
+                    [
+                        f'{_['name']}: {_['info'].NAME}' if 'info' in _ and _['info'] else _['name'] 
+                        for _ in PluginManager.plugins
+                     ]
+                )}")
 
-    logger.info("读取到监听服务器ip，将以此ip启动监听服务器: {}:{}"
-                .format(Configs.global_config.server_host, Configs.global_config.server_port))
+    threading.Thread(target=AutoRestartOnebot.check_heartbeat, daemon=True).start()
 
-    logger.info("读取到监听api，将以此url调用API: {}"
-                .format(str(api)))
-
-    # 检测bot名称与botUID是否为空或未设置
-    if bot_uid is None or bot_name == "" or bot_uid == 123456 or bot_name is None:
-        logger.warning("配置文件中未找到BotUID或昵称，将自动获取！")
-
-        bot_info = api.get_login_info()
-        if not isinstance(bot_info, dict):
-            logger.error(f"获取BotUID与昵称失败！可能会导致严重问题！报错信息：{repr(bot_info)}")
-        elif "user_id" in bot_info and "nickname" in bot_info:
-            bot_uid, bot_name = bot_info["user_id"], bot_info["nickname"]
-            raw_config = Configs.global_config.raw_config
-            raw_config["account"]["user_id"] = bot_uid
-            raw_config["account"]["nick_name"] = bot_name
-            Configs.global_config.write_cache(raw_config)
-            logger.debug("已成功获取BotUID与昵称！")
-        else:
-            logger.error(f"获取BotUID与昵称失败，字段缺失！可能会导致严重问题！{bot_info}")
-
-    logger.info(f"欢迎使用 {Configs.global_config.nick_name}({Configs.global_config.user_id})")
-
-    Command.start_command_listener()
-    logger.info("开启命令输入")
+    logger.info("启动监听服务器")
 
     # 禁用werkzeug的日志记录
     log = logging.getLogger('werkzeug')
     log.disabled = True
 
-    # 启动监听服务器
+    threading.Thread(target=ListenerServer.server.serve_forever, daemon=True).start()
+
     try:
-        logger.info("启动监听服务器")
-        ListeningServer.server.serve_forever()
-    except Exception as e:
-        logger.error(f"监听服务器启动失败！报错信息：{repr(e)}")
-    finally:
-        logger.info("监听服务器结束运行！")
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        logger.info("正在关闭...")

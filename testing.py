@@ -7,11 +7,10 @@
 一个MuRainBot2的虚拟onebot实现端服务器
 """
 import threading
-import logging
 import time
 
 import requests
-from flask import Flask, url_for, request
+from flask import Flask, request
 
 api_port = 5700
 listening_port = 5701
