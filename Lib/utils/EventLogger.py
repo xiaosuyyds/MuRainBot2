@@ -692,7 +692,7 @@ def run_node(node: Node, event: ListenerServer.EscalationEvent):
     return flag
 
 
-@EventManager.event_listener(ListenerServer.EscalationEvent)
+@EventManager.event_listener(ListenerServer.EscalationEvent, priority=1)
 def on_escalation(event):
     """
     事件记录
