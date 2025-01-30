@@ -51,30 +51,7 @@ class OnebotAPI:
 
         self.host = host
         self.port = port
-        self.node = ""
-        self.data = None
         self.original = original
-        self.lock = threading.Lock()
-
-    def __str__(self):
-        if not (self.host.startswith("http://") or self.host.startswith("https://")):
-            self.host = "http://" + self.host
-        # 拼接url
-        self.url = urllib.parse.urljoin(self.host + ":" + str(self.port), self.node)
-        return self.url
-
-    def set_node(self, node: str, data: dict = None):
-        """
-        设置节点和数据
-        Args:
-            node: 节点
-            data: 数据
-        """
-        if data is None:
-            data = {}
-        self.node = node
-        self.data = data
-        return self
 
     def set_url(self, host: str, port: int):
         """
@@ -86,16 +63,7 @@ class OnebotAPI:
         self.host = host
         self.port = port
 
-    def set_data(self, data: dict):
-        """
-        设置数据
-        Args:
-            data: 数据
-        """
-        self.data = data
-        return self
-
-    def get(self, node: str = "", data: dict = None, original: bool = None):
+    def get(self, node, data: dict = None, original: bool = None):
         """
         调用api
         Args:
@@ -103,19 +71,15 @@ class OnebotAPI:
             data: 数据
             original: 是否返回全部json（默认只返回data内）
         """
-        with self.lock:
-            if node == "":
-                node = self.node
-            if data is None:
-                data = self.data
-            if original is None:
-                original = self.original
 
-            host = self.host
-            port = self.port
+        if original is None:
+            original = self.original
 
         if node == "":
             raise ValueError('The node cannot be empty.')
+
+        host = self.host
+        port = self.port
 
         if not host:
             raise ValueError('The host cannot be empty.')
@@ -125,6 +89,7 @@ class OnebotAPI:
 
         if not (host.startswith("http://") or host.startswith("https://")):
             host = "http://" + host
+
         # 拼接url
         url = urllib.parse.urljoin(host + ":" + str(port), node)
 
@@ -135,6 +100,7 @@ class OnebotAPI:
             logger.debug(f"调用 API: {node} data: {data} by: {traceback.extract_stack()[-3].filename}")
         else:
             logger.debug(f"调用 API: {node} data: {data} by: {traceback.extract_stack()[-2].filename}")
+
         # 发起get请求
         try:
             response = requests.post(
@@ -146,7 +112,7 @@ class OnebotAPI:
                 raise Exception(response.text)
 
             # 如果original为真，则返回原值和response
-            if self.original:
+            if original:
                 return response.json()
             else:
                 return response.json()['data']
