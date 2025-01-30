@@ -10,6 +10,8 @@ OnebotAPI
 """
 
 import json
+import threading
+
 from . import EventManager, ConfigManager
 from ..utils import Logger
 import requests
@@ -52,6 +54,7 @@ class OnebotAPI:
         self.node = ""
         self.data = None
         self.original = original
+        self.lock = threading.Lock()
 
     def __str__(self):
         if not (self.host.startswith("http://") or self.host.startswith("https://")):
@@ -100,35 +103,44 @@ class OnebotAPI:
             data: 数据
             original: 是否返回全部json（默认只返回data内）
         """
-        if node != "":
-            self.node = node
-        if data is not None:
-            self.data = data
-        if original is not None:
-            self.original = original
+        with self.lock:
+            if node == "":
+                node = self.node
+            if data is None:
+                data = self.data
+            if original is None:
+                original = self.original
 
-        self.node = node
-        self.data = data
+            host = self.host
+            port = self.port
 
-        if self.node == "":
+        if node == "":
             raise ValueError('The node cannot be empty.')
 
-        if not self.host:
+        if not host:
             raise ValueError('The host cannot be empty.')
 
-        if (not isinstance(self.port, int)) or self.port > 65535 or self.port < 0:
+        if (not isinstance(port, int)) or port > 65535 or port < 0:
             raise ValueError('The port cannot be empty.')
 
+        if not (host.startswith("http://") or host.startswith("https://")):
+            host = "http://" + host
+        # 拼接url
+        url = urllib.parse.urljoin(host + ":" + str(port), node)
+
         # 广播call_api事件
-        event = CallAPIEvent(str(self), self.node, self.data)
-        event.call()
-        logger.debug(f"调用 API: {self.node} data: {self.data} by: {traceback.extract_stack()[-2].filename}")
+        event = CallAPIEvent(url, node, data)
+        event.call_async()
+        if traceback.extract_stack()[-1].filename == traceback.extract_stack()[-2].filename:
+            logger.debug(f"调用 API: {node} data: {data} by: {traceback.extract_stack()[-3].filename}")
+        else:
+            logger.debug(f"调用 API: {node} data: {data} by: {traceback.extract_stack()[-2].filename}")
         # 发起get请求
         try:
             response = requests.post(
-                str(self),
+                url,
                 headers={"Content-Type": "application/json"},
-                data=json.dumps(self.data if self.data is not None else {})
+                data=json.dumps(data if data is not None else {})
             )
             if response.status_code != 200 or (response.json()['status'] != 'ok' or response.json()['retcode'] != 0):
                 raise Exception(response.text)
@@ -139,7 +151,7 @@ class OnebotAPI:
             else:
                 return response.json()['data']
         except Exception as e:
-            logger.error(f"调用 API: {self.node} data: {self.data} 异常: {repr(e)}")
+            logger.error(f"调用 API: {node} data: {data} 异常: {repr(e)}")
             raise e
 
     def send_private_msg(self, user_id: int, message: str | list[dict]):
