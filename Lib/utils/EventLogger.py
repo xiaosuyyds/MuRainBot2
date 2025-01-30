@@ -15,6 +15,7 @@ class Rule:
     """
     事件规则
     """
+
     def __init__(self, item: str | Callable[[ListenerServer.EscalationEvent], bool], value):
         self.item = item
         self.value = value
@@ -46,6 +47,7 @@ class Node:
     """
     事件节点
     """
+
     def __init__(self, rules: list[Rule], value: str | Callable | list):
         self.rules: list[Rule] = rules
         if isinstance(value, Node):
@@ -110,7 +112,7 @@ root_node = Node(
                                 f"({event_data['user_id']}) "
                                 f"的消息: "
                                 f"{QQRichText.QQRichText(event_data['message']).
-                                   render(group_id=event_data['group_id'])}"
+                                    render(group_id=event_data['group_id'])}"
                                 f"({event_data['message_id']})"
                             )
                         ),
@@ -129,7 +131,7 @@ root_node = Node(
                                 f"({event_data['anonymous']['id']}; flag: {event_data['anonymous']['flag']}) "
                                 f"的匿名消息: "
                                 f"{QQRichText.QQRichText(event_data['message']).
-                                   render(group_id=event_data['group_id'])}"
+                                    render(group_id=event_data['group_id'])}"
                                 f"({event_data['message_id']})"
                             )
                         ),
@@ -145,7 +147,7 @@ root_node = Node(
                                 f"({event_data['group_id']}) "
                                 f"内的系统消息: "
                                 f"{QQRichText.QQRichText(event_data['message']).
-                                   render(group_id=event_data['group_id'])}"
+                                    render(group_id=event_data['group_id'])}"
                                 f"({event_data['message_id']})"
                             )
                         )
@@ -237,7 +239,8 @@ root_node = Node(
                         f"{qq_data.get_group_info(event_data['group_id']).group_name}"
                         f"({event_data['group_id']}) "
                         f"内成员 "
-                        f"{qq_data.get_user_info(event_data['user_id']).get_nickname()} "
+                        f"{qq_data.get_group_member_info(event_data['group_id'], event_data['user_id']).
+                            get_nickname()} "
                         f"({event_data['user_id']}) "
                         f"上传了文件: "
                         f"{event_data['file']['name']}"
@@ -261,7 +264,8 @@ root_node = Node(
                                 f"{qq_data.get_group_info(event_data['group_id']).group_name}"
                                 f"({event_data['group_id']}) "
                                 f"内 成员 "
-                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"{qq_data.get_group_member_info(event_data['group_id'], event_data['user_id']).
+                                    get_nickname()}"
                                 f"({event_data['user_id']}) "
                                 f"被设置为管理员"
                             )
@@ -277,7 +281,8 @@ root_node = Node(
                                 f"{qq_data.get_group_info(event_data['group_id']).group_name}"
                                 f"({event_data['group_id']}) "
                                 f"内 成员 "
-                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"{qq_data.get_group_member_info(event_data['group_id'], event_data['user_id']).
+                                    get_nickname()}"
                                 f"({event_data['user_id']}) "
                                 f"被取消管理员"
                             )
@@ -300,7 +305,8 @@ root_node = Node(
                                 f"{qq_data.get_group_info(event_data['group_id']).group_name}"
                                 f"({event_data['group_id']}) "
                                 f"内成员 "
-                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"{qq_data.get_group_member_info(event_data['group_id'], event_data['user_id']).
+                                    get_nickname()}"
                                 f"({event_data['user_id']}) "
                                 f"退出了群聊"
                             )
@@ -315,10 +321,12 @@ root_node = Node(
                                 f"{qq_data.get_group_info(event_data['group_id']).group_name}"
                                 f"({event_data['group_id']}) "
                                 f"内成员 "
-                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"{qq_data.get_group_member_info(event_data['group_id'], event_data['user_id']).
+                                    get_nickname()}"
                                 f"({event_data['user_id']}) "
                                 f"被管理员 "
-                                f"{qq_data.get_user_info(event_data['operator_id']).get_nickname()}"
+                                f"{qq_data.get_group_member_info(event_data['group_id'], event_data['operator_id']).
+                                    get_nickname()}"
                                 f"({event_data['operator_id']}) "
                                 f"踢出了群聊"
                             )
@@ -333,7 +341,8 @@ root_node = Node(
                                 f"{qq_data.get_group_info(event_data['group_id']).group_name}"
                                 f"({event_data['group_id']}) "
                                 f"内 "
-                                f"{qq_data.get_user_info(event_data['operator_id']).get_nickname()}"
+                                f"{qq_data.get_group_member_info(event_data['group_id'], event_data['operator_id']).
+                                    get_nickname()}"
                                 f"({event_data['operator_id']}) "
                                 f"将机器人踢出了群聊"
                             )
@@ -356,10 +365,12 @@ root_node = Node(
                                 f"{qq_data.get_group_info(event_data['group_id']).group_name}"
                                 f"({event_data['group_id']}) "
                                 f"内成员 "
-                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"{qq_data.get_group_member_info(event_data['group_id'], event_data['user_id']).
+                                    get_nickname()}"
                                 f"({event_data['user_id']}) "
                                 f"被管理员 "
-                                f"{qq_data.get_user_info(event_data['operator_id']).get_nickname()}"
+                                f"{qq_data.get_group_member_info(event_data['group_id'], event_data['operator_id']).
+                                    get_nickname()}"
                                 f"({event_data['operator_id']}) "
                                 f"批准入群"
                             ),
@@ -374,10 +385,12 @@ root_node = Node(
                                 f"{qq_data.get_group_info(event_data['group_id']).group_name}"
                                 f"({event_data['group_id']}) "
                                 f"内成员 "
-                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"{qq_data.get_group_member_info(event_data['group_id'], event_data['user_id']).
+                                    get_nickname()}"
                                 f"({event_data['user_id']}) "
                                 f"被 "
-                                f"{qq_data.get_user_info(event_data['operator_id']).get_nickname()}"
+                                f"{qq_data.get_group_member_info(event_data['group_id'], event_data['operator_id']).
+                                    get_nickname()}"
                                 f"({event_data['operator_id']}) "
                                 f"邀请入群"
                             )
@@ -400,10 +413,12 @@ root_node = Node(
                                 f"{qq_data.get_group_info(event_data['group_id']).group_name}"
                                 f"({event_data['group_id']}) "
                                 f"内成员 "
-                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"{qq_data.get_group_member_info(event_data['group_id'], event_data['user_id']).
+                                    get_nickname()}"
                                 f"({event_data['user_id']}) "
                                 f"被管理员 "
-                                f"{qq_data.get_user_info(event_data['operator_id']).get_nickname()}"
+                                f"{qq_data.get_group_member_info(event_data['group_id'], event_data['operator_id']).
+                                    get_nickname()}"
                                 f"({event_data['operator_id']}) "
                                 f"禁言了: "
                                 f"{event_data['duration']}s"
@@ -419,10 +434,12 @@ root_node = Node(
                                 f"{qq_data.get_group_info(event_data['group_id']).group_name}"
                                 f"({event_data['group_id']}) "
                                 f"内成员 "
-                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"{qq_data.get_group_member_info(event_data['group_id'], event_data['user_id']).
+                                    get_nickname()}"
                                 f"({event_data['user_id']}) "
                                 f"被管理员 "
-                                f"{qq_data.get_user_info(event_data['operator_id']).get_nickname()}"
+                                f"{qq_data.get_group_member_info(event_data['group_id'], event_data['operator_id']).
+                                    get_nickname()}"
                                 f"({event_data['operator_id']}) "
                                 f"解除了禁言"
                             )
@@ -462,7 +479,8 @@ root_node = Node(
                                 f"{qq_data.get_group_info(event_data['group_id']).group_name}"
                                 f"({event_data['group_id']}) "
                                 f"内成员 "
-                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"{qq_data.get_group_member_info(event_data['group_id'], event_data['user_id']).
+                                    get_nickname()}"
                                 f"({event_data['user_id']}) "
                                 f"撤回了消息: "
                                 f"{event_data['message_id']}"
@@ -482,10 +500,12 @@ root_node = Node(
                                 f"{qq_data.get_group_info(event_data['group_id']).group_name}"
                                 f"({event_data['group_id']}) "
                                 f"内成员 "
-                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"{qq_data.get_group_member_info(event_data['group_id'], event_data['user_id']).
+                                    get_nickname()}"
                                 f"({event_data['user_id']}) "
                                 f"被管理员 "
-                                f"{qq_data.get_user_info(event_data['operator_id']).get_nickname()}"
+                                f"{qq_data.get_group_member_info(event_data['group_id'], event_data['operator_id']).
+                                    get_nickname()}"
                                 f"({event_data['operator_id']}) "
                                 f"撤回了消息: "
                                 f"{event_data['message_id']}"
@@ -524,10 +544,12 @@ root_node = Node(
                                 f"{qq_data.get_group_info(event_data['group_id']).group_name}"
                                 f"({event_data['group_id']}) "
                                 f"内 "
-                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"{qq_data.get_group_member_info(event_data['user_id'], event_data['user_id']).
+                                    get_nickname()}"
                                 f"({event_data['user_id']}) "
                                 f"戳了戳 "
-                                f"{qq_data.get_user_info(event_data['target_id']).get_nickname()}"
+                                f"{qq_data.get_group_member_info(event_data['group_id'], event_data['target_id']).
+                                    get_nickname()}"
                                 f"({event_data['target_id']})"
                             )
                         ),
@@ -542,10 +564,12 @@ root_node = Node(
                                 f"{qq_data.get_group_info(event_data['group_id']).group_name}"
                                 f"({event_data['group_id']}) "
                                 f"内 "
-                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"{qq_data.get_group_member_info(event_data['group_id'], event_data['user_id']).
+                                    get_nickname()}"
                                 f"({event_data['user_id']}) "
                                 f"成为了 "
-                                f"{qq_data.get_user_info(event_data['target_id']).get_nickname()}"
+                                f"{qq_data.get_group_member_info(event_data['group_id'], event_data['target_id']).
+                                    get_nickname()}"
                                 f"({event_data['target_id']}) "
                                 f"发送的红包的运气王"
                             )
@@ -561,7 +585,8 @@ root_node = Node(
                                 f"{qq_data.get_group_info(event_data['group_id']).group_name}"
                                 f"({event_data['group_id']}) "
                                 f"内 "
-                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"{qq_data.get_group_member_info(event_data['group_id'], event_data['user_id']).
+                                    get_nickname()}"
                                 f"({event_data['user_id']}) "
                                 f"获得了 " + {
                                     "talkative": "群聊之火",
@@ -624,7 +649,8 @@ root_node = Node(
                             ],
                             lambda event_data:
                             logger.info(
-                                f"{qq_data.get_user_info(event_data['user_id']).get_nickname()}"
+                                f"{qq_data.get_group_member_info(event_data['group_id'], event_data['user_id']).
+                                    get_nickname()}"
                                 f"({event_data['user_id']})"
                                 f"邀请机器人加入群 "
                                 f"{qq_data.get_group_info(event_data['group_id']).group_name}"
