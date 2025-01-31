@@ -31,9 +31,17 @@ class Rule:
 class KeyValueRule(Rule):
     """
     键值规则
+    检测event data中的某个键的值是否满足要求
     """
     def __init__(self, key, value, model: Literal["eq", "ne", "in", "not in", "func"],
                  func: Callable[[Any, Any], bool] = None):
+        """
+        Args:
+            key: 键
+            value: 值
+            model: 匹配模式(可选: eq, ne, in, not in, func)
+            func: 函数（仅在 model 为 func 时有效，输入为 (event_data.get(key), value)，返回 bool）
+        """
         self.key = key
         self.value = value
         self.model = model
@@ -62,8 +70,13 @@ class KeyValueRule(Rule):
 class FuncRule(Rule):
     """
     函数规则
+    检测event data是否满足函数
     """
-    def __init__(self, func):
+    def __init__(self, func: Callable[[Any], bool]):
+        """
+        Args:
+            func: 用于检测函数（输入为 event_data， 返回 bool）
+        """
         self.func = func
 
     def match(self, event_data: EventClassifier.Event):
@@ -77,8 +90,20 @@ class FuncRule(Rule):
 class CommandRule(Rule):
     """
     命令规则
+    用于匹配命令
+
+    默认匹配：命令起始符 + 命令 和 命令起始符 + 别名。
+    若消息前带有 @bot 时，可直接匹配 命令本身 和 别名，无需命令起始符。
+
+    会自动移除消息中的 @bot 和命令起始符，同时会自动将 别名 替换为 命令本身，以简化插件处理逻辑。
     """
     def __init__(self, command: str, aliases: set[str] = None, command_start: list[str] = None):
+        """
+        Args:
+            command: 命令
+            aliases: 命令别名
+            command_start: 命令起始符（不填写默认为配置文件中的command_start）
+        """
         if aliases is None:
             aliases = set()
         if command_start is None:
