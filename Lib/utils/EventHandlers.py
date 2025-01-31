@@ -1,6 +1,7 @@
 """
 事件处理器
 """
+import copy
 
 from Lib.core import EventManager, ConfigManager
 from Lib.utils import EventClassifier, Logger, QQRichText
@@ -97,7 +98,7 @@ class CommandRule(Rule):
             return False
 
         flag = False
-        segments = event_data.message.rich_array
+        segments = copy.deepcopy(event_data.message.rich_array)
         if (
                 len(segments) > 0 and
                 isinstance(segments[0], QQRichText.At) and
@@ -205,8 +206,9 @@ events_matchers: dict[str, dict[Type[EventClassifier.Event], list[tuple[int, lis
 def _on_event(event_data, path, event_type):
     matchers = events_matchers[path][event_type]
     for priority, rules, matcher in sorted(matchers, key=lambda x: x[0], reverse=True):
-        if all(rule.match(event_data) for rule in rules):
-            matcher.match(event_data)
+        matcher_event_data = event_data.__class__(event_data.event_data)
+        if all(rule.match(matcher_event_data) for rule in rules):
+            matcher.match(matcher_event_data)
 
 
 def on_event(event: Type[EventClassifier.Event], priority: int = 0, rules: list[Rule] = None):
