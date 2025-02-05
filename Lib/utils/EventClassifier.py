@@ -15,6 +15,7 @@ class Event(EventManager.Event):
     """
     事件类
     """
+
     def __init__(self, event_data):
         self.event_data: dict = event_data
         self.time: int = self["time"]
@@ -71,6 +72,7 @@ def register_event(post_type: str, **other_rules):
     Returns:
         None
     """
+
     def decorator(cls):
         """
         Args:
@@ -129,6 +131,7 @@ class MessageEvent(Event):
     """
     消息事件
     """
+
     def __init__(self, event_data):
         super().__init__(event_data)
         self.message_type = self["message_type"]
@@ -148,6 +151,7 @@ class PrivateMessageEvent(MessageEvent):
     """
     私聊消息事件
     """
+
     def __init__(self, event_data):
         super().__init__(event_data)
         self.sender: PrivateDict = self["sender"]
@@ -166,7 +170,7 @@ class PrivateMessageEvent(MessageEvent):
                 f"{self.message.render()}"
                 f"({self.message_id})"
             )
-            
+
         elif self.sub_type == "group":
             logger.info(
                 f"收到来自群 "
@@ -182,7 +186,7 @@ class PrivateMessageEvent(MessageEvent):
                 f"{self.message.render()}"
                 f"({self.message_id})"
             )
-            
+
         elif self.sub_type == "other":
             logger.info(
                 f"收到来自 "
@@ -195,7 +199,7 @@ class PrivateMessageEvent(MessageEvent):
                 f"{self.message.render()}"
                 f"({self.message_id})"
             )
-            
+
         else:
             return super().logger()
 
@@ -205,6 +209,7 @@ class GroupMessageEvent(MessageEvent):
     """
     群聊消息事件
     """
+
     def __init__(self, event_data):
         super().__init__(event_data)
         self.group_id: int = int(self["group_id"])
@@ -226,7 +231,7 @@ class GroupMessageEvent(MessageEvent):
                 f"{self.message.render(group_id=self.group_id)}"
                 f"({self.message_id})"
             )
-            
+
         elif self.sub_type == "anonymous":
             anonymous_data = self.get('anonymous', {})
             anonymous_str = f"{qq_data.get_user_info(anonymous_data).get('name')}" if anonymous_data else "匿名用户"
@@ -240,7 +245,7 @@ class GroupMessageEvent(MessageEvent):
                 f"{self.message.render(group_id=self.group_id)}"
                 f"({self.message_id})"
             )
-            
+
         elif self.sub_type == "notice":
             logger.info(
                 f"收到来自群 "
@@ -250,7 +255,7 @@ class GroupMessageEvent(MessageEvent):
                 f"{self.message.render(group_id=self.group_id)}"
                 f"({self.message_id})"
             )
-            
+
         else:
             return super().logger()
 
@@ -260,6 +265,7 @@ class NoticeEvent(Event):
     """
     通知事件
     """
+
     def __init__(self, event_data):
         super().__init__(event_data)
         self.notice_type: str = self["notice_type"]
@@ -283,6 +289,7 @@ class GroupUploadEvent(NoticeEvent):
     """
     群文件上传事件
     """
+
     def __init__(self, event_data):
         super().__init__(event_data)
         self.group_id: int = int(self["group_id"])
@@ -301,7 +308,6 @@ class GroupUploadEvent(NoticeEvent):
             f"{self.file['name']}"
             f"({self.file['id']})"
         )
-        
 
 
 @register_event("notice", notice_type="group_admin")
@@ -309,6 +315,7 @@ class GroupAdminEvent(NoticeEvent):
     """
     群管理员变动事件
     """
+
     def __init__(self, event_data):
         super().__init__(event_data)
         self.group_id: int = int(self["group_id"])
@@ -324,6 +331,7 @@ class GroupSetAdminEvent(GroupAdminEvent):
     """
     群管理员被设置事件
     """
+
     def logger(self):
         logger.info(
             f"群 "
@@ -334,7 +342,6 @@ class GroupSetAdminEvent(GroupAdminEvent):
             f"({self.user_id}) "
             f"被设置为管理员"
         )
-        
 
 
 @register_event("notice", notice_type="group_admin", sub_type="unset")
@@ -342,6 +349,7 @@ class GroupUnsetAdminEvent(GroupAdminEvent):
     """
     群管理员被取消事件
     """
+
     def logger(self):
         logger.info(
             f"群 "
@@ -352,7 +360,6 @@ class GroupUnsetAdminEvent(GroupAdminEvent):
             f"({self.user_id}) "
             f"被取消管理员"
         )
-        
 
 
 @register_event("notice", notice_type="group_decrease")
@@ -360,6 +367,7 @@ class GroupDecreaseEvent(NoticeEvent):
     """
     群成员减少事件
     """
+
     def __init__(self, event_data):
         super().__init__(event_data)
         self.group_id: int = int(self["group_id"])
@@ -376,6 +384,7 @@ class GroupDecreaseLeaveEvent(GroupDecreaseEvent):
     """
     群成员离开事件
     """
+
     def logger(self):
         logger.info(
             f"群 "
@@ -386,7 +395,6 @@ class GroupDecreaseLeaveEvent(GroupDecreaseEvent):
             f"({self.user_id}) "
             f"退出了群聊"
         )
-        
 
 
 @register_event("notice", notice_type="group_decrease", sub_type="kick")
@@ -394,6 +402,7 @@ class GroupDecreaseKickEvent(GroupDecreaseEvent):
     """
     群成员被踢事件
     """
+
     def logger(self):
         logger.info(
             f"群 "
@@ -407,7 +416,6 @@ class GroupDecreaseKickEvent(GroupDecreaseEvent):
             f"({self.operator_id}) "
             f"踢出了群聊"
         )
-        
 
 
 @register_event("notice", notice_type="group_decrease", sub_type="kick_me")
@@ -415,6 +423,7 @@ class GroupDecreaseKickMeEvent(GroupDecreaseEvent):
     """
     机器人自己被移出事件
     """
+
     def logger(self):
         logger.info(
             f"群 "
@@ -425,7 +434,6 @@ class GroupDecreaseKickMeEvent(GroupDecreaseEvent):
             f"({self.operator_id}) "
             f"将机器人踢出了群聊"
         )
-        
 
 
 @register_event("notice", notice_type="group_increase")
@@ -433,6 +441,7 @@ class GroupIncreaseEvent(NoticeEvent):
     """
     群成员增加事件
     """
+
     def __init__(self, event_data):
         super().__init__(event_data)
         self.group_id: int = int(self["group_id"])
@@ -449,6 +458,7 @@ class GroupIncreaseApproveEvent(GroupIncreaseEvent):
     """
     群成员同意入群事件
     """
+
     def logger(self):
         logger.info(
             f"群 "
@@ -462,7 +472,6 @@ class GroupIncreaseApproveEvent(GroupIncreaseEvent):
             f"({self.operator_id}) "
             f"批准入群"
         )
-        
 
 
 @register_event("notice", notice_type="group_increase", sub_type="invite")
@@ -470,6 +479,7 @@ class GroupIncreaseInviteEvent(GroupIncreaseEvent):
     """
     群成员被邀请入群事件
     """
+
     def logger(self):
         logger.info(
             f"群 "
@@ -483,7 +493,6 @@ class GroupIncreaseInviteEvent(GroupIncreaseEvent):
             f"({self.operator_id}) "
             f"邀请入群"
         )
-        
 
 
 @register_event("notice", notice_type="group_ban")
@@ -491,6 +500,7 @@ class GroupBanEvent(NoticeEvent):
     """
     群禁言事件
     """
+
     def __init__(self, event_data):
         super().__init__(event_data)
         self.group_id: int = int(self["group_id"])
@@ -508,6 +518,7 @@ class GroupBanSetEvent(GroupBanEvent):
     """
     群禁言被设置事件
     """
+
     def logger(self):
         logger.info(
             f"群 "
@@ -522,7 +533,6 @@ class GroupBanSetEvent(GroupBanEvent):
             f"禁言了: "
             f"{self.duration}s"
         )
-        
 
 
 @register_event("notice", notice_type="group_ban", sub_type="lift_ban")
@@ -530,6 +540,7 @@ class GroupBanLiftEvent(GroupBanEvent):
     """
     群禁言被解除事件
     """
+
     def logger(self):
         logger.info(
             f"群 "
@@ -543,7 +554,6 @@ class GroupBanLiftEvent(GroupBanEvent):
             f"({self.operator_id}) "
             f"解除了禁言"
         )
-        
 
 
 @register_event("notice", notice_type="friend_add")
@@ -551,6 +561,7 @@ class FriendAddEvent(NoticeEvent):
     """
     好友添加事件
     """
+
     def __init__(self, event_data):
         super().__init__(event_data)
         self.user_id: int = int(self["user_id"])
@@ -562,7 +573,6 @@ class FriendAddEvent(NoticeEvent):
             f"({self.user_id}) "
             f"添加了机器人的好友"
         )
-        
 
 
 @register_event("notice", notice_type="group_recall")
@@ -570,6 +580,7 @@ class GroupRecallEvent(NoticeEvent):
     """
     群消息撤回事件
     """
+
     def __init__(self, event_data):
         super().__init__(event_data)
         self.group_id: int = int(self["group_id"])
@@ -603,7 +614,6 @@ class GroupRecallEvent(NoticeEvent):
                 f"撤回了消息: "
                 f"{self.message_id}"
             )
-        
 
 
 @register_event("notice", notice_type="friend_recall")
@@ -611,6 +621,7 @@ class FriendRecallEvent(NoticeEvent):
     """
     好友消息撤回事件
     """
+
     def __init__(self, event_data):
         super().__init__(event_data)
         self.user_id: int = int(self["user_id"])
@@ -624,7 +635,6 @@ class FriendRecallEvent(NoticeEvent):
             f"撤回了消息: "
             f"{self.message_id}"
         )
-        
 
 
 @register_event("notice", notice_type="notify", sub_type="poke")
@@ -632,6 +642,7 @@ class GroupPokeEvent(NoticeEvent):
     """
     群戳一戳事件
     """
+
     def __init__(self, event_data):
         super().__init__(event_data)
         self.group_id: int = int(self["group_id"])
@@ -644,13 +655,12 @@ class GroupPokeEvent(NoticeEvent):
             f"{qq_data.get_group_info(self.group_id).group_name}"
             f"({self.group_id}) "
             f"内 "
-            f"{qq_data.get_group_member_info(self.user_id, self.user_id).get_nickname()}" # user_id is the poker
+            f"{qq_data.get_group_member_info(self.user_id, self.user_id).get_nickname()}"  # user_id is the poker
             f"({self.user_id}) "
             f"戳了戳 "
-            f"{qq_data.get_group_member_info(self.group_id, self.target_id).get_nickname()}" # target_id is pokered
+            f"{qq_data.get_group_member_info(self.group_id, self.target_id).get_nickname()}"  # target_id is pokered
             f"({self.target_id})"
         )
-        
 
 
 @register_event("notice", notice_type="notify", sub_type="lucky_king")
@@ -658,6 +668,7 @@ class GroupLuckyKingEvent(NoticeEvent):
     """
     群红包运气王事件
     """
+
     def __init__(self, event_data):
         super().__init__(event_data)
         self.group_id: int = int(self["group_id"])
@@ -670,14 +681,13 @@ class GroupLuckyKingEvent(NoticeEvent):
             f"{qq_data.get_group_info(self.group_id).group_name}"
             f"({self.group_id}) "
             f"内 "
-            f"{qq_data.get_group_member_info(self.group_id, self.user_id).get_nickname()}" # user_id is lucky king
+            f"{qq_data.get_group_member_info(self.group_id, self.user_id).get_nickname()}"  # user_id is lucky king
             f"({self.user_id}) "
             f"成为了 "
-            f"{qq_data.get_group_member_info(self.group_id, self.target_id).get_nickname()}" # target_id is sender
+            f"{qq_data.get_group_member_info(self.group_id, self.target_id).get_nickname()}"  # target_id is sender
             f"({self.target_id}) "
             f"发送的红包的运气王"
         )
-        
 
 
 @register_event("notice", notice_type="notify", sub_type="honor")
@@ -685,6 +695,7 @@ class GroupHonorEvent(NoticeEvent):
     """
     群荣誉变更事件
     """
+
     def __init__(self, event_data):
         super().__init__(event_data)
         self.group_id: int = int(self["group_id"])
@@ -707,7 +718,6 @@ class GroupHonorEvent(NoticeEvent):
             f"({self.user_id}) "
             f"获得了 {honor_name} 的称号"
         )
-        
 
 
 @register_event("notice", notice_type="notify", sub_type="honor", honor_type="talkative")
@@ -739,6 +749,7 @@ class RequestEvent(Event):
     """
     请求事件
     """
+
     def __init__(self, event_data):
         super().__init__(event_data)
         self.request_type: str = self["request_type"]
@@ -754,6 +765,7 @@ class FriendRequestEvent(RequestEvent):
     """
     加好友请求事件
     """
+
     def __init__(self, event_data):
         super().__init__(event_data)
         self.user_id: int = int(self["user_id"])
@@ -766,7 +778,6 @@ class FriendRequestEvent(RequestEvent):
             f"验证信息: {self.comment}\n"
             f"flag: {self.flag}"
         )
-        
 
 
 @register_event("request", request_type="group")
@@ -774,6 +785,7 @@ class GroupRequestEvent(RequestEvent):
     """
     加群请求事件
     """
+
     def __init__(self, event_data):
         super().__init__(event_data)
         self.sub_type: str = self["sub_type"]
@@ -789,6 +801,7 @@ class GroupAddRequestEvent(GroupRequestEvent):
     """
     加群请求事件 - 添加
     """
+
     def logger(self):
         logger.info(
             f"{qq_data.get_user_info(self.user_id).get_nickname()}"
@@ -799,7 +812,6 @@ class GroupAddRequestEvent(GroupRequestEvent):
             f"验证信息: {self.comment}\n"
             f"flag: {self.flag}"
         )
-        
 
 
 @register_event("request", request_type="group", sub_type="invite")
@@ -807,6 +819,7 @@ class GroupInviteRequestEvent(GroupRequestEvent):
     """
     加群请求事件 - 邀请
     """
+
     def logger(self):
         logger.info(
             f"{qq_data.get_group_member_info(self.group_id, self.user_id).get_nickname()}"
@@ -814,7 +827,6 @@ class GroupInviteRequestEvent(GroupRequestEvent):
             f"邀请机器人加入群 "
             f"{qq_data.get_group_info(self.group_id).group_name}"
         )
-        
 
 
 @register_event("meta_event")
@@ -822,6 +834,7 @@ class MetaEvent(Event):
     """
     元事件
     """
+
     def __init__(self, event_data):
         super().__init__(event_data)
         self.meta_event_type: str = self["meta_event_type"]
@@ -835,6 +848,7 @@ class LifecycleMetaEvent(MetaEvent):
     """
     元事件 - 生命周期
     """
+
     def __init__(self, event_data):
         super().__init__(event_data)
         self.sub_type: str = self["sub_type"]
@@ -847,7 +861,6 @@ class LifecycleMetaEvent(MetaEvent):
                 "connect": "OneBot 连接成功"
             }[self.sub_type]
         )
-        
 
 
 @register_event("meta_event", meta_event_type="lifecycle", sub_type="enable")
@@ -879,6 +892,7 @@ class HeartbeatMetaEvent(MetaEvent):
     """
     元事件 - 心跳
     """
+
     def __init__(self, event_data):
         super().__init__(event_data)
         self.status: dict = self["status"]
@@ -886,7 +900,6 @@ class HeartbeatMetaEvent(MetaEvent):
 
     def logger(self):
         logger.debug(f"收到心跳包")
-        
 
 
 @EventManager.event_listener(ListenerServer.EscalationEvent)
