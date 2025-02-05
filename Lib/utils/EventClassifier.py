@@ -142,9 +142,6 @@ class MessageEvent(Event):
         self.message_id: int = int(self["message_id"])
         self.sender: SenderDict = self["sender"]
 
-    def logger(self):
-        return super().logger()
-
 
 @register_event("message", message_type="private")
 class PrivateMessageEvent(MessageEvent):
@@ -270,9 +267,6 @@ class NoticeEvent(Event):
         super().__init__(event_data)
         self.notice_type: str = self["notice_type"]
 
-    def logger(self):
-        return super().logger()
-
 
 class FileDict(TypedDict, total=False):
     """
@@ -321,9 +315,6 @@ class GroupAdminEvent(NoticeEvent):
         self.group_id: int = int(self["group_id"])
         self.user_id: int = int(self["user_id"])
         self.sub_type: str = self["sub_type"]
-
-    def logger(self):
-        return super().logger()
 
 
 @register_event("notice", notice_type="group_admin", sub_type="set")
@@ -374,9 +365,6 @@ class GroupDecreaseEvent(NoticeEvent):
         self.user_id: int = int(self["user_id"])
         self.operator_id = int(self["operator_id"])
         self.sub_type: str = self["sub_type"]
-
-    def logger(self):
-        return super().logger()
 
 
 @register_event("notice", notice_type="group_decrease", sub_type="leave")
@@ -449,9 +437,6 @@ class GroupIncreaseEvent(NoticeEvent):
         self.operator_id: int = int(self["operator_id"])
         self.sub_type: str = self["sub_type"]
 
-    def logger(self):
-        return super().logger()
-
 
 @register_event("notice", notice_type="group_increase", sub_type="approve")
 class GroupIncreaseApproveEvent(GroupIncreaseEvent):
@@ -508,9 +493,6 @@ class GroupBanEvent(NoticeEvent):
         self.operator_id: int = int(self["operator_id"])
         self.sub_type: str = self["sub_type"]
         self.duration: int = int(self["duration"])
-
-    def logger(self):
-        return super().logger()
 
 
 @register_event("notice", notice_type="group_ban", sub_type="ban")
@@ -784,9 +766,6 @@ class RequestEvent(Event):
         self.comment: str = self["comment"]
         self.flag: str = self["flag"]
 
-    def logger(self):
-        return super().logger()
-
 
 @register_event("request", request_type="friend")
 class FriendRequestEvent(RequestEvent):
@@ -819,9 +798,6 @@ class GroupRequestEvent(RequestEvent):
         self.sub_type: str = self["sub_type"]
         self.group_id: int = int(self["group_id"])
         self.user_id: int = int(self["user_id"])
-
-    def logger(self):
-        return super().logger()
 
 
 @register_event("request", request_type="group", sub_type="add")
@@ -866,9 +842,6 @@ class MetaEvent(Event):
     def __init__(self, event_data):
         super().__init__(event_data)
         self.meta_event_type: str = self["meta_event_type"]
-
-    def logger(self):
-        return super().logger()
 
 
 @register_event("meta_event", meta_event_type="lifecycle")
