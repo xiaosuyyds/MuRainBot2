@@ -6,6 +6,7 @@
 
 """
 Lagrange实现端扩展插件
+可能更新不及时，如果有偏差请再issue内告诉我或者直接跟我提pr
 """
 
 from Lib import *
@@ -23,4 +24,4 @@ plugin_info = PluginManager.PluginInfo(
 )
 
 
-from plugins.LagrangeExtension import Actions, Segments
+from plugins.LagrangeExtension import Actions, Segments, Events
