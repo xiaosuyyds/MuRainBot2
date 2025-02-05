@@ -24,4 +24,4 @@ plugin_info = PluginManager.PluginInfo(
 )
 
 
-from plugins.LagrangeExtension import Actions, Segments, Evnets
+from plugins.LagrangeExtension import Actions, Segments, Events
