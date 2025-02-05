@@ -703,21 +703,19 @@ class GroupHonorEvent(NoticeEvent):
         self.honor_type: str = self["honor_type"]
 
     def logger(self):
-        honor_name_map = {
-            "talkative": "群聊之火",
-            "performer": "群聊炽焰",
-            "emotion": "快乐源泉"
-        }
-        honor_name = honor_name_map.get(self.honor_type, "未知荣誉")
-        logger.info(
-            f"群 "
-            f"{qq_data.get_group_info(self.group_id).group_name}"
-            f"({self.group_id}) "
-            f"内 "
-            f"{qq_data.get_group_member_info(self.group_id, self.user_id).get_nickname()}"
-            f"({self.user_id}) "
-            f"获得了 {honor_name} 的称号"
-        )
+        if self.honor_type not in ["talkative", "performer", "emotion"]:
+            logger.info(
+                f"群 "
+                f"{qq_data.get_group_info(self.group_id).group_name}"
+                f"({self.group_id}) "
+                f"内 "
+                f"{qq_data.get_group_member_info(self.group_id, self.user_id).get_nickname()}"
+                f"({self.user_id}) "
+                f"获得了未知荣誉: "
+                f"{self.honor_type}"
+            )
+        else:
+            super().logger()
 
 
 @register_event("notice", notice_type="notify", sub_type="honor", honor_type="talkative")
@@ -725,7 +723,17 @@ class GroupTalkativeHonorEvent(GroupHonorEvent):
     """
     群龙王变更事件
     """
-    pass
+
+    def logger(self):
+        logger.info(
+            f"群 "
+            f"{qq_data.get_group_info(self.group_id).group_name}"
+            f"({self.group_id}) "
+            f"内 "
+            f"{qq_data.get_group_member_info(self.group_id, self.user_id).get_nickname()}"
+            f"({self.user_id}) "
+            f"获得了群龙王称号"
+        )
 
 
 @register_event("notice", notice_type="notify", sub_type="honor", honor_type="performer")
@@ -733,7 +741,17 @@ class GroupPerformerHonorEvent(GroupHonorEvent):
     """
     群群聊之火变更事件
     """
-    pass
+
+    def logger(self):
+        logger.info(
+            f"群 "
+            f"{qq_data.get_group_info(self.group_id).group_name}"
+            f"({self.group_id}) "
+            f"内 "
+            f"{qq_data.get_group_member_info(self.group_id, self.user_id).get_nickname()}"
+            f"({self.user_id}) "
+            f"获得了群聊炽焰称号"
+        )
 
 
 @register_event("notice", notice_type="notify", sub_type="honor", honor_type="emotion")
@@ -741,7 +759,17 @@ class GroupEmotionHonorEvent(GroupHonorEvent):
     """
     群表快乐源泉变更事件
     """
-    pass
+
+    def logger(self):
+        logger.info(
+            f"群 "
+            f"{qq_data.get_group_info(self.group_id).group_name}"
+            f"({self.group_id}) "
+            f"内 "
+            f"{qq_data.get_group_member_info(self.group_id, self.user_id).get_nickname()}"
+            f"({self.user_id}) "
+            f"获得了快乐源泉称号"
+        )
 
 
 @register_event("request")
@@ -868,7 +896,9 @@ class EnableMetaEvent(LifecycleMetaEvent):
     """
     元事件 - 生命周期 - OneBot 启用
     """
-    pass
+
+    def logger(self):
+        logger.info("收到元事件: OneBot 启用")
 
 
 @register_event("meta_event", meta_event_type="lifecycle", sub_type="disable")
@@ -876,7 +906,9 @@ class DisableMetaEvent(LifecycleMetaEvent):
     """
     元事件 - 生命周期 - OneBot 禁用
     """
-    pass
+
+    def logger(self):
+        logger.info("收到元事件: OneBot 禁用")
 
 
 @register_event("meta_event", meta_event_type="lifecycle", sub_type="connect")
@@ -884,7 +916,9 @@ class ConnectMetaEvent(LifecycleMetaEvent):
     """
     元事件 - 生命周期 - OneBot 连接成功
     """
-    pass
+
+    def logger(self):
+        logger.info("收到元事件: OneBot 连接成功")
 
 
 @register_event("meta_event", meta_event_type="heartbeat")
