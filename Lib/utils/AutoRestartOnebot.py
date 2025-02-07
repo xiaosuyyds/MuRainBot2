@@ -52,16 +52,30 @@ def check_heartbeat():
     """
     心跳包检查线程
     """
-    flag = False
-    interval = 0.1
+    flag = -1  # 心跳包状态，-1表示正常，其他表示异常
+    interval = 0.1  # 心跳包检查间隔
+    has_new_heartbeat = False  # 是否有有新的心跳包
+    _last_heartbeat_time = -1  # 用于检测是否有新的心跳包
     while True:
         if heartbeat_interval != -1:
-            interval = heartbeat_interval / 2
+            interval = heartbeat_interval / 4
+
+            # 检查是否有新的心跳包
+            if _last_heartbeat_time != last_heartbeat_time:
+                has_new_heartbeat = True
+                _last_heartbeat_time = last_heartbeat_time
+
+            # 检查心跳包是否超时
             if time.time() - last_heartbeat_time > heartbeat_interval * 2:
-                logger.warning("心跳包超时！请检查 Onebot 实现端是否正常运行！")
-                restart_onebot("心跳包超时")
-                flag = True
-            elif flag:
+                if flag == -1:
+                    logger.warning("心跳包超时！请检查 Onebot 实现端是否正常运行！")
+                    restart_onebot("心跳包超时")
+                flag = 3
+            elif flag > 0 and has_new_heartbeat:
+                flag -= 1
+                has_new_heartbeat = False
+            elif flag == 0:
                 logger.info("心跳包间隔已恢复正常")
+                flag = -1
 
         time.sleep(interval)
