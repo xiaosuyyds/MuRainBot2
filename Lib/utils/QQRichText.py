@@ -136,7 +136,7 @@ def convert_to_fileurl(input_str):
 
     # 检查输入是否是有效的 URL
     parsed_url = urlparse(input_str)
-    if parsed_url.scheme in ['http', 'https', 'ftp', 'file']:
+    if parsed_url.scheme in ['http', 'https', 'ftp', 'file', 'data']:
         return input_str  # 已经是 URL 格式，直接返回
 
     # 检查输入是否是有效的本地文件路径
