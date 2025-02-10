@@ -108,7 +108,7 @@ class CommandRule(Rule):
             aliases = set()
         if command_start is None:
             command_start = ConfigManager.GlobalConfig().command.command_start
-        if any(_ in command for _ in ['[', ']'] + command_start):
+        if any(_ in command and _ for _ in ['[', ']'] + command_start):
             raise ValueError("command cannot contain [ or ]")
         if command in aliases:
             raise ValueError("command cannot be an alias")
