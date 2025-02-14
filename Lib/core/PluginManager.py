@@ -28,6 +28,35 @@ class NotEnabledPluginException(Exception):
     pass
 
 
+def load_plugin(plugin):
+    """
+    加载插件
+    Args:
+        plugin: 插件信息
+    """
+    name = plugin["name"]
+    file_path = plugin["file_path"]
+
+    # 创建模块规范
+    spec = importlib.util.spec_from_file_location(name, file_path)
+
+    # 创建新模块
+    module = importlib.util.module_from_spec(spec)
+
+    spec.loader.exec_module(module)
+
+    plugin_info = None
+    try:
+        if isinstance(module.plugin_info, PluginInfo):
+            plugin_info = module.plugin_info
+        else:
+            logger.warning(f"插件 {name} 的 plugin_info 并非 PluginInfo 类型，无法获取插件信息")
+    except AttributeError:
+        logger.warning(f"插件 {name} 未定义 plugin_info 属性，无法获取插件信息")
+
+    return module, plugin_info
+
+
 def load_plugins():
     """
     加载插件
@@ -39,52 +68,41 @@ def load_plugins():
         if plugin == "__pycache__":
             continue
         full_path = os.path.join(PLUGINS_PATH, plugin)
+        if (
+                os.path.isdir(full_path) and
+                os.path.exists(os.path.join(full_path, "__init__.py")) and
+                os.path.isfile(os.path.join(full_path, "__init__.py"))
+        ):
+            file_path = os.path.join(os.path.join(full_path, "__init__.py"))
+            name = plugin
+        elif os.path.isfile(full_path) and full_path.endswith(".py"):
+            file_path = full_path
+            name = os.path.split(file_path)[1]
+        else:
+            logger.warning(f"{full_path} 不是一个有效的插件")
+            continue
+        logger.debug(f"正在加载插件 {file_path}")
+        plugin = {"name": name, "plugin": None, "info": None, "file_path": file_path, "path": full_path}
+        plugins.append(plugin)
+
+    for plugin in plugins:
+        name = plugin["name"]
+        file_path = plugin["file_path"]
+        full_path = plugin["path"]
+
+        if plugin["plugin"] is not None:
+            # 由于其他原因已被加载（例如插件依赖）
+            logger.debug(f"插件 {name} 已被加载，跳过加载")
+            continue
+
         try:
-            if (
-                    os.path.isdir(full_path) and
-                    os.path.exists(os.path.join(full_path, "__init__.py")) and
-                    os.path.isfile(os.path.join(full_path, "__init__.py"))
-            ):
-                file_path = os.path.join(os.path.join(full_path, "__init__.py"))
-                name = plugin
-            elif os.path.isfile(full_path) and full_path.endswith(".py"):
-                file_path = full_path
-                name = os.path.split(file_path)[1]
-            else:
-                logger.warning(f"{full_path} 不是一个有效的插件")
-                continue
-            logger.debug(f"正在加载插件 {file_path}")
-            plugin = {"name": name, "plugin": None, "info": None, "file_path": file_path}
-            plugins.append(plugin)
-
-            # 创建模块规范
-            spec = importlib.util.spec_from_file_location(name, file_path)
-
-            # 创建新模块
-            module = importlib.util.module_from_spec(spec)
-
-            spec.loader.exec_module(module)
-            try:
-                if callable(module.main):
-                    logger.warning(f"插件 {name} 仍在使用 main 函数，main函数已被弃用，请尽快修改")
-                    has_main_func_plugins.append({"name": name, "plugin": module})
-            except AttributeError:
-                pass
-
-            plugin_info = None
-            try:
-                if isinstance(module.plugin_info, PluginInfo):
-                    plugin_info = module.plugin_info
-                else:
-                    logger.warning(f"插件 {name} 的 plugin_info 并非 PluginInfo 类型，无法获取插件信息")
-            except AttributeError:
-                logger.warning(f"插件 {name} 未定义 plugin_info 属性，无法获取插件信息")
+            module, plugin_info = load_plugin(plugin)
 
             plugin["info"] = plugin_info
             plugin["plugin"] = module
             logger.debug(f"插件 {name}({file_path}) 加载成功！")
         except NotEnabledPluginException:
-            logger.warning(f"插件 {full_path} 已被禁用，将不会被加载")
+            logger.warning(f"插件 {name}({full_path}) 已被禁用，将不会被加载")
             plugins.remove(plugin)
             continue
 
@@ -113,6 +131,31 @@ class PluginInfo:
     def __post_init__(self):
         if self.ENABLED is not True:
             raise NotEnabledPluginException
+
+
+def requirement_plugin(plugin_name: str):
+    """
+    插件依赖
+    Args:
+        plugin_name: 插件的名称，如果依赖的是库形式的插件则是库文件夹的名称，如果依赖的是文件形式则是插件文件的名称（文件名称包含后缀）
+
+    Returns:
+        依赖的插件的信息
+    """
+    logger.debug(f"由于插件依赖，正在加载插件 {plugin_name}")
+    for plugin in plugins:
+        if plugin["name"] == plugin_name:
+            if plugin["plugin"] is None:
+                try:
+                    module, plugin_info = load_plugin(plugin)
+                    plugin["info"] = plugin_info
+                    plugin["plugin"] = module
+                except Exception as e:
+                    logger.error(f"尝试加载插件 {plugin_name} 时失败！ 原因:{repr(e)}")
+                    raise e
+            return plugin
+    else:
+        raise FileNotFoundError(f"插件 {plugin_name} 不存在")
 
 
 # 该方法已被弃用
