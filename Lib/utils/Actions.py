@@ -8,7 +8,7 @@ from Lib.utils import QQRichText, Logger
 
 logger = Logger.get_logger()
 
-from typing import Generic, TypeVar, Union
+from typing import Generic, TypeVar, Union, Callable
 
 api = OnebotAPI.OnebotAPI()
 
@@ -84,14 +84,14 @@ class Action:
     """
     call_func = None
 
-    def __init__(self, *args, callback: callable = None, **kwargs):
+    def __init__(self, *args, callback: Callable[[Result], ...] = None, **kwargs):
         self._result: UnCalled | Result = UnCalled
         self._async = None
         self.callback = callback
         self.args = args
         self.kwargs = kwargs
 
-    def set_callback(self, callback: callable):
+    def set_callback(self, callback: Callable[[Result], ...]):
         """
         设置回调函数，如果Action已被调用则立即执行回调函数
         Returns:
@@ -179,10 +179,11 @@ class SendPrivateMsg(Action):
 
     call_func = api.send_private_msg
 
-    def __init__(self, user_id: int, message: str | list[dict] | QQRichText.QQRichText):
+    def __init__(self, user_id: int, message: str | list[dict] | QQRichText.QQRichText,
+                 callback: Callable[[Result], ...] = None):
         if isinstance(message, QQRichText.QQRichText):
             message = message.get_array()
-        super().__init__(user_id=user_id, message=message)
+        super().__init__(user_id=user_id, message=message, callback=callback)
 
 
 class SendGroupMsg(Action):
@@ -192,10 +193,11 @@ class SendGroupMsg(Action):
 
     call_func = api.send_group_msg
 
-    def __init__(self, group_id: int, message: str | list[dict] | QQRichText.QQRichText):
+    def __init__(self, group_id: int, message: str | list[dict] | QQRichText.QQRichText,
+                 callback: Callable[[Result], ...] = None):
         if isinstance(message, QQRichText.QQRichText):
             message = message.get_array()
-        super().__init__(group_id=group_id, message=message)
+        super().__init__(group_id=group_id, message=message, callback=callback)
 
 
 class SendMsg(Action):
@@ -205,7 +207,8 @@ class SendMsg(Action):
 
     call_func = api.send_msg
 
-    def __init__(self, user_id: int = -1, group_id: int = -1, message: str | list[dict] | QQRichText.QQRichText = ""):
+    def __init__(self, user_id: int = -1, group_id: int = -1, message: str | list[dict] | QQRichText.QQRichText = "",
+                 callback: Callable[[Result], ...] = None):
         if isinstance(message, QQRichText.QQRichText):
             message = message.get_array()
 
@@ -214,7 +217,7 @@ class SendMsg(Action):
         if user_id == -1 and group_id == -1:
             raise ValueError('user_id and group_id cannot be both -1.')
 
-        super().__init__(user_id=user_id, group_id=group_id, message=message)
+        super().__init__(user_id=user_id, group_id=group_id, message=message, callback=callback)
 
 
 class DeleteMsg(Action):
@@ -224,8 +227,8 @@ class DeleteMsg(Action):
 
     call_func = api.delete_msg
 
-    def __init__(self, message_id: int):
-        super().__init__(message_id=message_id)
+    def __init__(self, message_id: int, callback: Callable[[Result], ...] = None):
+        super().__init__(message_id=message_id, callback=callback)
 
 
 class GetMsg(Action):
@@ -235,8 +238,8 @@ class GetMsg(Action):
 
     call_func = api.get_msg
 
-    def __init__(self, message_id: int):
-        super().__init__(message_id=message_id)
+    def __init__(self, message_id: int, callback: Callable[[Result], ...] = None):
+        super().__init__(message_id=message_id, callback=callback)
 
 
 class GetForwardMsg(Action):
@@ -246,8 +249,8 @@ class GetForwardMsg(Action):
 
     call_func = api.get_forward_msg
 
-    def __init__(self, message_id: int):
-        super().__init__(message_id=message_id)
+    def __init__(self, message_id: int, callback: Callable[[Result], ...] = None):
+        super().__init__(message_id=message_id, callback=callback)
 
 
 class SendLike(Action):
@@ -257,8 +260,8 @@ class SendLike(Action):
 
     call_func = api.send_like
 
-    def __init__(self, user_id: int, times: int = 1):
-        super().__init__(user_id=user_id, times=times)
+    def __init__(self, user_id: int, times: int = 1, callback: Callable[[Result], ...] = None):
+        super().__init__(user_id=user_id, times=times, callback=callback)
 
 
 class SetGroupKick(Action):
@@ -268,8 +271,9 @@ class SetGroupKick(Action):
 
     call_func = api.set_group_kick
 
-    def __init__(self, group_id: int, user_id: int, reject_add_request: bool = False):
-        super().__init__(group_id=group_id, user_id=user_id, reject_add_request=reject_add_request)
+    def __init__(self, group_id: int, user_id: int, reject_add_request: bool = False,
+                 callback: Callable[[Result], ...] = None):
+        super().__init__(group_id=group_id, user_id=user_id, reject_add_request=reject_add_request, callback=callback)
 
 
 class SetGroupBan(Action):
@@ -279,8 +283,8 @@ class SetGroupBan(Action):
 
     call_func = api.set_group_ban
 
-    def __init__(self, group_id: int, user_id: int, duration: int = 30 * 60):
-        super().__init__(group_id=group_id, user_id=user_id, duration=duration)
+    def __init__(self, group_id: int, user_id: int, duration: int = 30 * 60, callback: Callable[[Result], ...] = None):
+        super().__init__(group_id=group_id, user_id=user_id, duration=duration, callback=callback)
 
 
 class SetGroupAnonymousBan(Action):
@@ -290,8 +294,9 @@ class SetGroupAnonymousBan(Action):
 
     call_func = api.set_group_anonymous_ban
 
-    def __init__(self, group_id: int, anonymous: dict, duration: int = 30 * 60):
-        super().__init__(group_id=group_id, anonymous=anonymous, duration=duration)
+    def __init__(self, group_id: int, anonymous: dict, duration: int = 30 * 60,
+                 callback: Callable[[Result], ...] = None):
+        super().__init__(group_id=group_id, anonymous=anonymous, duration=duration, callback=callback)
 
 
 class SetGroupWholeBan(Action):
@@ -301,8 +306,8 @@ class SetGroupWholeBan(Action):
 
     call_func = api.set_group_whole_ban
 
-    def __init__(self, group_id: int, enable: bool = True):
-        super().__init__(group_id=group_id, enable=enable)
+    def __init__(self, group_id: int, enable: bool = True, callback: Callable[[Result], ...] = None):
+        super().__init__(group_id=group_id, enable=enable, callback=callback)
 
 
 class SetGroupAdmin(Action):
@@ -312,8 +317,8 @@ class SetGroupAdmin(Action):
 
     call_func = api.set_group_admin
 
-    def __init__(self, group_id: int, user_id: int, enable: bool = True):
-        super().__init__(group_id=group_id, user_id=user_id, enable=enable)
+    def __init__(self, group_id: int, user_id: int, enable: bool = True, callback: Callable[[Result], ...] = None):
+        super().__init__(group_id=group_id, user_id=user_id, enable=enable, callback=callback)
 
 
 class SetGroupCard(Action):
@@ -323,8 +328,8 @@ class SetGroupCard(Action):
 
     call_func = api.set_group_card
 
-    def __init__(self, group_id: int, user_id: int, card: str = ""):
-        super().__init__(group_id=group_id, user_id=user_id, card=card)
+    def __init__(self, group_id: int, user_id: int, card: str = "", callback: Callable[[Result], ...] = None):
+        super().__init__(group_id=group_id, user_id=user_id, card=card, callback=callback)
 
 
 class SetGroupLeave(Action):
@@ -334,8 +339,8 @@ class SetGroupLeave(Action):
 
     call_func = api.set_group_leave
 
-    def __init__(self, group_id: int, is_dismiss: bool = False):
-        super().__init__(group_id=group_id, is_dismiss=is_dismiss)
+    def __init__(self, group_id: int, is_dismiss: bool = False, callback: Callable[[Result], ...] = None):
+        super().__init__(group_id=group_id, is_dismiss=is_dismiss, callback=callback)
 
 
 class SetGroupSpecialTitle(Action):
@@ -345,8 +350,10 @@ class SetGroupSpecialTitle(Action):
 
     call_func = api.set_group_special_title
 
-    def __init__(self, group_id: int, user_id: int, special_title: str = "", duration: int = -1):
-        super().__init__(group_id=group_id, user_id=user_id, special_title=special_title, duration=duration)
+    def __init__(self, group_id: int, user_id: int, special_title: str = "", duration: int = -1,
+                 callback: Callable[[Result], ...] = None):
+        super().__init__(group_id=group_id, user_id=user_id, special_title=special_title, duration=duration,
+                         callback=callback)
 
 
 class SetFriendAddRequest(Action):
@@ -356,8 +363,8 @@ class SetFriendAddRequest(Action):
 
     call_func = api.set_friend_add_request
 
-    def __init__(self, flag: str, approve: bool = True, remark: str = ""):
-        super().__init__(flag=flag, approve=approve, remark=remark)
+    def __init__(self, flag: str, approve: bool = True, remark: str = "", callback: Callable[[Result], ...] = None):
+        super().__init__(flag=flag, approve=approve, remark=remark, callback=callback)
 
 
 class SetGroupAddRequest(Action):
@@ -367,8 +374,9 @@ class SetGroupAddRequest(Action):
 
     call_func = api.set_group_add_request
 
-    def __init__(self, flag: str, sub_type: str = "add", approve: bool = True, reason: str = ""):
-        super().__init__(flag=flag, sub_type=sub_type, approve=approve, reason=reason)
+    def __init__(self, flag: str, sub_type: str = "add", approve: bool = True, reason: str = "",
+                 callback: Callable[[Result], ...] = None):
+        super().__init__(flag=flag, sub_type=sub_type, approve=approve, reason=reason, callback=callback)
 
 
 class GetLoginInfo(Action):
@@ -378,8 +386,8 @@ class GetLoginInfo(Action):
 
     call_func = api.get_login_info
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, callback: Callable[[Result], ...] = None):
+        super().__init__(callback=callback)
 
 
 class GetStrangerInfo(Action):
@@ -389,8 +397,8 @@ class GetStrangerInfo(Action):
 
     call_func = api.get_stranger_info
 
-    def __init__(self, user_id: int, no_cache: bool = False):
-        super().__init__(user_id=user_id, no_cache=no_cache)
+    def __init__(self, user_id: int, no_cache: bool = False, callback: Callable[[Result], ...] = None):
+        super().__init__(user_id=user_id, no_cache=no_cache, callback=callback)
 
 
 class GetFriendList(Action):
@@ -400,8 +408,8 @@ class GetFriendList(Action):
 
     call_func = api.get_friend_list
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, callback: Callable[[Result], ...] = None):
+        super().__init__(callback=callback)
 
 
 class GetGroupInfo(Action):
@@ -411,8 +419,8 @@ class GetGroupInfo(Action):
 
     call_func = api.get_group_info
 
-    def __init__(self, group_id: int, no_cache: bool = False):
-        super().__init__(group_id=group_id, no_cache=no_cache)
+    def __init__(self, group_id: int, no_cache: bool = False, callback: Callable[[Result], ...] = None):
+        super().__init__(group_id=group_id, no_cache=no_cache, callback=callback)
 
 
 class GetGroupList(Action):
@@ -422,8 +430,8 @@ class GetGroupList(Action):
 
     call_func = api.get_group_list
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, callback: Callable[[Result], ...] = None):
+        super().__init__(callback=callback)
 
 
 class GetGroupMemberInfo(Action):
@@ -433,8 +441,8 @@ class GetGroupMemberInfo(Action):
 
     call_func = api.get_group_member_info
 
-    def __init__(self, group_id: int, user_id: int, no_cache: bool = False):
-        super().__init__(group_id=group_id, user_id=user_id, no_cache=no_cache)
+    def __init__(self, group_id: int, user_id: int, no_cache: bool = False, callback: Callable[[Result], ...] = None):
+        super().__init__(group_id=group_id, user_id=user_id, no_cache=no_cache, callback=callback)
 
 
 class GetGroupMemberList(Action):
@@ -444,8 +452,8 @@ class GetGroupMemberList(Action):
 
     call_func = api.get_group_member_list
 
-    def __init__(self, group_id: int, no_cache: bool = False):
-        super().__init__(group_id=group_id, no_cache=no_cache)
+    def __init__(self, group_id: int, no_cache: bool = False, callback: Callable[[Result], ...] = None):
+        super().__init__(group_id=group_id, no_cache=no_cache, callback=callback)
 
 
 class GetGroupHonorInfo(Action):
@@ -455,8 +463,8 @@ class GetGroupHonorInfo(Action):
 
     call_func = api.get_group_honor_info
 
-    def __init__(self, group_id: int, type_: str = "all"):
-        super().__init__(group_id=group_id, type_=type_)
+    def __init__(self, group_id: int, type_: str = "all", callback: Callable[[Result], ...] = None):
+        super().__init__(group_id=group_id, type_=type_, callback=callback)
 
 
 class GetCookies(Action):
@@ -466,8 +474,8 @@ class GetCookies(Action):
 
     call_func = api.get_cookies
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, callback: Callable[[Result], ...] = None):
+        super().__init__(callback=callback)
 
 
 class GetCsrfToken(Action):
@@ -477,8 +485,8 @@ class GetCsrfToken(Action):
 
     call_func = api.get_csrf_token
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, callback: Callable[[Result], ...] = None):
+        super().__init__(callback=callback)
 
 
 class GetCredentials(Action):
@@ -488,8 +496,8 @@ class GetCredentials(Action):
 
     call_func = api.get_credentials
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, callback: Callable[[Result], ...] = None):
+        super().__init__(callback=callback)
 
 
 class GetRecord(Action):
@@ -499,8 +507,9 @@ class GetRecord(Action):
 
     call_func = api.get_record
 
-    def __init__(self, file: str, out_format: str = "mp3", out_file: str = ""):
-        super().__init__(file=file, out_format=out_format, out_file=out_file)
+    def __init__(self, file: str, out_format: str = "mp3", out_file: str = "",
+                 callback: Callable[[Result], ...] = None):
+        super().__init__(file=file, out_format=out_format, out_file=out_file, callback=callback)
 
 
 class GetImage(Action):
@@ -510,8 +519,8 @@ class GetImage(Action):
 
     call_func = api.get_image
 
-    def __init__(self, file: str):
-        super().__init__(file=file)
+    def __init__(self, file: str, callback: Callable[[Result], ...] = None):
+        super().__init__(file=file, callback=callback)
 
 
 class CanSendImage(Action):
@@ -521,8 +530,8 @@ class CanSendImage(Action):
 
     call_func = api.can_send_image
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, callback: Callable[[Result], ...] = None):
+        super().__init__(callback=callback)
 
 
 class CanSendRecord(Action):
@@ -532,8 +541,8 @@ class CanSendRecord(Action):
 
     call_func = api.can_send_record
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, callback: Callable[[Result], ...] = None):
+        super().__init__(callback=callback)
 
 
 class GetStatus(Action):
@@ -543,8 +552,8 @@ class GetStatus(Action):
 
     call_func = api.get_status
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, callback: Callable[[Result], ...] = None):
+        super().__init__(callback=callback)
 
 
 class GetVersionInfo(Action):
@@ -554,8 +563,8 @@ class GetVersionInfo(Action):
 
     call_func = api.get_version_info
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, callback: Callable[[Result], ...] = None):
+        super().__init__(callback=callback)
 
 
 class SetRestart(Action):
@@ -565,8 +574,8 @@ class SetRestart(Action):
 
     call_func = api.set_restart
 
-    def __init__(self, delay: int = 0):
-        super().__init__(delay=delay)
+    def __init__(self, delay: int = 0, callback: Callable[[Result], ...] = None):
+        super().__init__(delay=delay, callback=callback)
 
 
 class CleanCache(Action):
@@ -576,8 +585,8 @@ class CleanCache(Action):
 
     call_func = api.clean_cache
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, callback: Callable[[Result], ...] = None):
+        super().__init__(callback=callback)
 
 
 """
