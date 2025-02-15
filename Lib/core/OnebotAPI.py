@@ -434,16 +434,14 @@ class OnebotAPI:
         }
         return self.get("/get_group_member_info", data)
 
-    def get_group_member_list(self, group_id: int, no_cache: bool = False):
+    def get_group_member_list(self, group_id: int):
         """
         获取群成员列表
         Args:
             group_id: 群号
-            no_cache: 是否不使用缓存（使用缓存可能更新不及时，但响应更快）
         """
         data = {
-            "group_id": group_id,
-            "no_cache": no_cache
+            "group_id": group_id
         }
         return self.get("/get_group_member_list", data)
 

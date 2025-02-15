@@ -592,14 +592,13 @@ class GetGroupMemberList(Action):
 
     call_func = api.get_group_member_list
 
-    def __init__(self, group_id: int, no_cache: bool = False, callback: Callable[[Result], ...] = None):
+    def __init__(self, group_id: int, callback: Callable[[Result], ...] = None):
         """
         Args:
             group_id (int): 群号
-            no_cache (bool, optional): 是否不使用缓存（使用缓存可能更新不及时，但响应更快）, This parameter seems to be useless for this API. Defaults to False.
             callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
         """
-        super().__init__(group_id=group_id, no_cache=no_cache, callback=callback)
+        super().__init__(group_id=group_id, callback=callback)
 
 
 class GetGroupHonorInfo(Action):
