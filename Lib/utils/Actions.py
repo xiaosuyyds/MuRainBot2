@@ -1,9 +1,12 @@
 """
 操作
 """
+import traceback
 
 from Lib.core import OnebotAPI, ThreadPool
-from Lib.utils import QQRichText
+from Lib.utils import QQRichText, Logger
+
+logger = Logger.get_logger()
 
 from typing import Generic, TypeVar, Union
 
@@ -81,11 +84,27 @@ class Action:
     """
     call_func = None
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, callback: callable = None, **kwargs):
         self._result: UnCalled | Result = UnCalled
         self._async = None
+        self.callback = callback
         self.args = args
         self.kwargs = kwargs
+
+    def set_callback(self, callback: callable):
+        """
+        设置回调函数，如果Action已被调用则立即执行回调函数
+        Returns:
+            Action
+        """
+        self.callback = callback
+        if self._result is not UnCalled:
+            try:
+                self.callback(self._result)
+            except Exception as e:
+                logger.warning(f"回调函数异常: {repr(e)}\n"
+                               f"{traceback.format_exc()}")
+        return self
 
     def call(self):
         """
@@ -98,6 +117,12 @@ class Action:
         except Exception as e:
             result = Result(e, False)
         self._result = result
+        if self.callback is not None:
+            try:
+                self.callback(self._result)
+            except Exception as e:
+                logger.warning(f"回调函数异常: {repr(e)}\n"
+                               f"{traceback.format_exc()}")
         return self
 
     def get_result(self) -> Result:
