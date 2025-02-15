@@ -3,8 +3,10 @@ QQ富文本
 """
 import inspect
 import json
+import os
 import re
 from typing import Any
+from urllib.parse import urlparse
 
 from Lib.utils import QQDataCacher, Logger
 
@@ -117,6 +119,36 @@ def array_2_cq(cq_array: list | dict) -> str:
             else:
                 text += f"[CQ:{segment.get('type')}]"
     return text
+
+
+def convert_to_fileurl(input_str):
+    """
+    自动将输入的路径转换成fileurl
+    Args:
+        input_str: 输入的路径
+
+    Returns:
+        转换后的 fileurl
+    """
+    # 检查是否已经是 file:// 格式
+    if input_str.startswith("file://"):
+        return input_str
+
+    # 检查输入是否是有效的 URL
+    parsed_url = urlparse(input_str)
+    if parsed_url.scheme in ['http', 'https', 'ftp', 'file', 'data']:
+        return input_str  # 已经是 URL 格式，直接返回
+
+    # 检查输入是否是有效的本地文件路径
+    if os.path.isfile(input_str):
+        # 转换为 file:// 格式
+        return f"file://{os.path.abspath(input_str)}"
+
+    # 如果是相对路径或其他文件类型，则尝试转换
+    if os.path.exists(input_str):
+        return f"file://{os.path.abspath(input_str)}"
+
+    raise ValueError("输入的路径无效，无法转换为 fileurl 格式")
 
 
 segments = []
@@ -333,20 +365,22 @@ class Image(Segment):
     """
     segment_type = "image"
 
-    def __init__(self, file):
+    def __init__(self, file: str):
         """
         Args:
             file: 图片文件(url，对于文件使用file url格式)
         """
+        file = convert_to_fileurl(file)
         self.file = file
         super().__init__({"type": "image", "data": {"file": str(file)}})
 
-    def set_file(self, file):
+    def set_file(self, file: str):
         """
         设置图片文件
         Args:
             file: 图片文件
         """
+        file = convert_to_fileurl(file)
         self.file = file
         self.array["data"]["file"] = str(file)
 
@@ -360,20 +394,22 @@ class Record(Segment):
     """
     segment_type = "record"
 
-    def __init__(self, file):
+    def __init__(self, file: str):
         """
         Args:
             file: 语音文件(url，对于文件使用file url格式)
         """
+        file = convert_to_fileurl(file)
         self.file = file
         super().__init__({"type": "record", "data": {"file": str(file)}})
 
-    def set_file(self, file):
+    def set_file(self, file: str):
         """
         设置语音文件
         Args:
             file: 语音文件(url，对于文件使用file url格式)
         """
+        file = convert_to_fileurl(file)
         self.file = file
         self.array["data"]["file"] = str(file)
 
@@ -387,20 +423,22 @@ class Video(Segment):
     """
     segment_type = "video"
 
-    def __init__(self, file):
+    def __init__(self, file: str):
         """
         Args:
             file: 视频文件(url，对于文件使用file url格式)
         """
+        file = convert_to_fileurl(file)
         self.file = file
         super().__init__({"type": "video", "data": {"file": str(file)}})
 
-    def set_file(self, file):
+    def set_file(self, file: str):
         """
         设置视频文件
         Args:
             file: 视频文件(url，对于文件使用file url格式)
         """
+        file = convert_to_fileurl(file)
         self.file = file
         self.array["data"]["file"] = str(file)
 

@@ -2,10 +2,14 @@
 操作
 """
 
-from Lib.core import OnebotAPI, ThreadPool
-from Lib.utils import QQRichText
+import traceback
 
-from typing import Generic, TypeVar, Union
+from Lib.core import OnebotAPI, ThreadPool
+from Lib.utils import QQRichText, Logger
+
+logger = Logger.get_logger()
+
+from typing import Generic, TypeVar, Union, Callable
 
 api = OnebotAPI.OnebotAPI()
 
@@ -81,11 +85,27 @@ class Action:
     """
     call_func = None
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, callback: Callable[[Result], ...] = None, **kwargs):
         self._result: UnCalled | Result = UnCalled
         self._async = None
+        self.callback = callback
         self.args = args
         self.kwargs = kwargs
+
+    def set_callback(self, callback: Callable[[Result], ...]):
+        """
+        设置回调函数，如果Action已被调用则立即执行回调函数
+        Returns:
+            Action
+        """
+        self.callback = callback
+        if self._result is not UnCalled:
+            try:
+                self.callback(self._result)
+            except Exception as e:
+                logger.warning(f"回调函数异常: {repr(e)}\n"
+                               f"{traceback.format_exc()}")
+        return self
 
     def call(self):
         """
@@ -98,6 +118,12 @@ class Action:
         except Exception as e:
             result = Result(e, False)
         self._result = result
+        if self.callback is not None:
+            try:
+                self.callback(self._result)
+            except Exception as e:
+                logger.warning(f"回调函数异常: {repr(e)}\n"
+                               f"{traceback.format_exc()}")
         return self
 
     def get_result(self) -> Result:
@@ -154,10 +180,17 @@ class SendPrivateMsg(Action):
 
     call_func = api.send_private_msg
 
-    def __init__(self, user_id: int, message: str | list[dict] | QQRichText.QQRichText):
+    def __init__(self, user_id: int, message: str | list[dict] | QQRichText.QQRichText,
+                 callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            user_id (int): 对方 QQ 号
+            message (str | list[dict] | QQRichText.QQRichText): 要发送的内容
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
         if isinstance(message, QQRichText.QQRichText):
             message = message.get_array()
-        super().__init__(user_id=user_id, message=message)
+        super().__init__(user_id=user_id, message=message, callback=callback)
 
 
 class SendGroupMsg(Action):
@@ -167,10 +200,17 @@ class SendGroupMsg(Action):
 
     call_func = api.send_group_msg
 
-    def __init__(self, group_id: int, message: str | list[dict] | QQRichText.QQRichText):
+    def __init__(self, group_id: int, message: str | list[dict] | QQRichText.QQRichText,
+                 callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            group_id (int): 群号
+            message (str | list[dict] | QQRichText.QQRichText): 要发送的内容
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
         if isinstance(message, QQRichText.QQRichText):
             message = message.get_array()
-        super().__init__(group_id=group_id, message=message)
+        super().__init__(group_id=group_id, message=message, callback=callback)
 
 
 class SendMsg(Action):
@@ -180,7 +220,15 @@ class SendMsg(Action):
 
     call_func = api.send_msg
 
-    def __init__(self, user_id: int = -1, group_id: int = -1, message: str | list[dict] | QQRichText.QQRichText = ""):
+    def __init__(self, user_id: int = -1, group_id: int = -1, message: str | list[dict] | QQRichText.QQRichText = "",
+                 callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            user_id (int, optional): 对方 QQ 号（消息类型为 `private` 时需要）. Defaults to -1.
+            group_id (int, optional): 群号（消息类型为 `group` 时需要）. Defaults to -1.
+            message (str | list[dict] | QQRichText.QQRichText, optional): 要发送的内容. Defaults to "".
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
         if isinstance(message, QQRichText.QQRichText):
             message = message.get_array()
 
@@ -189,7 +237,7 @@ class SendMsg(Action):
         if user_id == -1 and group_id == -1:
             raise ValueError('user_id and group_id cannot be both -1.')
 
-        super().__init__(user_id=user_id, group_id=group_id, message=message)
+        super().__init__(user_id=user_id, group_id=group_id, message=message, callback=callback)
 
 
 class DeleteMsg(Action):
@@ -199,8 +247,13 @@ class DeleteMsg(Action):
 
     call_func = api.delete_msg
 
-    def __init__(self, message_id: int):
-        super().__init__(message_id=message_id)
+    def __init__(self, message_id: int, callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            message_id (int): 消息 ID
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(message_id=message_id, callback=callback)
 
 
 class GetMsg(Action):
@@ -210,8 +263,13 @@ class GetMsg(Action):
 
     call_func = api.get_msg
 
-    def __init__(self, message_id: int):
-        super().__init__(message_id=message_id)
+    def __init__(self, message_id: int, callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            message_id (int): 消息 ID
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(message_id=message_id, callback=callback)
 
 
 class GetForwardMsg(Action):
@@ -221,8 +279,13 @@ class GetForwardMsg(Action):
 
     call_func = api.get_forward_msg
 
-    def __init__(self, message_id: int):
-        super().__init__(message_id=message_id)
+    def __init__(self, message_id: int, callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            message_id (int): 合并转发 ID
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(message_id=message_id, callback=callback)
 
 
 class SendLike(Action):
@@ -232,8 +295,14 @@ class SendLike(Action):
 
     call_func = api.send_like
 
-    def __init__(self, user_id: int, times: int = 1):
-        super().__init__(user_id=user_id, times=times)
+    def __init__(self, user_id: int, times: int = 1, callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            user_id (int): 对方 QQ 号
+            times (int, optional): 赞的次数，每个好友每天最多 10 次. Defaults to 1.
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(user_id=user_id, times=times, callback=callback)
 
 
 class SetGroupKick(Action):
@@ -243,8 +312,16 @@ class SetGroupKick(Action):
 
     call_func = api.set_group_kick
 
-    def __init__(self, group_id: int, user_id: int, reject_add_request: bool = False):
-        super().__init__(group_id=group_id, user_id=user_id, reject_add_request=reject_add_request)
+    def __init__(self, group_id: int, user_id: int, reject_add_request: bool = False,
+                 callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            group_id (int): 群号
+            user_id (int): 要踢的 QQ 号
+            reject_add_request (bool, optional): 拒绝此人的加群请求. Defaults to False.
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(group_id=group_id, user_id=user_id, reject_add_request=reject_add_request, callback=callback)
 
 
 class SetGroupBan(Action):
@@ -254,8 +331,15 @@ class SetGroupBan(Action):
 
     call_func = api.set_group_ban
 
-    def __init__(self, group_id: int, user_id: int, duration: int = 30 * 60):
-        super().__init__(group_id=group_id, user_id=user_id, duration=duration)
+    def __init__(self, group_id: int, user_id: int, duration: int = 30 * 60, callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            group_id (int): 群号
+            user_id (int): 要禁言的 QQ 号
+            duration (int, optional): 禁言时长，单位秒，0 表示取消禁言. Defaults to 30 * 60.
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(group_id=group_id, user_id=user_id, duration=duration, callback=callback)
 
 
 class SetGroupAnonymousBan(Action):
@@ -265,8 +349,18 @@ class SetGroupAnonymousBan(Action):
 
     call_func = api.set_group_anonymous_ban
 
-    def __init__(self, group_id: int, anonymous: dict, duration: int = 30 * 60):
-        super().__init__(group_id=group_id, anonymous=anonymous, duration=duration)
+    def __init__(self, group_id: int, anonymous: dict = None, anonymous_flag: str = None, duration: int = 30 * 60,
+                 callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            group_id (int): 群号
+            anonymous (dict, optional): 要禁言的匿名用户对象（群消息上报的 `anonymous` 字段）. Defaults to None.
+            anonymous_flag (str, optional): 要禁言的匿名用户的 flag（需从群消息上报的数据中获得）. Defaults to None.
+            duration (int, optional): 禁言时长，单位秒，无法取消匿名用户禁言. Defaults to 30 * 60.
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(group_id=group_id, anonymous=anonymous, anonymous_flag=anonymous_flag, duration=duration,
+                         callback=callback, **{'flag': anonymous_flag} if anonymous_flag else {})
 
 
 class SetGroupWholeBan(Action):
@@ -276,8 +370,14 @@ class SetGroupWholeBan(Action):
 
     call_func = api.set_group_whole_ban
 
-    def __init__(self, group_id: int, enable: bool = True):
-        super().__init__(group_id=group_id, enable=enable)
+    def __init__(self, group_id: int, enable: bool = True, callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            group_id (int): 群号
+            enable (bool, optional): 是否禁言. Defaults to True.
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(group_id=group_id, enable=enable, callback=callback)
 
 
 class SetGroupAdmin(Action):
@@ -287,8 +387,15 @@ class SetGroupAdmin(Action):
 
     call_func = api.set_group_admin
 
-    def __init__(self, group_id: int, user_id: int, enable: bool = True):
-        super().__init__(group_id=group_id, user_id=user_id, enable=enable)
+    def __init__(self, group_id: int, user_id: int, enable: bool = True, callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            group_id (int): 群号
+            user_id (int): 要设置管理员的 QQ 号
+            enable (bool, optional): true 为设置，false 为取消. Defaults to True.
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(group_id=group_id, user_id=user_id, enable=enable, callback=callback)
 
 
 class SetGroupCard(Action):
@@ -298,8 +405,15 @@ class SetGroupCard(Action):
 
     call_func = api.set_group_card
 
-    def __init__(self, group_id: int, user_id: int, card: str = ""):
-        super().__init__(group_id=group_id, user_id=user_id, card=card)
+    def __init__(self, group_id: int, user_id: int, card: str = "", callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            group_id (int): 群号
+            user_id (int): 要设置的 QQ 号
+            card (str, optional): 群名片内容，不填或空字符串表示删除群名片. Defaults to "".
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(group_id=group_id, user_id=user_id, card=card, callback=callback)
 
 
 class SetGroupLeave(Action):
@@ -309,8 +423,14 @@ class SetGroupLeave(Action):
 
     call_func = api.set_group_leave
 
-    def __init__(self, group_id: int, is_dismiss: bool = False):
-        super().__init__(group_id=group_id, is_dismiss=is_dismiss)
+    def __init__(self, group_id: int, is_dismiss: bool = False, callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            group_id (int): 群号
+            is_dismiss (bool, optional): 是否解散，如果登录号是群主，则仅在此项为 true 时能够解散. Defaults to False.
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(group_id=group_id, is_dismiss=is_dismiss, callback=callback)
 
 
 class SetGroupSpecialTitle(Action):
@@ -320,8 +440,18 @@ class SetGroupSpecialTitle(Action):
 
     call_func = api.set_group_special_title
 
-    def __init__(self, group_id: int, user_id: int, special_title: str = "", duration: int = -1):
-        super().__init__(group_id=group_id, user_id=user_id, special_title=special_title, duration=duration)
+    def __init__(self, group_id: int, user_id: int, special_title: str = "", duration: int = -1,
+                 callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            group_id (int): 群号
+            user_id (int): 要设置的 QQ 号
+            special_title (str, optional): 专属头衔，不填或空字符串表示删除专属头衔. Defaults to "".
+            duration (int, optional): 专属头衔有效期，单位秒，-1 表示永久. Defaults to -1.
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(group_id=group_id, user_id=user_id, special_title=special_title, duration=duration,
+                         callback=callback)
 
 
 class SetFriendAddRequest(Action):
@@ -331,8 +461,15 @@ class SetFriendAddRequest(Action):
 
     call_func = api.set_friend_add_request
 
-    def __init__(self, flag: str, approve: bool = True, remark: str = ""):
-        super().__init__(flag=flag, approve=approve, remark=remark)
+    def __init__(self, flag: str, approve: bool = True, remark: str = "", callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            flag (str): 加好友请求的 flag（需从上报的数据中获得）
+            approve (bool, optional): 是否同意请求. Defaults to True.
+            remark (str, optional): 添加后的好友备注（仅在同意时有效）. Defaults to "".
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(flag=flag, approve=approve, remark=remark, callback=callback)
 
 
 class SetGroupAddRequest(Action):
@@ -342,8 +479,17 @@ class SetGroupAddRequest(Action):
 
     call_func = api.set_group_add_request
 
-    def __init__(self, flag: str, sub_type: str = "add", approve: bool = True, reason: str = ""):
-        super().__init__(flag=flag, sub_type=sub_type, approve=approve, reason=reason)
+    def __init__(self, flag: str, sub_type: str = "add", approve: bool = True, reason: str = "",
+                 callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            flag (str): 加群请求的 flag（需从上报的数据中获得）
+            sub_type (str, optional): `add` 或 `invite`，请求类型（需要和上报消息中的 `sub_type` 字段相符）. Defaults to "add".
+            approve (bool, optional): 是否同意请求／邀请. Defaults to True.
+            reason (str, optional): 拒绝理由（仅在拒绝时有效）. Defaults to "".
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(flag=flag, sub_type=sub_type, approve=approve, reason=reason, callback=callback)
 
 
 class GetLoginInfo(Action):
@@ -353,8 +499,12 @@ class GetLoginInfo(Action):
 
     call_func = api.get_login_info
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(callback=callback)
 
 
 class GetStrangerInfo(Action):
@@ -364,8 +514,14 @@ class GetStrangerInfo(Action):
 
     call_func = api.get_stranger_info
 
-    def __init__(self, user_id: int, no_cache: bool = False):
-        super().__init__(user_id=user_id, no_cache=no_cache)
+    def __init__(self, user_id: int, no_cache: bool = False, callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            user_id (int): QQ 号
+            no_cache (bool, optional): 是否不使用缓存（使用缓存可能更新不及时，但响应更快）. Defaults to False.
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(user_id=user_id, no_cache=no_cache, callback=callback)
 
 
 class GetFriendList(Action):
@@ -375,8 +531,12 @@ class GetFriendList(Action):
 
     call_func = api.get_friend_list
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(callback=callback)
 
 
 class GetGroupInfo(Action):
@@ -386,8 +546,14 @@ class GetGroupInfo(Action):
 
     call_func = api.get_group_info
 
-    def __init__(self, group_id: int, no_cache: bool = False):
-        super().__init__(group_id=group_id, no_cache=no_cache)
+    def __init__(self, group_id: int, no_cache: bool = False, callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            group_id (int): 群号
+            no_cache (bool, optional): 是否不使用缓存（使用缓存可能更新不及时，但响应更快）. Defaults to False.
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(group_id=group_id, no_cache=no_cache, callback=callback)
 
 
 class GetGroupList(Action):
@@ -397,8 +563,12 @@ class GetGroupList(Action):
 
     call_func = api.get_group_list
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(callback=callback)
 
 
 class GetGroupMemberInfo(Action):
@@ -408,8 +578,15 @@ class GetGroupMemberInfo(Action):
 
     call_func = api.get_group_member_info
 
-    def __init__(self, group_id: int, user_id: int, no_cache: bool = False):
-        super().__init__(group_id=group_id, user_id=user_id, no_cache=no_cache)
+    def __init__(self, group_id: int, user_id: int, no_cache: bool = False, callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            group_id (int): 群号
+            user_id (int): QQ 号
+            no_cache (bool, optional): 是否不使用缓存（使用缓存可能更新不及时，但响应更快）. Defaults to False.
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(group_id=group_id, user_id=user_id, no_cache=no_cache, callback=callback)
 
 
 class GetGroupMemberList(Action):
@@ -419,8 +596,13 @@ class GetGroupMemberList(Action):
 
     call_func = api.get_group_member_list
 
-    def __init__(self, group_id: int, no_cache: bool = False):
-        super().__init__(group_id=group_id, no_cache=no_cache)
+    def __init__(self, group_id: int, callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            group_id (int): 群号
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(group_id=group_id, callback=callback)
 
 
 class GetGroupHonorInfo(Action):
@@ -430,8 +612,15 @@ class GetGroupHonorInfo(Action):
 
     call_func = api.get_group_honor_info
 
-    def __init__(self, group_id: int, type_: str = "all"):
-        super().__init__(group_id=group_id, type_=type_)
+    def __init__(self, group_id: int, type_: str = "all", callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            group_id (int): 群号
+            type_ (str, optional): 要获取的群荣誉类型，可传入 `talkative` `performer` `legend` `strong_newbie` `emotion`
+            以分别获取单个类型的群荣誉数据，或传入 `all` 获取所有数据. Defaults to "all".
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(group_id=group_id, type_=type_, callback=callback)
 
 
 class GetCookies(Action):
@@ -441,8 +630,13 @@ class GetCookies(Action):
 
     call_func = api.get_cookies
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, domain: str = "", callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            domain (str, optional): 需要获取 cookies 的域名. Defaults to "".
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(domain=domain, callback=callback)
 
 
 class GetCsrfToken(Action):
@@ -452,8 +646,12 @@ class GetCsrfToken(Action):
 
     call_func = api.get_csrf_token
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(callback=callback)
 
 
 class GetCredentials(Action):
@@ -463,8 +661,13 @@ class GetCredentials(Action):
 
     call_func = api.get_credentials
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, domain: str = "", callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            domain (str, optional): 需要获取 cookies 的域名. Defaults to "".
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(domain=domain, callback=callback)
 
 
 class GetRecord(Action):
@@ -474,8 +677,17 @@ class GetRecord(Action):
 
     call_func = api.get_record
 
-    def __init__(self, file: str, out_format: str = "mp3", out_file: str = ""):
-        super().__init__(file=file, out_format=out_format, out_file=out_file)
+    def __init__(self, file: str, out_format: str = "mp3", out_file: str = "",
+                 callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            file (str): 收到的语音文件名（消息段的 `file` 参数），如 `0B38145AA44505000B38145AA4450500.silk`
+            out_format (str, optional): 要转换到的格式，目前支持
+            `mp3`、`amr`、`wma`、`m4a`、`spx`、`ogg`、`wav`、`flac`. Defaults to "mp3".
+            out_file (str, optional): unused parameter. Defaults to "".
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(file=file, out_format=out_format, out_file=out_file, callback=callback)
 
 
 class GetImage(Action):
@@ -485,8 +697,13 @@ class GetImage(Action):
 
     call_func = api.get_image
 
-    def __init__(self, file: str):
-        super().__init__(file=file)
+    def __init__(self, file: str, callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            file (str): 收到的图片文件名（消息段的 `file` 参数），如 `6B4DE3DFD1BD271E3297859D41C530F5.jpg`
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(file=file, callback=callback)
 
 
 class CanSendImage(Action):
@@ -496,8 +713,12 @@ class CanSendImage(Action):
 
     call_func = api.can_send_image
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(callback=callback)
 
 
 class CanSendRecord(Action):
@@ -507,8 +728,12 @@ class CanSendRecord(Action):
 
     call_func = api.can_send_record
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(callback=callback)
 
 
 class GetStatus(Action):
@@ -518,8 +743,12 @@ class GetStatus(Action):
 
     call_func = api.get_status
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(callback=callback)
 
 
 class GetVersionInfo(Action):
@@ -529,8 +758,12 @@ class GetVersionInfo(Action):
 
     call_func = api.get_version_info
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(callback=callback)
 
 
 class SetRestart(Action):
@@ -540,8 +773,13 @@ class SetRestart(Action):
 
     call_func = api.set_restart
 
-    def __init__(self, delay: int = 0):
-        super().__init__(delay=delay)
+    def __init__(self, delay: int = 0, callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            delay (int, optional): 要延迟的毫秒数. Defaults to 0.
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(delay=delay, callback=callback)
 
 
 class CleanCache(Action):
@@ -551,8 +789,12 @@ class CleanCache(Action):
 
     call_func = api.clean_cache
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, callback: Callable[[Result], ...] = None):
+        """
+        Args:
+            callback (Callable[[Result], ...], optional): 回调函数. Defaults to None.
+        """
+        super().__init__(callback=callback)
 
 
 """
